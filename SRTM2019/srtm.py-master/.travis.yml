@@ -1,0 +1,16 @@
+language: python
+
+# Use container-based infrastructure
+sudo: false
+
+# Those without lxml wheels first because building lxml is slow
+python:
+ - 3.5
+ - 2.7
+ - 2.6
+ - 3.4
+ - 3.3
+
+script:
+ - pip install requests
+ - python -m unittest test
