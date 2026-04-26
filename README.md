@@ -122,3 +122,9 @@ dado un grupo de puntos, busca las combinaciones posibles que permita encontrar 
 ### --- `encontrar_relaciones_uc.ejecutar_dos_archivos_arbol`
 escoge dos grupos de puntos segun su tipo. Considera los primeros como nodos conectados y los segundos como nodos no conectados. Hace el mejor esfuerzo para dar conexion al segundo grupo a partir del primero.
 ### --- `encontrar_relaciones_uc.ejecutar_clusterizar`
+
+
+## -- para debug
+```sh
+sed -n '50000,80000p' myapp.log > issue.log
+```
