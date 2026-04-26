@@ -11,8 +11,8 @@ class CsvPuntoRepository(PuntoGateway):
     Adaptador de infraestructura que implementa PuntoGateway
     leyendo archivos CSV con cabecera.
 
-    Formato esperado (8 columnas):
-        nombre,ubigeo,longitud,latitud,altura_antena,tipo,metros_sobre_nivel_mar,green_asociado
+    Formato esperado (9 columnas):
+        nombre,ubigeo,longitud,latitud,altura_antena,tipo,metros_sobre_nivel_mar,green_asociado,conectado
 
     Pertenece a la capa de Infraestructura.
     """
@@ -40,6 +40,7 @@ class CsvPuntoRepository(PuntoGateway):
                         metros_sobre_nivel_mar=float(fila["metros_sobre_nivel_mar"]),
                     )
                     punto.green_asociado = fila.get("green_asociado", "").strip()
+                    punto.conectado = fila.get("conectado", "False").strip().lower() == "true"
                     puntos.append(punto)
                 except (KeyError, ValueError) as exc:
                     print(
@@ -47,16 +48,19 @@ class CsvPuntoRepository(PuntoGateway):
                     )
         return puntos
 
+    def leer_puntos_por_tipo(self, nombre_archivo: str, tipo: str) -> List[Punto]:
+        return [p for p in self.leer_puntos(nombre_archivo) if p.tipo == tipo]
+
     def leer_relaciones(self, nombre_archivo: str) -> List[Relacion]:
         raise NotImplementedError(
             "CsvPuntoRepository: leer_relaciones no está implementado para el formato CSV."
         )
 
-    def guardar_puntos(self, puntos: List[Punto], nombre_archivo: str) -> None:
-        ruta = self._directorio + nombre_archivo + ".csv"
+    def guardar_puntos(self, puntos: List[Punto]) -> None:
+        ruta = self._directorio + "punto.csv"
         _CAMPOS = [
             "nombre", "ubigeo", "longitud", "latitud",
-            "altura_antena", "tipo", "metros_sobre_nivel_mar", "green_asociado",
+            "altura_antena", "tipo", "metros_sobre_nivel_mar", "green_asociado", "conectado",
         ]
         with open(ruta, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=_CAMPOS)
@@ -71,10 +75,11 @@ class CsvPuntoRepository(PuntoGateway):
                     "tipo": p.tipo,
                     "metros_sobre_nivel_mar": p.metros_sobre_nivel_mar,
                     "green_asociado": p.green_asociado,
+                    "conectado": p.conectado,
                 })
 
-    def guardar_relaciones(self, relaciones: List[Relacion], nombre_archivo: str) -> None:
-        ruta = self._directorio + nombre_archivo + ".csv"
+    def guardar_relaciones(self, relaciones: List[Relacion]) -> None:
+        ruta = self._directorio + "relacion.csv"
         _CAMPOS = ["punto_inicial_id", "punto_final_id", "distancia"]
         with open(ruta, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=_CAMPOS)

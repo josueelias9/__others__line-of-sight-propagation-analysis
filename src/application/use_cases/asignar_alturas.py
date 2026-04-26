@@ -45,5 +45,5 @@ class AsignarAlturasUseCase:
             self._elevation_repo.obtener_elevacion_punto(punto)
             print(f"AsignarAlturasUseCase: punto {i} actualizado → {punto}")
 
-        self._punto_repo.guardar_puntos(puntos, request.nombre_archivo)
+        self._punto_repo.guardar_puntos(puntos)
         return AsignarAlturasResponse(puntos=puntos)

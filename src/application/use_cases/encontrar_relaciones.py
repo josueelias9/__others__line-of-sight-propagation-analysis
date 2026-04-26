@@ -24,15 +24,15 @@ class EncontrarRelacionesUnArchivoResponse:
 
 @dataclass
 class EncontrarRelacionesArbolRequest:
-    nombre_conectados: str
-    nombre_no_conectados: str
+    tipo_conectados: str
+    tipo_no_conectados: str
     distancia_maxima: float
 
 
 @dataclass
 class EncontrarRelacionesArbolResponse:
     relaciones_exitosas: List[Relacion]
-    relaciones_con_error: List[Relacion]
+    puntos_sin_conexion: List[Punto]
 
 
 @dataclass
@@ -103,7 +103,7 @@ class EncontrarRelacionesUseCase:
                 print(f"  par {i}-{j}")
 
         self._kml_output.escribir_rutas(relaciones, request.nombre_archivo, altitud_absoluta=True)
-        self._punto_repo.guardar_relaciones(relaciones, "relacion")
+        self._punto_repo.guardar_relaciones(relaciones)
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
     def ejecutar_dos_archivos_arbol(
@@ -111,26 +111,34 @@ class EncontrarRelacionesUseCase:
         request: EncontrarRelacionesArbolRequest,
     ) -> EncontrarRelacionesArbolResponse:
         """
-        Lee dos archivos (puntos ya conectados y puntos sin conexión)
-        y construye el árbol de conexión mínimo.
+        Lee los puntos de `punto.csv` filtrando por tipo y construye
+        el árbol de conexión mínimo.
         """
-        conectados = self._punto_repo.leer_puntos(request.nombre_conectados)
-        no_conectados = self._punto_repo.leer_puntos(request.nombre_no_conectados)
+        conectados = self._punto_repo.leer_puntos_por_tipo("punto", request.tipo_conectados)
+        no_conectados = self._punto_repo.leer_puntos_por_tipo("punto", request.tipo_no_conectados)
 
-        exitosas, errores = NetworkAnalysisService.encontrar_menor_relacion(
+        for p in conectados:
+            p.conectado = True
+
+        for p in no_conectados:
+            p.conectado = False
+
+        exitosas, sin_conexion = NetworkAnalysisService.encontrar_menor_relacion(
             lista1=conectados,
             lista2=no_conectados,
             distancia_maxima=request.distancia_maxima,
             verifica_los=self._verificar_los,
         )
 
-        self._kml_output.escribir_rutas(exitosas, request.nombre_conectados, altitud_absoluta=True)
-        self._kml_output.escribir_rutas(errores, request.nombre_conectados + "_errores", altitud_absoluta=True)
-        self._punto_repo.guardar_relaciones(exitosas, "relacion")
-        self._punto_repo.guardar_relaciones(errores, "relacion_errores")
+        for rel in exitosas:
+            rel.punto_final.conectado = True
+
+        self._kml_output.escribir_rutas(exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True)
+        self._punto_repo.guardar_relaciones(exitosas)
+        self._punto_repo.guardar_puntos(conectados + no_conectados)
         return EncontrarRelacionesArbolResponse(
             relaciones_exitosas=exitosas,
-            relaciones_con_error=errores,
+            puntos_sin_conexion=sin_conexion,
         )
 
     def ejecutar_clusterizar(
@@ -147,5 +155,5 @@ class EncontrarRelacionesUseCase:
             distancia_maxima=request.distancia_maxima,
         )
         self._kml_output.escribir_rutas(relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True)
-        self._punto_repo.guardar_relaciones(relaciones, "relacion")
+        self._punto_repo.guardar_relaciones(relaciones)
         return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)

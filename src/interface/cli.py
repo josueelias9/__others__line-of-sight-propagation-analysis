@@ -111,8 +111,7 @@ def run() -> None:
             break
 
         elif opcion == "1":
-            archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
-            asignar_alturas_uc.ejecutar(AsignarAlturasRequest(nombre_archivo=archivo))
+            asignar_alturas_uc.ejecutar(AsignarAlturasRequest(nombre_archivo="punto"))
 
         elif opcion == "2":
             archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()
@@ -149,13 +148,13 @@ def run() -> None:
             )
 
         elif opcion == "5":
-            conectados = input("Archivo de puntos CONECTADOS (sin .csv): ").strip()
-            no_conectados = input("Archivo de puntos NO CONECTADOS (sin .csv): ").strip()
+            tipo_conectados = input("Tipo de puntos BASE/CONECTADOS (ej: transporte): ").strip()
+            tipo_no_conectados = input("Tipo de puntos a CONECTAR (ej: acceso): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             encontrar_relaciones_uc.ejecutar_dos_archivos_arbol(
                 EncontrarRelacionesArbolRequest(
-                    nombre_conectados=conectados,
-                    nombre_no_conectados=no_conectados,
+                    tipo_conectados=tipo_conectados,
+                    tipo_no_conectados=tipo_no_conectados,
                     distancia_maxima=dist,
                 )
             )

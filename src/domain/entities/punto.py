@@ -23,6 +23,7 @@ class Punto:
         self.tipo = tipo
         self.metros_sobre_nivel_mar = metros_sobre_nivel_mar
         self.green_asociado: str = ""
+        self.conectado: bool = False
 
     def __str__(self) -> str:
         return (
