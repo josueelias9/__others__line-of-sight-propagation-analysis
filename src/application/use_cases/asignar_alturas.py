@@ -40,12 +40,12 @@ class AsignarAlturasUseCase:
         Lee los puntos de `punto.csv`, asigna alturas y
         sobreescribe el mismo archivo de entrada con los valores actualizados.
         """
-        logger.info("Inicio de caso de uso")
+        logger.info("🟢")
         puntos = self._punto_repo.leer_puntos()
         for i, punto in enumerate(puntos):
             self._elevation_repo.obtener_elevacion_punto(punto)
             logger.debug("punto %d actualizado → %s", i, punto)
 
         self._punto_repo.guardar_puntos(puntos)
-        logger.info("Fin de caso de uso")
+        logger.info("🔴")
         return AsignarAlturasResponse(puntos=puntos)

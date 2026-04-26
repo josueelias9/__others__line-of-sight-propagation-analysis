@@ -95,7 +95,7 @@ class EncontrarRelacionesUseCase:
         Lee un solo archivo de puntos y encuentra todas las relaciones
         posibles con LOS dentro de la distancia máxima.
         """
-        logger.info("Inicio de caso de uso")
+        logger.info("🟢")
         puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
         relaciones = []
         for i in range(len(puntos)):
@@ -108,7 +108,7 @@ class EncontrarRelacionesUseCase:
 
         self._kml_output.escribir_rutas(relaciones, request.nombre_archivo, altitud_absoluta=True)
         self._punto_repo.guardar_relaciones(relaciones)
-        logger.info("Fin de caso de uso")
+        logger.info("🔴")
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
     def ejecutar_dos_archivos_arbol(
@@ -119,7 +119,7 @@ class EncontrarRelacionesUseCase:
         Lee los puntos de `punto.csv` filtrando por tipo y construye
         el árbol de conexión mínimo.
         """
-        logger.info("Inicio de caso de uso")
+        logger.info("🟢")
         conectados = self._punto_repo.leer_puntos_por_tipo(request.tipo_conectados)
         no_conectados = self._punto_repo.leer_puntos_por_tipo(request.tipo_no_conectados)
 
@@ -142,7 +142,7 @@ class EncontrarRelacionesUseCase:
         self._kml_output.escribir_rutas(exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True)
         self._punto_repo.guardar_relaciones(exitosas)
         self._punto_repo.actualizar_conectado(conectados + no_conectados)
-        logger.info("Fin de caso de uso")
+        logger.info("🔴")
         return EncontrarRelacionesArbolResponse(
             relaciones_exitosas=exitosas,
             puntos_sin_conexion=sin_conexion,
@@ -155,7 +155,7 @@ class EncontrarRelacionesUseCase:
         """
         Agrupa los puntos en clusters conectados por LOS y distancia.
         """
-        logger.info("Inicio de caso de uso")
+        logger.info("🟢")
         puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
         redes, relaciones = NetworkAnalysisService.clusterizar(
             lista=puntos,
@@ -164,5 +164,5 @@ class EncontrarRelacionesUseCase:
         )
         self._kml_output.escribir_rutas(relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True)
         self._punto_repo.guardar_relaciones(relaciones)
-        logger.info("Fin de caso de uso")
+        logger.info("🔴")
         return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)

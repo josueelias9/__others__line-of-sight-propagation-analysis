@@ -167,12 +167,14 @@ class PolygonAnalysisService:
         while True:
             # ── INICIAL ──────────────────────────────────────────────
             if estado == EST_INICIAL:
+                logger.debug("estado INICIAL en (%d, %d)", i, j)
                 i = self._cursor_i
                 j = self._cursor_j
                 estado = EST_BUSCAR
 
             # ── BUSCAR ───────────────────────────────────────────────
             elif estado == EST_BUSCAR:
+                logger.debug("estado BUSCAR en (%d, %d)", i, j)
                 j += 1
                 if j + 1 == self._est.m:
                     estado = EST_SUBE
@@ -193,6 +195,7 @@ class PolygonAnalysisService:
 
             # ── SUBE ─────────────────────────────────────────────────
             elif estado == EST_SUBE:
+                logger.debug("estado SUBE en (%d, %d)", i, j)
                 i += 1
                 j = -1
                 if i == self._est.n:
@@ -201,6 +204,7 @@ class PolygonAnalysisService:
 
             # ── DERECHA ──────────────────────────────────────────────
             elif estado == EST_DER:
+                logger.debug("estado DER en (%d, %d)", i, j)
                 j += 1
                 AR, AB, DE, IZ = self._vecinos(i, j)
                 up = i + 1
@@ -228,6 +232,7 @@ class PolygonAnalysisService:
 
             # ── ABAJO ────────────────────────────────────────────────
             elif estado == EST_ABA:
+                logger.debug("estado ABA en (%d, %d)", i, j)
                 i -= 1
                 AR, AB, DE, IZ = self._vecinos(i, j)
                 up = i + 1
@@ -248,6 +253,7 @@ class PolygonAnalysisService:
 
             # ── IZQUIERDA ────────────────────────────────────────────
             elif estado == EST_IZQ:
+                logger.debug("estado IZQ en (%d, %d)", i, j)
                 j -= 1
                 AR, AB, DE, IZ = self._vecinos(i, j)
                 up = i + 1
@@ -271,6 +277,7 @@ class PolygonAnalysisService:
 
             # ── ARRIBA ───────────────────────────────────────────────
             elif estado == EST_ARR:
+                logger.debug("estado ARR en (%d, %d)", i, j)
                 i += 1
                 AR, AB, DE, IZ = self._vecinos(i, j)
                 up = i + 1
@@ -293,6 +300,7 @@ class PolygonAnalysisService:
 
             # ── FINAL ────────────────────────────────────────────────
             elif estado == EST_FINAL:
+                logger.debug("estado FINAL en (%d, %d)", i, j)
                 break
 
         self._limpiar(a_borrar, 0)

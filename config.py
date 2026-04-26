@@ -53,7 +53,7 @@ def setup_logging() -> None:
     """Configura el logging: consola (INFO) y archivo app.log (DEBUG)."""
     logging.basicConfig(
         level=logging.DEBUG,
-        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        format="%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename='myapp.log'
     )
