@@ -19,6 +19,7 @@ from application.gateways.punto_gateway import PuntoGateway
 class EncontrarTorreFantasmaRequest:
     nombre_salida: str
     reduccion_maxima: int = 3
+    ubigeos: Optional[List[int]] = None
 
 
 @dataclass
@@ -78,6 +79,8 @@ class EncontrarTorreFantasmaUseCase:
         de la lista antes de abandonar la búsqueda.
         """
         puntos = self._punto_repo.leer_puntos()
+        if request.ubigeos:
+            puntos = [p for p in puntos if p.ubigeo in request.ubigeos]
         print(f"EncontrarTorreFantasmaUseCase: {len(puntos)} puntos cargados.")
 
         for eliminados in range(request.reduccion_maxima):

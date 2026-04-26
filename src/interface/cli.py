@@ -138,9 +138,12 @@ def run() -> None:
 
         elif opcion == "4":
             salida = input("Prefijo de archivos de salida: ").strip()
+            ubigeos_raw = input("Ubigeos a filtrar (separados por coma, vacío = todos, ejemplo: 4,5,6): ").strip()
+            ubigeos = [int(u) for u in ubigeos_raw.split(",") if u.strip()] or None
             encontrar_torre_fantasma_uc.ejecutar(
                 EncontrarTorreFantasmaRequest(
                     nombre_salida=salida,
+                    ubigeos=ubigeos,
                 )
             )
 

@@ -32,11 +32,14 @@ class PolygonAnalysisService:
         detectables en la estructura matricial.
         """
         lista: List[Poligonito] = []
+        counter = 0
         while True:
             poligonito = self._ejecutar_maquina_de_estados()
             if not poligonito.lista_de_puntos:
                 break
             lista.append(poligonito)
+            counter += 1
+            print(f"Polígono {counter} detectado con {len(poligonito.lista_de_puntos)} puntos.")
 
         resultado = Poligonos()
         resultado.lista_de_poligonitos = lista
@@ -141,7 +144,7 @@ class PolygonAnalysisService:
         return False
 
     # ------------------------------------------------------------------ máquina de estados
-
+    # TODO error aqui! revisar
     def _ejecutar_maquina_de_estados(self) -> Poligonito:
         """
         Máquina de estados de Mealy que traza el contorno de un polígono
