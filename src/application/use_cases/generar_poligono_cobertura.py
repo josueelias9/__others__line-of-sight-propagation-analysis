@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 from shapely.geometry.polygon import Polygon
 
 from application.ports.output_port import KmlOutputPort
@@ -5,6 +7,17 @@ from domain.entities.estructura import Estructura
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
 from domain.services.polygon_analysis_service import PolygonAnalysisService
+
+
+@dataclass
+class GenerarPoligonoCoberturaRequest:
+    punto: Punto
+    escribir_kml: bool = False
+
+
+@dataclass
+class GenerarPoligonoCoberturaResponse:
+    poligono: Polygon
 
 
 class GenerarPoligonoCoberturaUseCase:
@@ -36,17 +49,17 @@ class GenerarPoligonoCoberturaUseCase:
         self._distancia_grados = distancia_grados
         self._altura_torre_fantasma = altura_torre_fantasma
 
-    def ejecutar(self, punto: Punto, escribir_kml: bool = False) -> Polygon:
+    def ejecutar(self, request: GenerarPoligonoCoberturaRequest) -> GenerarPoligonoCoberturaResponse:
         """
-        Calcula y devuelve el polígono de cobertura del punto como objeto Shapely.
+        Calcula y devuelve el polígono de cobertura del punto.
 
-        Si `escribir_kml` es True, también genera el archivo KML.
+        Si `request.escribir_kml` es True, también genera el archivo KML.
         """
         estructura = Estructura(
             n=self._numero_de_ldv,
             m=self._muestras,
             r=self._distancia_grados,
-            punto_cero=punto,
+            punto_cero=request.punto,
             altura_torre_fantasma=self._altura_torre_fantasma,
         )
 
@@ -56,11 +69,11 @@ class GenerarPoligonoCoberturaUseCase:
         poligonos = servicio.extraer_poligonos()
         poligono_shapely = servicio.convertir_a_shapely(poligonos)
 
-        if escribir_kml:
-            self._kml_output.escribir_poligonos(poligonos, estructura, punto.nombre)
-            self._kml_output.escribir_malla_cobertura(estructura, punto.nombre + "_malla")
+        if request.escribir_kml:
+            self._kml_output.escribir_poligonos(poligonos, estructura, request.punto.nombre)
+            self._kml_output.escribir_malla_cobertura(estructura, request.punto.nombre + "_malla")
 
-        return poligono_shapely
+        return GenerarPoligonoCoberturaResponse(poligono=poligono_shapely)
 
     # ------------------------------------------------------------------ privado
 

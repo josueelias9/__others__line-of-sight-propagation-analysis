@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from itertools import combinations
 from typing import List, Optional, Tuple
 
@@ -6,11 +7,36 @@ from shapely.geometry.polygon import Polygon
 
 from application.ports.output_port import KmlOutputPort, TxtOutputPort
 from application.use_cases.generar_poligono_cobertura import (
+    GenerarPoligonoCoberturaRequest,
     GenerarPoligonoCoberturaUseCase,
 )
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
 from application.gateways.punto_gateway import PuntoGateway
+
+
+@dataclass
+class EncontrarTorreFantasmaRequest:
+    nombre_archivo: str
+    nombre_salida: str
+    reduccion_maxima: int = 3
+
+
+@dataclass
+class EncontrarTorreFantasmaResponse:
+    encontrado: bool
+
+
+@dataclass
+class EncontrarTorreFantasmaDosArchivosRequest:
+    nombre_no_conectados: str
+    nombre_conectados: str
+    nombre_salida_prefijo: str
+
+
+@dataclass
+class EncontrarTorreFantasmaDosArchivosResponse:
+    pass
 
 
 class EncontrarTorreFantasmaUseCase:
@@ -43,23 +69,19 @@ class EncontrarTorreFantasmaUseCase:
 
     def ejecutar(
         self,
-        nombre_archivo: str,
-        nombre_salida: str,
-        reduccion_maxima: int = 3,
-    ) -> bool:
+        request: EncontrarTorreFantasmaRequest,
+    ) -> EncontrarTorreFantasmaResponse:
         """
-        Lee los puntos de `nombre_archivo` y busca la intersección de sus
-        polígonos de cobertura.
+        Lee los puntos de `request.nombre_archivo` y busca la intersección
+        de sus polígonos de cobertura.
 
-        `reduccion_maxima` indica cuántos puntos se pueden eliminar de la
-        lista antes de abandonar la búsqueda.
-
-        Devuelve True si se encontró una zona de intersección.
+        `request.reduccion_maxima` indica cuántos puntos se pueden eliminar
+        de la lista antes de abandonar la búsqueda.
         """
-        puntos = self._punto_repo.leer_puntos(nombre_archivo)
+        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
         print(f"EncontrarTorreFantasmaUseCase: {len(puntos)} puntos cargados.")
 
-        for eliminados in range(reduccion_maxima):
+        for eliminados in range(request.reduccion_maxima):
             longitud_subconjunto = len(puntos) - eliminados
             for tupla in combinations(puntos, longitud_subconjunto):
                 if not self._todos_a_distancia_razonable(list(tupla)):
@@ -67,30 +89,30 @@ class EncontrarTorreFantasmaUseCase:
 
                 area, poligono = self._intersectar_coberturas(list(tupla))
                 if area:
-                    self._kml_output.escribir_wkt(mapping(poligono), nombre_salida)
-                    self._txt_output.escribir_puntos(list(tupla), nombre_salida + "_puntos")
+                    self._kml_output.escribir_wkt(mapping(poligono), request.nombre_salida)
+                    self._txt_output.escribir_puntos(list(tupla), request.nombre_salida + "_puntos")
                     print("EncontrarTorreFantasmaUseCase: ¡área encontrada!")
-                    return True
+                    return EncontrarTorreFantasmaResponse(encontrado=True)
 
         print("EncontrarTorreFantasmaUseCase: no se encontró área de intersección.")
-        return False
+        return EncontrarTorreFantasmaResponse(encontrado=False)
 
     def ejecutar_dos_archivos(
         self,
-        nombre_no_conectados: str,
-        nombre_conectados: str,
-        nombre_salida_prefijo: str,
-    ) -> None:
+        request: EncontrarTorreFantasmaDosArchivosRequest,
+    ) -> EncontrarTorreFantasmaDosArchivosResponse:
         """
         Para cada punto no conectado busca la intersección de su cobertura
         con la cobertura de los puntos conectados más cercanos.
         """
-        no_conectados = self._punto_repo.leer_puntos(nombre_no_conectados)
-        conectados = self._punto_repo.leer_puntos(nombre_conectados)
+        no_conectados = self._punto_repo.leer_puntos(request.nombre_no_conectados)
+        conectados = self._punto_repo.leer_puntos(request.nombre_conectados)
 
         for i, nc in enumerate(no_conectados):
             print(f"  Nodo no conectado {i}: {nc.nombre}")
-            cobertura_nc = self._cobertura_uc.ejecutar(nc)
+            cobertura_nc = self._cobertura_uc.ejecutar(
+                GenerarPoligonoCoberturaRequest(punto=nc)
+            ).poligono
             cobertura_actual = cobertura_nc
 
             candidatos = sorted(
@@ -99,18 +121,22 @@ class EncontrarTorreFantasmaUseCase:
             )
 
             for j, rel in enumerate(candidatos):
-                cobertura_c = self._cobertura_uc.ejecutar(rel.punto_final)
+                cobertura_c = self._cobertura_uc.ejecutar(
+                    GenerarPoligonoCoberturaRequest(punto=rel.punto_final)
+                ).poligono
                 interseccion = cobertura_actual.intersection(cobertura_c)
                 if interseccion.wkt != "GEOMETRYCOLLECTION EMPTY":
                     nombre = f"{nc.nombre}-{rel.punto_final.nombre}"
                     self._kml_output.escribir_wkt(
-                        mapping(interseccion), nombre_salida_prefijo + nombre
+                        mapping(interseccion), request.nombre_salida_prefijo + nombre
                     )
                     print(f"    → intersección encontrada con {rel.punto_final.nombre}")
                     break
                 else:
                     cobertura_actual = cobertura_nc
             print()
+
+        return EncontrarTorreFantasmaDosArchivosResponse()
 
     # ------------------------------------------------------------------ helpers privados
 
@@ -127,9 +153,13 @@ class EncontrarTorreFantasmaUseCase:
         if not puntos:
             return False, None
 
-        resultado = self._cobertura_uc.ejecutar(puntos[0])
+        resultado = self._cobertura_uc.ejecutar(
+            GenerarPoligonoCoberturaRequest(punto=puntos[0])
+        ).poligono
         for pt in puntos[1:]:
-            cobertura = self._cobertura_uc.ejecutar(pt)
+            cobertura = self._cobertura_uc.ejecutar(
+                GenerarPoligonoCoberturaRequest(punto=pt)
+            ).poligono
             resultado = resultado.intersection(cobertura)
             if resultado.wkt == "GEOMETRYCOLLECTION EMPTY":
                 return False, None

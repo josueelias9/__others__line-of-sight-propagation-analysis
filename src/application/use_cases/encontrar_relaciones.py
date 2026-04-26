@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, Tuple
 
 from application.ports.output_port import KmlOutputPort, TxtOutputPort
@@ -8,6 +9,45 @@ from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
 from domain.services.line_of_sight_service import LineOfSightService
 from domain.services.network_analysis_service import NetworkAnalysisService
+
+
+@dataclass
+class EncontrarRelacionesUnArchivoRequest:
+    nombre_archivo: str
+    distancia_maxima: float
+    nombre_salida: str
+
+
+@dataclass
+class EncontrarRelacionesUnArchivoResponse:
+    relaciones: List[Relacion]
+
+
+@dataclass
+class EncontrarRelacionesArbolRequest:
+    nombre_conectados: str
+    nombre_no_conectados: str
+    distancia_maxima: float
+    nombre_salida: str
+
+
+@dataclass
+class EncontrarRelacionesArbolResponse:
+    relaciones_exitosas: List[Relacion]
+    relaciones_con_error: List[Relacion]
+
+
+@dataclass
+class ClusterizarRequest:
+    nombre_archivo: str
+    distancia_maxima: float
+    nombre_salida: str
+
+
+@dataclass
+class ClusterizarResponse:
+    redes: List[Red]
+    relaciones: List[Relacion]
 
 
 class EncontrarRelacionesUseCase:
@@ -51,71 +91,66 @@ class EncontrarRelacionesUseCase:
 
     def ejecutar_un_archivo(
         self,
-        nombre_archivo: str,
-        distancia_maxima: float,
-        nombre_salida: str,
-    ) -> List[Relacion]:
+        request: EncontrarRelacionesUnArchivoRequest,
+    ) -> EncontrarRelacionesUnArchivoResponse:
         """
         Lee un solo archivo de puntos y encuentra todas las relaciones
         posibles con LOS dentro de la distancia máxima.
         """
-        puntos = self._punto_repo.leer_puntos(nombre_archivo)
+        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
         relaciones = []
         for i in range(len(puntos)):
             for j in range(i + 1, len(puntos)):
                 re = Relacion(puntos[i], puntos[j])
-                if re.distancia < distancia_maxima:
+                if re.distancia < request.distancia_maxima:
                     if self._verificar_los(puntos[i], puntos[j]):
                         relaciones.append(re)
                 print(f"  par {i}-{j}")
 
-        self._kml_output.escribir_rutas(relaciones, nombre_salida, altitud_absoluta=True)
-        self._txt_output.escribir_relaciones(relaciones, nombre_salida)
-        return relaciones
+        self._kml_output.escribir_rutas(relaciones, request.nombre_salida, altitud_absoluta=True)
+        self._txt_output.escribir_relaciones(relaciones, request.nombre_salida)
+        return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
     def ejecutar_dos_archivos_arbol(
         self,
-        nombre_conectados: str,
-        nombre_no_conectados: str,
-        distancia_maxima: float,
-        nombre_salida: str,
-    ) -> Tuple[List[Relacion], List[Relacion]]:
+        request: EncontrarRelacionesArbolRequest,
+    ) -> EncontrarRelacionesArbolResponse:
         """
         Lee dos archivos (puntos ya conectados y puntos sin conexión)
         y construye el árbol de conexión mínimo.
-        Devuelve (relaciones_exitosas, relaciones_con_error).
         """
-        conectados = self._punto_repo.leer_puntos(nombre_conectados)
-        no_conectados = self._punto_repo.leer_puntos(nombre_no_conectados)
+        conectados = self._punto_repo.leer_puntos(request.nombre_conectados)
+        no_conectados = self._punto_repo.leer_puntos(request.nombre_no_conectados)
 
         exitosas, errores = NetworkAnalysisService.encontrar_menor_relacion(
             lista1=conectados,
             lista2=no_conectados,
-            distancia_maxima=distancia_maxima,
+            distancia_maxima=request.distancia_maxima,
             verifica_los=self._verificar_los,
         )
 
-        self._kml_output.escribir_rutas(exitosas, nombre_salida, altitud_absoluta=True)
-        self._kml_output.escribir_rutas(errores, nombre_salida + "_errores", altitud_absoluta=True)
-        self._txt_output.escribir_relaciones(exitosas, nombre_salida)
-        self._txt_output.escribir_relaciones(errores, nombre_salida + "_errores")
-        return exitosas, errores
+        self._kml_output.escribir_rutas(exitosas, request.nombre_salida, altitud_absoluta=True)
+        self._kml_output.escribir_rutas(errores, request.nombre_salida + "_errores", altitud_absoluta=True)
+        self._txt_output.escribir_relaciones(exitosas, request.nombre_salida)
+        self._txt_output.escribir_relaciones(errores, request.nombre_salida + "_errores")
+        return EncontrarRelacionesArbolResponse(
+            relaciones_exitosas=exitosas,
+            relaciones_con_error=errores,
+        )
 
     def ejecutar_clusterizar(
         self,
-        nombre_archivo: str,
-        distancia_maxima: float,
-        nombre_salida: str,
-    ) -> Tuple[List[Red], List[Relacion]]:
+        request: ClusterizarRequest,
+    ) -> ClusterizarResponse:
         """
         Agrupa los puntos en clusters conectados por LOS y distancia.
         """
-        puntos = self._punto_repo.leer_puntos(nombre_archivo)
+        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
         redes, relaciones = NetworkAnalysisService.clusterizar(
             lista=puntos,
             verifica_los=self._verificar_los,
-            distancia_maxima=distancia_maxima,
+            distancia_maxima=request.distancia_maxima,
         )
-        self._kml_output.escribir_rutas(relaciones, nombre_salida + "_rutas", altitud_absoluta=True)
-        self._txt_output.escribir_relaciones(relaciones, nombre_salida + "_rutas")
-        return redes, relaciones
+        self._kml_output.escribir_rutas(relaciones, request.nombre_salida + "_rutas", altitud_absoluta=True)
+        self._txt_output.escribir_relaciones(relaciones, request.nombre_salida + "_rutas")
+        return ClusterizarResponse(redes=redes, relaciones=relaciones)

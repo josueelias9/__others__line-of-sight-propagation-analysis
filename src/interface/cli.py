@@ -22,10 +22,19 @@ for _p in (_SRC_DIR, os.path.join(_SRC_DIR, ".."), _ROOT_DIR):
         sys.path.insert(0, _p)
 
 import config
-from application.use_cases.asignar_alturas import AsignarAlturasUseCase
-from application.use_cases.encontrar_relaciones import EncontrarRelacionesUseCase
-from application.use_cases.encontrar_torre_fantasma import EncontrarTorreFantasmaUseCase
+from application.use_cases.asignar_alturas import AsignarAlturasRequest, AsignarAlturasUseCase
+from application.use_cases.encontrar_relaciones import (
+    ClusterizarRequest,
+    EncontrarRelacionesArbolRequest,
+    EncontrarRelacionesUnArchivoRequest,
+    EncontrarRelacionesUseCase,
+)
+from application.use_cases.encontrar_torre_fantasma import (
+    EncontrarTorreFantasmaRequest,
+    EncontrarTorreFantasmaUseCase,
+)
 from application.use_cases.generar_poligono_cobertura import (
+    GenerarPoligonoCoberturaRequest,
     GenerarPoligonoCoberturaUseCase,
 )
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
@@ -122,13 +131,19 @@ def run() -> None:
 
         elif opcion == "1":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
-            uc["asignar_alturas"].ejecutar(archivo)
+            uc["asignar_alturas"].ejecutar(AsignarAlturasRequest(nombre_archivo=archivo))
 
         elif opcion == "2":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             salida = input("Nombre del archivo de salida (sin extensión): ").strip()
-            uc["encontrar_relaciones"].ejecutar_un_archivo(archivo, dist, salida)
+            uc["encontrar_relaciones"].ejecutar_un_archivo(
+                EncontrarRelacionesUnArchivoRequest(
+                    nombre_archivo=archivo,
+                    distancia_maxima=dist,
+                    nombre_salida=salida,
+                )
+            )
 
         elif opcion == "3":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
@@ -139,13 +154,20 @@ def run() -> None:
             except StopIteration:
                 print(f"No se encontró un punto con ubigeo={ubigeo}.")
                 continue
-            uc["generar_poligono"].ejecutar(punto, escribir_kml=True)
+            uc["generar_poligono"].ejecutar(
+                GenerarPoligonoCoberturaRequest(punto=punto, escribir_kml=True)
+            )
             print(f"KML generado en {config.DIR_OUTPUT}{punto.nombre}.kml")
 
         elif opcion == "4":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             salida = input("Prefijo de archivos de salida: ").strip()
-            uc["encontrar_torre"].ejecutar(archivo, salida)
+            uc["encontrar_torre"].ejecutar(
+                EncontrarTorreFantasmaRequest(
+                    nombre_archivo=archivo,
+                    nombre_salida=salida,
+                )
+            )
 
         elif opcion == "5":
             conectados = input("Archivo de puntos CONECTADOS (sin .txt): ").strip()
@@ -153,14 +175,25 @@ def run() -> None:
             salida = input("Nombre del archivo de salida (sin extensión): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             uc["encontrar_relaciones"].ejecutar_dos_archivos_arbol(
-                conectados, no_conectados, dist, salida
+                EncontrarRelacionesArbolRequest(
+                    nombre_conectados=conectados,
+                    nombre_no_conectados=no_conectados,
+                    distancia_maxima=dist,
+                    nombre_salida=salida,
+                )
             )
 
         elif opcion == "6":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             salida = input("Prefijo de archivos de salida: ").strip()
-            uc["encontrar_relaciones"].ejecutar_clusterizar(archivo, dist, salida)
+            uc["encontrar_relaciones"].ejecutar_clusterizar(
+                ClusterizarRequest(
+                    nombre_archivo=archivo,
+                    distancia_maxima=dist,
+                    nombre_salida=salida,
+                )
+            )
 
         else:
             print("Opción no válida, intenta de nuevo.")

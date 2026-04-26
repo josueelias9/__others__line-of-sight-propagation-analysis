@@ -1,9 +1,20 @@
+from dataclasses import dataclass
 from typing import List
 
 from application.ports.output_port import TxtOutputPort
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
+
+
+@dataclass
+class AsignarAlturasRequest:
+    nombre_archivo: str
+
+
+@dataclass
+class AsignarAlturasResponse:
+    puntos: List[Punto]
 
 
 class AsignarAlturasUseCase:
@@ -27,17 +38,15 @@ class AsignarAlturasUseCase:
         self._elevation_repo = elevation_repo
         self._txt_output = txt_output
 
-    def ejecutar(self, nombre_archivo: str) -> List[Punto]:
+    def ejecutar(self, request: AsignarAlturasRequest) -> AsignarAlturasResponse:
         """
-        Lee los puntos de `nombre_archivo`, asigna alturas y los guarda
+        Lee los puntos de `request.nombre_archivo`, asigna alturas y los guarda
         en el mismo nombre de archivo de salida.
-
-        Devuelve la lista de puntos con las alturas asignadas.
         """
-        puntos = self._punto_repo.leer_puntos(nombre_archivo)
+        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
         for i, punto in enumerate(puntos):
             self._elevation_repo.obtener_elevacion_punto(punto)
             print(f"AsignarAlturasUseCase: punto {i} actualizado → {punto}")
 
-        self._txt_output.escribir_puntos(puntos, nombre_archivo)
-        return puntos
+        self._txt_output.escribir_puntos(puntos, request.nombre_archivo)
+        return AsignarAlturasResponse(puntos=puntos)
