@@ -15,7 +15,6 @@ from domain.services.network_analysis_service import NetworkAnalysisService
 class EncontrarRelacionesUnArchivoRequest:
     nombre_archivo: str
     distancia_maxima: float
-    nombre_salida: str
 
 
 @dataclass
@@ -28,7 +27,6 @@ class EncontrarRelacionesArbolRequest:
     nombre_conectados: str
     nombre_no_conectados: str
     distancia_maxima: float
-    nombre_salida: str
 
 
 @dataclass
@@ -41,7 +39,6 @@ class EncontrarRelacionesArbolResponse:
 class EncontrarRelacionesClusterizarRequest:
     nombre_archivo: str
     distancia_maxima: float
-    nombre_salida: str
 
 
 @dataclass
@@ -107,8 +104,8 @@ class EncontrarRelacionesUseCase:
                         relaciones.append(re)
                 print(f"  par {i}-{j}")
 
-        self._kml_output.escribir_rutas(relaciones, request.nombre_salida, altitud_absoluta=True)
-        self._txt_output.escribir_relaciones(relaciones, request.nombre_salida)
+        self._kml_output.escribir_rutas(relaciones, request.nombre_archivo, altitud_absoluta=True)
+        self._punto_repo.guardar_relaciones(relaciones, "relacion")
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
     def ejecutar_dos_archivos_arbol(
@@ -129,10 +126,10 @@ class EncontrarRelacionesUseCase:
             verifica_los=self._verificar_los,
         )
 
-        self._kml_output.escribir_rutas(exitosas, request.nombre_salida, altitud_absoluta=True)
-        self._kml_output.escribir_rutas(errores, request.nombre_salida + "_errores", altitud_absoluta=True)
-        self._txt_output.escribir_relaciones(exitosas, request.nombre_salida)
-        self._txt_output.escribir_relaciones(errores, request.nombre_salida + "_errores")
+        self._kml_output.escribir_rutas(exitosas, request.nombre_conectados, altitud_absoluta=True)
+        self._kml_output.escribir_rutas(errores, request.nombre_conectados + "_errores", altitud_absoluta=True)
+        self._punto_repo.guardar_relaciones(exitosas, "relacion")
+        self._punto_repo.guardar_relaciones(errores, "relacion_errores")
         return EncontrarRelacionesArbolResponse(
             relaciones_exitosas=exitosas,
             relaciones_con_error=errores,
@@ -151,6 +148,6 @@ class EncontrarRelacionesUseCase:
             verifica_los=self._verificar_los,
             distancia_maxima=request.distancia_maxima,
         )
-        self._kml_output.escribir_rutas(relaciones, request.nombre_salida + "_rutas", altitud_absoluta=True)
-        self._txt_output.escribir_relaciones(relaciones, request.nombre_salida + "_rutas")
+        self._kml_output.escribir_rutas(relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True)
+        self._punto_repo.guardar_relaciones(relaciones, "relacion")
         return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)

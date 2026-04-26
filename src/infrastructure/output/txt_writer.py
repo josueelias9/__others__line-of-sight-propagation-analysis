@@ -27,7 +27,7 @@ class TxtWriter(TxtOutputPort):
                     f"{p.altura_antena};{p.tipo};{p.metros_sobre_nivel_mar};"
                     f"{p.green_asociado}\n"
                 )
-
+    # TODO elmina esto, ya fue reemplazado
     def escribir_relaciones(self, relaciones: List[Relacion], nombre: str) -> None:
         ruta = self._directorio + nombre + ".txt"
         with open(ruta, "w", encoding="utf-8") as f:

@@ -86,19 +86,17 @@ encontrar_torre_fantasma_uc = EncontrarTorreFantasmaUseCase(
 # ── Menú interactivo ──────────────────────────────────────────────────────────
 
 _MENU = """
-╔══════════════════════════════════════════════════════════╗
-║ Visualizador de zonas de cobertura en zonas accidentadas ║
-╠══════════════════════════════════════════════════════════╣
-║  1. Asignar alturas a puntos (un archivo) -> ok          ║
-║  2. Encontrar relaciones posibles con LOS (un archivo)   ║
-║  3. Generar polígono de cobertura (un punto por ubigeo)  ║
-║  4. Buscar ubicación de torre fantasma (un archivo)      ║
-║  5. Árbol de conexión (dos archivos: conectados/no)      ║
-║  6. Clusterizar puntos                                   ║
-║  0. Salir                                                ║
-╚══════════════════════════════════════════════════════════╝
-xxxxx
-xx✔️xx
+╔═════════════════════════════════════════════════════════════════╗
+║ Visualizador de zonas de cobertura en zonas accidentadas        ║
+╠═════════════════════════════════════════════════════════════════╣
+║  1. Asignar alturas a puntos (un archivo) -> ok                 ║
+║  2. Encontrar relaciones posibles con LOS (un archivo)          ║
+║  3. Generar polígono de cobertura (un punto por ubigeo) -> ok   ║
+║  4. Buscar ubicación de torre fantasma (un archivo)             ║
+║  5. Árbol de conexión (dos archivos: conectados/no)             ║
+║  6. Clusterizar puntos                                          ║
+║  0. Salir                                                       ║
+╚═════════════════════════════════════════════════════════════════╝
 """
 
 
@@ -118,14 +116,12 @@ def run() -> None:
             asignar_alturas_uc.ejecutar(AsignarAlturasRequest(nombre_archivo=archivo))
 
         elif opcion == "2":
-            archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
+            archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
-            salida = input("Nombre del archivo de salida (sin extensión): ").strip()
             encontrar_relaciones_uc.ejecutar_un_archivo(
                 EncontrarRelacionesUnArchivoRequest(
                     nombre_archivo=archivo,
                     distancia_maxima=dist,
-                    nombre_salida=salida,
                 )
             )
 
@@ -154,28 +150,24 @@ def run() -> None:
             )
 
         elif opcion == "5":
-            conectados = input("Archivo de puntos CONECTADOS (sin .txt): ").strip()
-            no_conectados = input("Archivo de puntos NO CONECTADOS (sin .txt): ").strip()
-            salida = input("Nombre del archivo de salida (sin extensión): ").strip()
+            conectados = input("Archivo de puntos CONECTADOS (sin .csv): ").strip()
+            no_conectados = input("Archivo de puntos NO CONECTADOS (sin .csv): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             encontrar_relaciones_uc.ejecutar_dos_archivos_arbol(
                 EncontrarRelacionesArbolRequest(
                     nombre_conectados=conectados,
                     nombre_no_conectados=no_conectados,
                     distancia_maxima=dist,
-                    nombre_salida=salida,
                 )
             )
 
         elif opcion == "6":
-            archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
+            archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
-            salida = input("Prefijo de archivos de salida: ").strip()
             encontrar_relaciones_uc.ejecutar_clusterizar(
                 EncontrarRelacionesClusterizarRequest(
                     nombre_archivo=archivo,
                     distancia_maxima=dist,
-                    nombre_salida=salida,
                 )
             )
 

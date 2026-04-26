@@ -24,3 +24,7 @@ class PuntoGateway(ABC):
     @abstractmethod
     def leer_relaciones(self, nombre_archivo: str) -> List[Relacion]:
         """Lee y devuelve una lista de Relacion desde la fuente de datos."""
+
+    @abstractmethod
+    def guardar_relaciones(self, relaciones: List[Relacion], nombre_archivo: str) -> None:
+        """Persiste la lista de Relacion en la fuente de datos (sobreescribe)."""

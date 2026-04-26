@@ -72,3 +72,16 @@ class CsvPuntoRepository(PuntoGateway):
                     "metros_sobre_nivel_mar": p.metros_sobre_nivel_mar,
                     "green_asociado": p.green_asociado,
                 })
+
+    def guardar_relaciones(self, relaciones: List[Relacion], nombre_archivo: str) -> None:
+        ruta = self._directorio + nombre_archivo + ".csv"
+        _CAMPOS = ["punto_inicial_id", "punto_final_id", "distancia"]
+        with open(ruta, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=_CAMPOS)
+            writer.writeheader()
+            for r in relaciones:
+                writer.writerow({
+                    "punto_inicial_id": r.punto_inicial.ubigeo,
+                    "punto_final_id": r.punto_final.ubigeo,
+                    "distancia": r.distancia,
+                })
