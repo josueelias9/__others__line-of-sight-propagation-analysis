@@ -51,7 +51,7 @@ class CsvPuntoRepository(PuntoGateway):
     def leer_puntos_por_tipo(self, tipo: str) -> List[Punto]:
         return [p for p in self.leer_puntos() if p.tipo == tipo]
 
-    def leer_relaciones(self, nombre_archivo: str) -> List[Relacion]:
+    def leer_relaciones(self) -> List[Relacion]:
         raise NotImplementedError(
             "CsvPuntoRepository: leer_relaciones no está implementado para el formato CSV."
         )
