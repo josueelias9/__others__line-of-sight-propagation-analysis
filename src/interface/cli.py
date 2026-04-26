@@ -117,8 +117,6 @@ def run() -> None:
 
         elif opcion == "1":
             asignar_alturas_uc.ejecutar()
-            print("Alturas asignadas a los puntos. desde print")
-            logger.info("Alturas asignadas a los puntos. desde logger")
 
         elif opcion == "2":
             archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()

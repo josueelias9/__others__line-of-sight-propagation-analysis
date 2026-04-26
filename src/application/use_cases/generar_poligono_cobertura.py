@@ -57,6 +57,7 @@ class GenerarPoligonoCoberturaUseCase:
 
         Si `request.escribir_kml` es True, también genera el archivo KML.
         """
+        logger.info("Inicio de caso de uso")
         estructura = Estructura(
             n=self._numero_de_ldv,
             m=self._muestras,
@@ -75,7 +76,7 @@ class GenerarPoligonoCoberturaUseCase:
         if request.escribir_kml:
             self._kml_output.escribir_poligonos(poligonos, estructura, request.punto.nombre)
             self._kml_output.escribir_malla_cobertura(estructura, request.punto.nombre + "_malla")
-
+        logger.info("Fin de caso de uso")
         return GenerarPoligonoCoberturaResponse(poligono=poligono_shapely)
 
     # ------------------------------------------------------------------ privado

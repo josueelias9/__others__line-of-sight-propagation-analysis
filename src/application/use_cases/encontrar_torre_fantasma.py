@@ -81,6 +81,7 @@ class EncontrarTorreFantasmaUseCase:
         `request.reduccion_maxima` indica cuántos puntos se pueden eliminar
         de la lista antes de abandonar la búsqueda.
         """
+        logger.info("Inicio de caso de uso")
         puntos = self._punto_repo.leer_puntos()
         if request.ubigeos:
             puntos = [p for p in puntos if p.ubigeo in request.ubigeos]
@@ -100,6 +101,7 @@ class EncontrarTorreFantasmaUseCase:
                     return EncontrarTorreFantasmaResponse(encontrado=True)
 
         logger.info("no se encontró área de intersección.")
+        logger.info("Fin de caso de uso")
         return EncontrarTorreFantasmaResponse(encontrado=False)
 
     def ejecutar_dos_archivos(
