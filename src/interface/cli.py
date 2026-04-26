@@ -85,17 +85,17 @@ encontrar_torre_fantasma_uc = EncontrarTorreFantasmaUseCase(
 # ── Menú interactivo ──────────────────────────────────────────────────────────
 
 _MENU = """
-╔═════════════════════════════════════════════════════════════════╗
-║ Visualizador de zonas de cobertura en zonas accidentadas        ║
-╠═════════════════════════════════════════════════════════════════╣
-║  1. Asignar alturas a puntos (un archivo)               -> ok   ║
-║  2. Encontrar relaciones posibles con LOS (un archivo)          ║
-║  3. Generar polígono de cobertura (un punto por ubigeo) -> ok   ║
-║  4. Buscar ubicación de torre fantasma (un archivo)             ║
-║  5. Árbol de conexión (dos archivos: conectados/no)     -> ok   ║
-║  6. Clusterizar puntos                                          ║
-║  0. Salir                                                       ║
-╚═════════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════╗
+║ Visualizador de zonas de cobertura en zonas accidentadas             ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  1. Asignar alturas a puntos (punto.csv)                       -> ok ║
+║  2. Encontrar relaciones posibles con LOS (un archivo)               ║
+║  3. Generar polígono de cobertura (un punto por ubigeo)        -> ok ║
+║  4. Buscar ubicación de torre fantasma (un archivo)                  ║
+║  5. Árbol de conexión (punto.csv: conectados vs no conectados) -> ok ║
+║  6. Clusterizar puntos                                               ║
+║  0. Salir                                                            ║
+╚══════════════════════════════════════════════════════════════════════╝
 """
 
 

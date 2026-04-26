@@ -17,6 +17,7 @@ class PuntoGateway(ABC):
     def leer_puntos(self, nombre_archivo: str) -> List[Punto]:
         """Lee y devuelve una lista de Punto desde la fuente de datos."""
 
+    # TODO el archivo siempre sera "punto.csv". no es necesario recibirlo como parametro
     @abstractmethod
     def leer_puntos_por_tipo(self, nombre_archivo: str, tipo: str) -> List[Punto]:
         """Lee y devuelve sólo los Punto cuyo campo tipo coincida con el valor dado."""

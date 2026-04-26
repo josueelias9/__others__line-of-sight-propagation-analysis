@@ -163,5 +163,7 @@ class EncontrarTorreFantasmaUseCase:
             resultado = resultado.intersection(cobertura)
             if resultado.wkt == "GEOMETRYCOLLECTION EMPTY":
                 return False, None
+            if resultado.wkt == "POLYGON EMPTY":
+                return False, None
 
         return True, resultado

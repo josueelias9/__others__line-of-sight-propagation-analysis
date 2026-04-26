@@ -3,14 +3,21 @@
 {
 	"name": "Python 3",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:3-3.11-trixie",
+	// "image": "mcr.microsoft.com/devcontainers/python:3-3.11-trixie",
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"mechatroner.rainbow-csv",
-				"Gruntfuggly.todo-tree"
-			]
+				"Gruntfuggly.todo-tree",
+				"hediet.vscode-drawio"
+			],
+			"settings": {
+				"workbench.colorTheme": "Monokai"
+			}
 		}
+	},
+	"build":{
+		"dockerfile": "../Dockerfile"
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

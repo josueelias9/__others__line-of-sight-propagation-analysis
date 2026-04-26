@@ -1,4 +1,4 @@
-# Visualizador de zonas de cobertura en zonas accidentadas
+# - Visualizador de zonas de cobertura en zonas accidentadas
 
 **Problemática:** al instalar antenas de radioenlace en zonas accidentadas, se necesita saber qué cobertura tendrá la antena considerando:
 - altura de la antena y del equipo receptor
@@ -11,39 +11,23 @@
 
 ---
 
-## Ejecución rápida
-
-```bash
-# 1. Clonar el repositorio y entrar a la raíz
-git clone <url-del-repo>
-cd linea-de-vista
-
-# 2. Crear y activar el entorno virtual
-python3 -m venv env
-source env/bin/activate          # Linux / macOS
-# env\Scripts\activate           # Windows
-
-# 3. Instalar dependencias
-pip install shapely srtm.py geohelper requests
-
-# 4. Poner el archivo de puntos en la carpeta in/
-#    Formato de cada línea (separado por ;):
-#    nombre;ubigeo;longitud;latitud;altura_antena;tipo;metros_sobre_nivel_mar
-
-# 5. Ejecutar
-python main.py
-```
-
-El programa muestra un menú interactivo:
+## -- Ejecución rápida
+- entra al dev container
+- presionar `F5` para iniciar el programa
+- El programa muestra un menú interactivo:
 
 ```
-1. Asignar alturas a puntos          → lee in/<archivo>.txt, consulta SRTM
-2. Encontrar relaciones posibles      → LOS + distancia máxima entre puntos
-3. Generar polígono de cobertura      → polígono KML para un punto por ubigeo
-4. Buscar ubicación de torre fantasma → intersección de coberturas
-5. Árbol de conexión (2 archivos)     → conectados ↔ no conectados
-6. Clusterizar puntos                 → agrupa por LOS y distancia
-0. Salir
+╔══════════════════════════════════════════════════════════════════════╗
+║ Visualizador de zonas de cobertura en zonas accidentadas             ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  1. Asignar alturas a puntos (punto.csv)                       -> ok ║
+║  2. Encontrar relaciones posibles con LOS (un archivo)               ║
+║  3. Generar polígono de cobertura (un punto por ubigeo)        -> ok ║
+║  4. Buscar ubicación de torre fantasma (un archivo)                  ║
+║  5. Árbol de conexión (punto.csv: conectados vs no conectados) -> ok ║
+║  6. Clusterizar puntos                                               ║
+║  0. Salir                                                            ║
+╚══════════════════════════════════════════════════════════════════════╝
 ```
 
 Los archivos de salida (`.kml` y `.txt`) quedan en la carpeta `out/`.  
@@ -51,7 +35,7 @@ Los archivos de salida (`.kml` y `.txt`) quedan en la carpeta `out/`.
 
 ---
 
-## Formato del archivo de entrada
+## -- Formato del archivo de entrada
 
 Archivo `.txt` en `in/`, una línea por punto, campos separados por `;`:
 
@@ -66,7 +50,7 @@ acceso1;2;-78.397267;-6.898882;15.0;acceso;0
 
 ---
 
-## Estructura del proyecto
+## -- Estructura del proyecto
 
 ```
 linea-de-vista/
@@ -95,7 +79,7 @@ linea-de-vista/
         └── cli.py        ← menú interactivo
 ```
 
-### Capas de Clean Architecture
+### --- Capas de Clean Architecture
 
 | Capa | Responsabilidad | Depende de |
 |------|----------------|-----------|
@@ -106,14 +90,14 @@ linea-de-vista/
 
 ---
 
-## SRTM
+## -- SRTM
 
 Los datos de elevación provienen de [tkrajina/srtm.py](https://github.com/tkrajina/srtm.py).  
 La carpeta `proyecto/srtm/` contiene la librería; `main.py` la añade automáticamente al path.
 
 ---
 
-## Parámetros
+## -- Parámetros
 
 Edita `config.py` en la raíz para cambiar rutas y parámetros sin tocar el código:
 
@@ -125,3 +109,16 @@ Edita `config.py` en la raíz para cambiar rutas y parámetros sin tocar el cód
 | `NUMERO_DE_LDV` | `200` | Direcciones de la grilla polar |
 | `DISTANCIA_KM` | `20.0` | Distancia máxima de radioenlace (km) |
 | `ALTURA_TORRE_FANTASMA` | `15.0` | Altura del repetidor hipotético (m) |
+
+
+## -- use cases
+### --- `asignar_alturas_uc.ejecutar`
+actualiza las alturas en el archivo `punto.csv`
+### --- `encontrar_relaciones_uc.ejecutar_un_archivo`
+### --- `generar_poligono_cobertura_uc.ejecutar`
+muestra la cobertura de una torre
+### --- `encontrar_torre_fantasma_uc.ejecutar`
+dado un grupo de puntos, busca las combinaciones posibles que permita encontrar interseccion de linea de vista para poder poner una nueva torre
+### --- `encontrar_relaciones_uc.ejecutar_dos_archivos_arbol`
+escoge dos grupos de puntos segun su tipo. Considera los primeros como nodos conectados y los segundos como nodos no conectados. Hace el mejor esfuerzo para dar conexion al segundo grupo a partir del primero.
+### --- `encontrar_relaciones_uc.ejecutar_clusterizar`
