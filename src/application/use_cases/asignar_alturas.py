@@ -1,9 +1,12 @@
+import logging
 from dataclasses import dataclass
 from typing import List
 
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -40,7 +43,7 @@ class AsignarAlturasUseCase:
         puntos = self._punto_repo.leer_puntos()
         for i, punto in enumerate(puntos):
             self._elevation_repo.obtener_elevacion_punto(punto)
-            print(f"AsignarAlturasUseCase: punto {i} actualizado → {punto}")
+            logger.debug("punto %d actualizado → %s", i, punto)
 
         self._punto_repo.guardar_puntos(puntos)
         return AsignarAlturasResponse(puntos=puntos)

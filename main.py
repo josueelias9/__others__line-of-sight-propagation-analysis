@@ -22,6 +22,8 @@ if _PROYECTO not in sys.path:
     sys.path.insert(0, _PROYECTO)
 
 from interface.cli import run  # noqa: E402
+import config
 
 if __name__ == "__main__":
+    config.setup_logging()
     run()

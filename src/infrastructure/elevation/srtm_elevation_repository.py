@@ -1,3 +1,4 @@
+import logging
 from typing import List, Tuple
 
 import srtm
@@ -5,6 +6,7 @@ import srtm
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
 
+logger = logging.getLogger(__name__)
 
 # Cargado una sola vez al importar el módulo (costoso en tiempo/memoria)
 _elevation_data = srtm.get_data()
@@ -112,9 +114,6 @@ class SrtmElevationRepository(ElevationGateway):
         altura = _elevation_data.get_elevation(punto.latitud, punto.longitud)
         if altura is None:
             punto.metros_sobre_nivel_mar = 0.0
-            print(
-                f"SrtmElevationRepository: altura None para '{punto.nombre}', "
-                "se asigna 0."
-            )
+            logger.warning("altura None para '%s', se asigna 0.", punto.nombre)
         else:
             punto.metros_sobre_nivel_mar = float(altura)

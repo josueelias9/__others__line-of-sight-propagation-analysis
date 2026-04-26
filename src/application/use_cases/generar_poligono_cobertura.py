@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import logging
 
 from shapely.geometry.polygon import Polygon
 
@@ -8,6 +9,7 @@ from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
 from domain.services.polygon_analysis_service import PolygonAnalysisService
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class GenerarPoligonoCoberturaRequest:
@@ -67,6 +69,7 @@ class GenerarPoligonoCoberturaUseCase:
 
         servicio = PolygonAnalysisService(estructura)
         poligonos = servicio.extraer_poligonos()
+        logger.debug(f"Polígonos extraídos: {len(poligonos.lista_de_poligonitos)}")
         poligono_shapely = servicio.convertir_a_shapely(poligonos)
 
         if request.escribir_kml:

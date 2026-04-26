@@ -1,9 +1,12 @@
+import logging
 import csv
 from typing import List
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
 from application.gateways.punto_gateway import PuntoGateway
+
+logger = logging.getLogger(__name__)
 
 
 class CsvPuntoRepository(PuntoGateway):
@@ -43,9 +46,7 @@ class CsvPuntoRepository(PuntoGateway):
                     punto.conectado = fila.get("conectado", "False").strip().lower() == "true"
                     puntos.append(punto)
                 except (KeyError, ValueError) as exc:
-                    print(
-                        f"CsvPuntoRepository: línea {numero_linea} ignorada ({exc})."
-                    )
+                    logger.warning("línea %d ignorada: %s", numero_linea, exc)
         return puntos
 
     def leer_puntos_por_tipo(self, tipo: str) -> List[Punto]:

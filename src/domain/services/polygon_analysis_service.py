@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from shapely.geometry.polygon import Polygon
@@ -5,6 +6,8 @@ from shapely.geometry.polygon import Polygon
 from domain.entities.estructura import Estructura
 from domain.entities.poligonito import Poligonito
 from domain.entities.poligonos import Poligonos
+
+logger = logging.getLogger(__name__)
 
 
 class PolygonAnalysisService:
@@ -39,7 +42,7 @@ class PolygonAnalysisService:
                 break
             lista.append(poligonito)
             counter += 1
-            print(f"Polígono {counter} detectado con {len(poligonito.lista_de_puntos)} puntos.")
+            logger.debug("polígono %d detectado con %d puntos.", counter, len(poligonito.lista_de_puntos))
 
         resultado = Poligonos()
         resultado.lista_de_poligonitos = lista

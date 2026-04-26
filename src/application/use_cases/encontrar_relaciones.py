@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from typing import List, Tuple
 
@@ -9,6 +10,8 @@ from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
 from domain.services.line_of_sight_service import LineOfSightService
 from domain.services.network_analysis_service import NetworkAnalysisService
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -76,9 +79,9 @@ class EncontrarRelacionesUseCase:
             )
             return LineOfSightService.verificar_linea_de_vista(puntos_elev, p1, p2)
         except Exception as exc:
-            print(
-                f"EncontrarRelacionesUseCase: error al verificar LOS "
-                f"entre '{p1.nombre}' y '{p2.nombre}': {exc}"
+            logger.warning(
+                "error al verificar LOS entre '%s' y '%s': %s",
+                p1.nombre, p2.nombre, exc,
             )
             return False
 
@@ -100,7 +103,7 @@ class EncontrarRelacionesUseCase:
                 if re.distancia < request.distancia_maxima:
                     if self._verificar_los(puntos[i], puntos[j]):
                         relaciones.append(re)
-                print(f"  par {i}-{j}")
+                logger.debug("par %d-%d evaluado", i, j)
 
         self._kml_output.escribir_rutas(relaciones, request.nombre_archivo, altitud_absoluta=True)
         self._punto_repo.guardar_relaciones(relaciones)

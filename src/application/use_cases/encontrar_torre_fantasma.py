@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from itertools import combinations
 from typing import List, Optional, Tuple
@@ -13,6 +14,8 @@ from application.use_cases.generar_poligono_cobertura import (
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
 from application.gateways.punto_gateway import PuntoGateway
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -81,7 +84,7 @@ class EncontrarTorreFantasmaUseCase:
         puntos = self._punto_repo.leer_puntos()
         if request.ubigeos:
             puntos = [p for p in puntos if p.ubigeo in request.ubigeos]
-        print(f"EncontrarTorreFantasmaUseCase: {len(puntos)} puntos cargados.")
+        logger.info("%d puntos cargados.", len(puntos))
 
         for eliminados in range(request.reduccion_maxima):
             longitud_subconjunto = len(puntos) - eliminados
@@ -93,10 +96,10 @@ class EncontrarTorreFantasmaUseCase:
                 if area:
                     self._kml_output.escribir_wkt(mapping(poligono), request.nombre_salida)
                     self._txt_output.escribir_puntos(list(tupla), request.nombre_salida + "_puntos")
-                    print("EncontrarTorreFantasmaUseCase: ¡área encontrada!")
+                    logger.info("¡área encontrada!")
                     return EncontrarTorreFantasmaResponse(encontrado=True)
 
-        print("EncontrarTorreFantasmaUseCase: no se encontró área de intersección.")
+        logger.info("no se encontró área de intersección.")
         return EncontrarTorreFantasmaResponse(encontrado=False)
 
     def ejecutar_dos_archivos(
@@ -111,7 +114,7 @@ class EncontrarTorreFantasmaUseCase:
         conectados = self._punto_repo.leer_puntos(request.nombre_conectados)
 
         for i, nc in enumerate(no_conectados):
-            print(f"  Nodo no conectado {i}: {nc.nombre}")
+            logger.debug("Nodo no conectado %d: %s", i, nc.nombre)
             cobertura_nc = self._cobertura_uc.ejecutar(
                 GenerarPoligonoCoberturaRequest(punto=nc)
             ).poligono
@@ -132,11 +135,10 @@ class EncontrarTorreFantasmaUseCase:
                     self._kml_output.escribir_wkt(
                         mapping(interseccion), request.nombre_salida_prefijo + nombre
                     )
-                    print(f"    → intersección encontrada con {rel.punto_final.nombre}")
+                    logger.info("→ intersección encontrada con %s", rel.punto_final.nombre)
                     break
                 else:
                     cobertura_actual = cobertura_nc
-            print()
 
         return EncontrarTorreFantasmaDosArchivosResponse()
 
@@ -159,6 +161,7 @@ class EncontrarTorreFantasmaUseCase:
             GenerarPoligonoCoberturaRequest(punto=puntos[0])
         ).poligono
         for pt in puntos[1:]:
+            logger.debug("intersectando con cobertura de %s con id %s", pt.nombre, pt.ubigeo)
             cobertura = self._cobertura_uc.ejecutar(
                 GenerarPoligonoCoberturaRequest(punto=pt)
             ).poligono

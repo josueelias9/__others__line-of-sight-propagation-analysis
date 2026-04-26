@@ -3,6 +3,7 @@ Configuración centralizada del proyecto.
 
 Modifica este archivo para adaptar las rutas y parámetros a tu entorno.
 """
+import logging
 import os
 
 # ── Rutas ──────────────────────────────────────────────────────────────────────
@@ -43,3 +44,17 @@ def de_km_a_grados(km: float) -> float:
 def de_grados_a_km(grados: float) -> float:
     """Convierte grados a kilómetros (aproximación esférica)."""
     return grados * 111.11
+
+
+# ── Logging ────────────────────────────────────────────────────────────────────
+
+
+def setup_logging() -> None:
+    """Configura el logging: consola (INFO) y archivo app.log (DEBUG)."""
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        filename='myapp.log'
+    )
+
