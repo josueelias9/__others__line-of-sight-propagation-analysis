@@ -5,11 +5,11 @@ from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
 
 
-class PuntoRepository(ABC):
+class PuntoGateway(ABC):
     """
-    Puerto (interfaz) para la lectura de puntos y relaciones persistidos.
+    Gateway para la lectura de puntos y relaciones persistidos.
 
-    Pertenece a la capa de Dominio. La implementación concreta (archivos .txt)
+    Pertenece a la capa de Aplicación. La implementación concreta (archivos .txt)
     reside en la capa de Infraestructura.
     """
 

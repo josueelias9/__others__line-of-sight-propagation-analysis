@@ -4,8 +4,8 @@ from application.ports.output_port import KmlOutputPort, TxtOutputPort
 from domain.entities.punto import Punto
 from domain.entities.red import Red
 from domain.entities.relacion import Relacion
-from domain.repositories.elevation_repository import ElevationRepository
-from domain.repositories.punto_repository import PuntoRepository
+from application.gateways.elevation_gateway import ElevationGateway
+from application.gateways.punto_gateway import PuntoGateway
 from domain.services.line_of_sight_service import LineOfSightService
 from domain.services.network_analysis_service import NetworkAnalysisService
 
@@ -20,8 +20,8 @@ class EncontrarRelacionesUseCase:
 
     def __init__(
         self,
-        punto_repo: PuntoRepository,
-        elevation_repo: ElevationRepository,
+        punto_repo: PuntoGateway,
+        elevation_repo: ElevationGateway,
         kml_output: KmlOutputPort,
         txt_output: TxtOutputPort,
         muestras: int,

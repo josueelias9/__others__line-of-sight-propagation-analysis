@@ -3,7 +3,7 @@ from shapely.geometry.polygon import Polygon
 from application.ports.output_port import KmlOutputPort
 from domain.entities.estructura import Estructura
 from domain.entities.punto import Punto
-from domain.repositories.elevation_repository import ElevationRepository
+from application.gateways.elevation_gateway import ElevationGateway
 from domain.services.polygon_analysis_service import PolygonAnalysisService
 
 
@@ -22,7 +22,7 @@ class GenerarPoligonoCoberturaUseCase:
 
     def __init__(
         self,
-        elevation_repo: ElevationRepository,
+        elevation_repo: ElevationGateway,
         kml_output: KmlOutputPort,
         numero_de_ldv: int,
         muestras: int,

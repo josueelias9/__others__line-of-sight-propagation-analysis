@@ -10,7 +10,7 @@ from application.use_cases.generar_poligono_cobertura import (
 )
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
-from domain.repositories.punto_repository import PuntoRepository
+from application.gateways.punto_gateway import PuntoGateway
 
 
 class EncontrarTorreFantasmaUseCase:
@@ -27,7 +27,7 @@ class EncontrarTorreFantasmaUseCase:
 
     def __init__(
         self,
-        punto_repo: PuntoRepository,
+        punto_repo: PuntoGateway,
         cobertura_uc: GenerarPoligonoCoberturaUseCase,
         kml_output: KmlOutputPort,
         txt_output: TxtOutputPort,

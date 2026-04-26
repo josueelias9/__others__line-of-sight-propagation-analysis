@@ -2,8 +2,8 @@ from typing import List
 
 from application.ports.output_port import TxtOutputPort
 from domain.entities.punto import Punto
-from domain.repositories.elevation_repository import ElevationRepository
-from domain.repositories.punto_repository import PuntoRepository
+from application.gateways.elevation_gateway import ElevationGateway
+from application.gateways.punto_gateway import PuntoGateway
 
 
 class AsignarAlturasUseCase:
@@ -19,8 +19,8 @@ class AsignarAlturasUseCase:
 
     def __init__(
         self,
-        punto_repo: PuntoRepository,
-        elevation_repo: ElevationRepository,
+        punto_repo: PuntoGateway,
+        elevation_repo: ElevationGateway,
         txt_output: TxtOutputPort,
     ) -> None:
         self._punto_repo = punto_repo

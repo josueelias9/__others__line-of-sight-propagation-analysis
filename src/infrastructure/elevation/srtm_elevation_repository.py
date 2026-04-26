@@ -3,16 +3,16 @@ from typing import List, Tuple
 import srtm
 
 from domain.entities.punto import Punto
-from domain.repositories.elevation_repository import ElevationRepository
+from application.gateways.elevation_gateway import ElevationGateway
 
 
 # Cargado una sola vez al importar el módulo (costoso en tiempo/memoria)
 _elevation_data = srtm.get_data()
 
 
-class SrtmElevationRepository(ElevationRepository):
+class SrtmElevationRepository(ElevationGateway):
     """
-    Adaptador de infraestructura que implementa ElevationRepository
+    Adaptador de infraestructura que implementa ElevationGateway
     usando la librería SRTM para obtener datos de elevación del terreno.
 
     Pertenece a la capa de Infraestructura.
@@ -21,7 +21,7 @@ class SrtmElevationRepository(ElevationRepository):
     def __init__(self, muestras: int) -> None:
         self._muestras = muestras
 
-    # ------------------------------------------------------------------ ElevationRepository
+    # ------------------------------------------------------------------ ElevationGateway
 
     def obtener_perfil_de_puntos(
         self,

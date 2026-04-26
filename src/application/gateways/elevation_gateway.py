@@ -4,11 +4,11 @@ from typing import List, Tuple
 from domain.entities.punto import Punto
 
 
-class ElevationRepository(ABC):
+class ElevationGateway(ABC):
     """
-    Puerto (interfaz) para la obtención de datos de elevación del terreno.
+    Gateway para la obtención de datos de elevación del terreno.
 
-    Pertenece a la capa de Dominio. La implementación concreta (SRTM)
+    Pertenece a la capa de Aplicación. La implementación concreta (SRTM)
     reside en la capa de Infraestructura.
     """
 

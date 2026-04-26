@@ -2,12 +2,12 @@ from typing import List
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
-from domain.repositories.punto_repository import PuntoRepository
+from application.gateways.punto_gateway import PuntoGateway
 
 
-class TxtPuntoRepository(PuntoRepository):
+class TxtPuntoRepository(PuntoGateway):
     """
-    Adaptador de infraestructura que implementa PuntoRepository
+    Adaptador de infraestructura que implementa PuntoGateway
     leyendo archivos de texto plano con campos separados por ';'.
 
     Formato de línea para puntos (7 campos):
@@ -24,7 +24,7 @@ class TxtPuntoRepository(PuntoRepository):
         # directorio debe terminar con '/'
         self._directorio = directorio
 
-    # ------------------------------------------------------------------ PuntoRepository
+    # ------------------------------------------------------------------ PuntoGateway
 
     def leer_puntos(self, nombre_archivo: str) -> List[Punto]:
         puntos: List[Punto] = []
