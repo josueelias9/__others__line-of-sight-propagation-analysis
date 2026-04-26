@@ -54,19 +54,17 @@ class EncontrarRelacionesUseCase:
 
     Pertenece a la capa de Aplicación.
     """
-
+    # TODO punto_repo tiene que cambiarse a data_repo o store_repo porque ahora se guardaran relaciones y no solo puntos.
     def __init__(
         self,
         punto_repo: PuntoGateway,
         elevation_repo: ElevationGateway,
         kml_output: KmlOutputPort,
-        txt_output: TxtOutputPort,
         muestras: int,
     ) -> None:
         self._punto_repo = punto_repo
         self._elevation_repo = elevation_repo
         self._kml_output = kml_output
-        self._txt_output = txt_output
         self._muestras = muestras
 
     # ------------------------------------------------------------------ verificador LOS

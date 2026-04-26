@@ -61,7 +61,6 @@ encontrar_relaciones_uc = EncontrarRelacionesUseCase(
     punto_repo=punto_repo,
     elevation_repo=elevation_repo,
     kml_output=kml_output,
-    txt_output=txt_output,
     muestras=config.MUESTRAS,
 )
 
@@ -89,11 +88,11 @@ _MENU = """
 ╔═════════════════════════════════════════════════════════════════╗
 ║ Visualizador de zonas de cobertura en zonas accidentadas        ║
 ╠═════════════════════════════════════════════════════════════════╣
-║  1. Asignar alturas a puntos (un archivo) -> ok                 ║
+║  1. Asignar alturas a puntos (un archivo)               -> ok   ║
 ║  2. Encontrar relaciones posibles con LOS (un archivo)          ║
 ║  3. Generar polígono de cobertura (un punto por ubigeo) -> ok   ║
 ║  4. Buscar ubicación de torre fantasma (un archivo)             ║
-║  5. Árbol de conexión (dos archivos: conectados/no)             ║
+║  5. Árbol de conexión (dos archivos: conectados/no)     -> ok   ║
 ║  6. Clusterizar puntos                                          ║
 ║  0. Salir                                                       ║
 ╚═════════════════════════════════════════════════════════════════╝
