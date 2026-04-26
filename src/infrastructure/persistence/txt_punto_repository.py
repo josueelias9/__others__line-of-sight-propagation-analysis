@@ -1,10 +1,11 @@
+# TODO elimina porque ya no sera necesario. ahora el archivo input tendra la forma csv, para acercarnos a como se ve una DB
 from typing import List
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
 from application.gateways.punto_gateway import PuntoGateway
 
-
+# TODO busquemos eliminar esta clase ya que todo se hara directamente en el csv
 class TxtPuntoRepository(PuntoGateway):
     """
     Adaptador de infraestructura que implementa PuntoGateway
@@ -73,3 +74,8 @@ class TxtPuntoRepository(PuntoGateway):
                 p2 = Punto(c[7], int(c[8]), float(c[9]), float(c[10]), float(c[11]), c[12], float(c[13]))
                 relaciones.append(Relacion(p1, p2))
         return relaciones
+
+    def guardar_puntos(self, puntos: List[Punto], nombre_archivo: str) -> None:
+        raise NotImplementedError(
+            "TxtPuntoRepository: guardar_puntos no está implementado."
+        )

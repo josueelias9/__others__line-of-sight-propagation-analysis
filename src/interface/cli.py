@@ -40,7 +40,7 @@ from application.use_cases.generar_poligono_cobertura import (
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from infrastructure.output.kml_writer import KmlWriter
 from infrastructure.output.txt_writer import TxtWriter
-from infrastructure.persistence.txt_punto_repository import TxtPuntoRepository
+from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
 
 
 # ── Ensamblado del contenedor de dependencias ─────────────────────────────────
@@ -54,14 +54,13 @@ def _construir_contenedor():
     os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
     elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
-    punto_repo = TxtPuntoRepository(directorio=config.DIR_INPUT)
+    punto_repo = CsvPuntoRepository(directorio=config.DIR_INPUT)
     kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
     txt_output = TxtWriter(directorio=config.DIR_OUTPUT)
 
     asignar_alturas_uc = AsignarAlturasUseCase(
         punto_repo=punto_repo,
         elevation_repo=elevation_repo,
-        txt_output=txt_output,
     )
 
     encontrar_relaciones_uc = EncontrarRelacionesUseCase(
