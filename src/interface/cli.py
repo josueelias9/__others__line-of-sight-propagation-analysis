@@ -22,7 +22,7 @@ for _p in (_SRC_DIR, os.path.join(_SRC_DIR, ".."), _ROOT_DIR):
         sys.path.insert(0, _p)
 
 import config
-from application.use_cases.asignar_alturas import AsignarAlturasRequest, AsignarAlturasUseCase
+from application.use_cases.asignar_alturas import AsignarAlturasUseCase
 from application.use_cases.encontrar_relaciones import (
     EncontrarRelacionesClusterizarRequest,
     EncontrarRelacionesArbolRequest,
@@ -111,7 +111,7 @@ def run() -> None:
             break
 
         elif opcion == "1":
-            asignar_alturas_uc.ejecutar(AsignarAlturasRequest(nombre_archivo="punto"))
+            asignar_alturas_uc.ejecutar()
 
         elif opcion == "2":
             archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()
@@ -124,8 +124,7 @@ def run() -> None:
             )
 
         elif opcion == "3":
-            archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
-            puntos = punto_repo.leer_puntos(archivo)
+            puntos = punto_repo.leer_puntos()
             ubigeo = int(input("Ubigeo del punto: ").strip())
             try:
                 punto = next(p for p in puntos if p.ubigeo == ubigeo)
@@ -138,11 +137,9 @@ def run() -> None:
             print(f"KML generado en {config.DIR_OUTPUT}{punto.nombre}.kml")
 
         elif opcion == "4":
-            archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             salida = input("Prefijo de archivos de salida: ").strip()
             encontrar_torre_fantasma_uc.ejecutar(
                 EncontrarTorreFantasmaRequest(
-                    nombre_archivo=archivo,
                     nombre_salida=salida,
                 )
             )

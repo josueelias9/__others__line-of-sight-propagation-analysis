@@ -9,7 +9,9 @@
 			"extensions": [
 				"mechatroner.rainbow-csv",
 				"Gruntfuggly.todo-tree",
-				"hediet.vscode-drawio"
+				"hediet.vscode-drawio",
+				"ms-python.python",
+				"RandomFractalsInc.geo-data-viewer"
 			],
 			"settings": {
 				"workbench.colorTheme": "Monokai"

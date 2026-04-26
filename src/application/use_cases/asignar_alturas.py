@@ -6,9 +6,6 @@ from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
 
 
-@dataclass
-class AsignarAlturasRequest:
-    nombre_archivo: str
 
 
 @dataclass
@@ -35,12 +32,12 @@ class AsignarAlturasUseCase:
         self._punto_repo = punto_repo
         self._elevation_repo = elevation_repo
 
-    def ejecutar(self, request: AsignarAlturasRequest) -> AsignarAlturasResponse:
+    def ejecutar(self) -> AsignarAlturasResponse:
         """
-        Lee los puntos de `request.nombre_archivo`, asigna alturas y
+        Lee los puntos de `punto.csv`, asigna alturas y
         sobreescribe el mismo archivo de entrada con los valores actualizados.
         """
-        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
+        puntos = self._punto_repo.leer_puntos()
         for i, punto in enumerate(puntos):
             self._elevation_repo.obtener_elevacion_punto(punto)
             print(f"AsignarAlturasUseCase: punto {i} actualizado → {punto}")

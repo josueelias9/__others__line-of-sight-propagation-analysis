@@ -1,4 +1,5 @@
 {
     "files.autoSave": "afterDelay",
-    "explorer.autoReveal": false
+    "explorer.autoReveal": false,
+    "python.defaultInterpreterPath": "/usr/local/bin/python3"
 }

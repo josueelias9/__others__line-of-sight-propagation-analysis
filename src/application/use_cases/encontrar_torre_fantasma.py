@@ -17,7 +17,6 @@ from application.gateways.punto_gateway import PuntoGateway
 
 @dataclass
 class EncontrarTorreFantasmaRequest:
-    nombre_archivo: str
     nombre_salida: str
     reduccion_maxima: int = 3
 
@@ -72,13 +71,13 @@ class EncontrarTorreFantasmaUseCase:
         request: EncontrarTorreFantasmaRequest,
     ) -> EncontrarTorreFantasmaResponse:
         """
-        Lee los puntos de `request.nombre_archivo` y busca la intersección
+        Lee los puntos de `punto.csv` y busca la intersección
         de sus polígonos de cobertura.
 
         `request.reduccion_maxima` indica cuántos puntos se pueden eliminar
         de la lista antes de abandonar la búsqueda.
         """
-        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
+        puntos = self._punto_repo.leer_puntos()
         print(f"EncontrarTorreFantasmaUseCase: {len(puntos)} puntos cargados.")
 
         for eliminados in range(request.reduccion_maxima):

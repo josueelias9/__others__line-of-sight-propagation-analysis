@@ -23,9 +23,9 @@ class CsvPuntoRepository(PuntoGateway):
 
     # ------------------------------------------------------------------ PuntoGateway
 
-    def leer_puntos(self, nombre_archivo: str) -> List[Punto]:
+    def leer_puntos(self) -> List[Punto]:
         puntos: List[Punto] = []
-        ruta = self._directorio + nombre_archivo + ".csv"
+        ruta = self._directorio + "punto.csv"
         with open(ruta, encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
             for numero_linea, fila in enumerate(reader, start=2):
@@ -48,8 +48,8 @@ class CsvPuntoRepository(PuntoGateway):
                     )
         return puntos
 
-    def leer_puntos_por_tipo(self, nombre_archivo: str, tipo: str) -> List[Punto]:
-        return [p for p in self.leer_puntos(nombre_archivo) if p.tipo == tipo]
+    def leer_puntos_por_tipo(self, tipo: str) -> List[Punto]:
+        return [p for p in self.leer_puntos() if p.tipo == tipo]
 
     def leer_relaciones(self, nombre_archivo: str) -> List[Relacion]:
         raise NotImplementedError(
@@ -95,7 +95,7 @@ class CsvPuntoRepository(PuntoGateway):
         """Lee punto.csv completo, parchea solo la columna `conectado` para los
         ubigeos presentes en *puntos*, y reescribe el archivo."""
         conectado_map = {p.ubigeo: p.conectado for p in puntos}
-        todos = self.leer_puntos("punto")
+        todos = self.leer_puntos()
         for p in todos:
             if p.ubigeo in conectado_map:
                 p.conectado = conectado_map[p.ubigeo]

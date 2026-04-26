@@ -114,8 +114,8 @@ class EncontrarRelacionesUseCase:
         Lee los puntos de `punto.csv` filtrando por tipo y construye
         el árbol de conexión mínimo.
         """
-        conectados = self._punto_repo.leer_puntos_por_tipo("punto", request.tipo_conectados)
-        no_conectados = self._punto_repo.leer_puntos_por_tipo("punto", request.tipo_no_conectados)
+        conectados = self._punto_repo.leer_puntos_por_tipo(request.tipo_conectados)
+        no_conectados = self._punto_repo.leer_puntos_por_tipo(request.tipo_no_conectados)
 
         for p in conectados:
             p.conectado = True
