@@ -90,3 +90,13 @@ class CsvPuntoRepository(PuntoGateway):
                     "punto_final_id": r.punto_final.ubigeo,
                     "distancia": r.distancia,
                 })
+
+    def actualizar_conectado(self, puntos: List[Punto]) -> None:
+        """Lee punto.csv completo, parchea solo la columna `conectado` para los
+        ubigeos presentes en *puntos*, y reescribe el archivo."""
+        conectado_map = {p.ubigeo: p.conectado for p in puntos}
+        todos = self.leer_puntos("punto")
+        for p in todos:
+            if p.ubigeo in conectado_map:
+                p.conectado = conectado_map[p.ubigeo]
+        self.guardar_puntos(todos)

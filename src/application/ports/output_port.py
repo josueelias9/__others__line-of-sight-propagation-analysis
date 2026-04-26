@@ -70,8 +70,3 @@ class TxtOutputPort(ABC):
     def escribir_puntos(self, puntos: List[Punto], nombre: str) -> None:
         """Persiste una lista de Punto en formato CSV con ';'."""
 
-    @abstractmethod
-    def escribir_relaciones(
-        self, relaciones: List[Relacion], nombre: str
-    ) -> None:
-        """Persiste una lista de Relacion en formato CSV con ';'."""

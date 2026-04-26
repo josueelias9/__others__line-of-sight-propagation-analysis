@@ -33,3 +33,8 @@ class PuntoGateway(ABC):
     def guardar_relaciones(self, relaciones: List[Relacion]) -> None:
         """Persiste la lista de Relacion en relacion.csv (sobreescribe)."""
         """Persiste la lista de Relacion en la fuente de datos (sobreescribe)."""
+
+    @abstractmethod
+    def actualizar_conectado(self, puntos: List[Punto]) -> None:
+        """Actualiza únicamente el campo `conectado` de los Punto indicados en punto.csv,
+        sin modificar los demás campos ni los puntos no presentes en la lista."""

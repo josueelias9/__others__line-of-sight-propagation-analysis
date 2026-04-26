@@ -135,7 +135,7 @@ class EncontrarRelacionesUseCase:
 
         self._kml_output.escribir_rutas(exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True)
         self._punto_repo.guardar_relaciones(exitosas)
-        self._punto_repo.guardar_puntos(conectados + no_conectados)
+        self._punto_repo.actualizar_conectado(conectados + no_conectados)
         return EncontrarRelacionesArbolResponse(
             relaciones_exitosas=exitosas,
             puntos_sin_conexion=sin_conexion,
