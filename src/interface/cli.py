@@ -24,7 +24,7 @@ for _p in (_SRC_DIR, os.path.join(_SRC_DIR, ".."), _ROOT_DIR):
 import config
 from application.use_cases.asignar_alturas import AsignarAlturasRequest, AsignarAlturasUseCase
 from application.use_cases.encontrar_relaciones import (
-    ClusterizarRequest,
+    EncontrarRelacionesClusterizarRequest,
     EncontrarRelacionesArbolRequest,
     EncontrarRelacionesUnArchivoRequest,
     EncontrarRelacionesUseCase,
@@ -45,67 +45,51 @@ from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
 
 # ── Ensamblado del contenedor de dependencias ─────────────────────────────────
 
+os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
-def _construir_contenedor():
-    """
-    Instancia y conecta todas las dependencias.
-    Devuelve un diccionario con los casos de uso listos para usar.
-    """
-    os.makedirs(config.DIR_OUTPUT, exist_ok=True)
+elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
+punto_repo = CsvPuntoRepository(directorio=config.DIR_INPUT)
+kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
+txt_output = TxtWriter(directorio=config.DIR_OUTPUT)
 
-    elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
-    punto_repo = CsvPuntoRepository(directorio=config.DIR_INPUT)
-    kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
-    txt_output = TxtWriter(directorio=config.DIR_OUTPUT)
+asignar_alturas_uc = AsignarAlturasUseCase(
+    punto_repo=punto_repo,
+    elevation_repo=elevation_repo,
+)
 
-    asignar_alturas_uc = AsignarAlturasUseCase(
-        punto_repo=punto_repo,
-        elevation_repo=elevation_repo,
-    )
+encontrar_relaciones_uc = EncontrarRelacionesUseCase(
+    punto_repo=punto_repo,
+    elevation_repo=elevation_repo,
+    kml_output=kml_output,
+    txt_output=txt_output,
+    muestras=config.MUESTRAS,
+)
 
-    encontrar_relaciones_uc = EncontrarRelacionesUseCase(
-        punto_repo=punto_repo,
-        elevation_repo=elevation_repo,
-        kml_output=kml_output,
-        txt_output=txt_output,
-        muestras=config.MUESTRAS,
-    )
+generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
+    elevation_repo=elevation_repo,
+    kml_output=kml_output,
+    numero_de_ldv=config.NUMERO_DE_LDV,
+    muestras=config.MUESTRAS,
+    distancia_grados=config.de_km_a_grados(config.DISTANCIA_KM),
+    altura_torre_fantasma=config.ALTURA_TORRE_FANTASMA,
+)
 
-    generar_poligono_uc = GenerarPoligonoCoberturaUseCase(
-        elevation_repo=elevation_repo,
-        kml_output=kml_output,
-        numero_de_ldv=config.NUMERO_DE_LDV,
-        muestras=config.MUESTRAS,
-        distancia_grados=config.de_km_a_grados(config.DISTANCIA_KM),
-        altura_torre_fantasma=config.ALTURA_TORRE_FANTASMA,
-    )
-
-    encontrar_torre_uc = EncontrarTorreFantasmaUseCase(
-        punto_repo=punto_repo,
-        cobertura_uc=generar_poligono_uc,
-        kml_output=kml_output,
-        txt_output=txt_output,
-        distancia_maxima=config.DISTANCIA_KM,
-    )
-
-    return {
-        "asignar_alturas": asignar_alturas_uc,
-        "encontrar_relaciones": encontrar_relaciones_uc,
-        "generar_poligono": generar_poligono_uc,
-        "encontrar_torre": encontrar_torre_uc,
-        "punto_repo": punto_repo,
-        "kml_output": kml_output,
-        "txt_output": txt_output,
-    }
+encontrar_torre_fantasma_uc = EncontrarTorreFantasmaUseCase(
+    punto_repo=punto_repo,
+    cobertura_uc=generar_poligono_cobertura_uc,
+    kml_output=kml_output,
+    txt_output=txt_output,
+    distancia_maxima=config.DISTANCIA_KM,
+)
 
 
 # ── Menú interactivo ──────────────────────────────────────────────────────────
 
 _MENU = """
 ╔══════════════════════════════════════════════════════════╗
-║  Visualizador de zonas de cobertura en zonas accidentadas ║
+║ Visualizador de zonas de cobertura en zonas accidentadas ║
 ╠══════════════════════════════════════════════════════════╣
-║  1. Asignar alturas a puntos (un archivo)                ║
+║  1. Asignar alturas a puntos (un archivo) -> ok          ║
 ║  2. Encontrar relaciones posibles con LOS (un archivo)   ║
 ║  3. Generar polígono de cobertura (un punto por ubigeo)  ║
 ║  4. Buscar ubicación de torre fantasma (un archivo)      ║
@@ -113,12 +97,13 @@ _MENU = """
 ║  6. Clusterizar puntos                                   ║
 ║  0. Salir                                                ║
 ╚══════════════════════════════════════════════════════════╝
+xxxxx
+xx✔️xx
 """
 
 
 def run() -> None:
     """Bucle principal del CLI."""
-    uc = _construir_contenedor()
 
     while True:
         print(_MENU)
@@ -130,13 +115,13 @@ def run() -> None:
 
         elif opcion == "1":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
-            uc["asignar_alturas"].ejecutar(AsignarAlturasRequest(nombre_archivo=archivo))
+            asignar_alturas_uc.ejecutar(AsignarAlturasRequest(nombre_archivo=archivo))
 
         elif opcion == "2":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             salida = input("Nombre del archivo de salida (sin extensión): ").strip()
-            uc["encontrar_relaciones"].ejecutar_un_archivo(
+            encontrar_relaciones_uc.ejecutar_un_archivo(
                 EncontrarRelacionesUnArchivoRequest(
                     nombre_archivo=archivo,
                     distancia_maxima=dist,
@@ -146,14 +131,14 @@ def run() -> None:
 
         elif opcion == "3":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
-            puntos = uc["punto_repo"].leer_puntos(archivo)
+            puntos = punto_repo.leer_puntos(archivo)
             ubigeo = int(input("Ubigeo del punto: ").strip())
             try:
                 punto = next(p for p in puntos if p.ubigeo == ubigeo)
             except StopIteration:
                 print(f"No se encontró un punto con ubigeo={ubigeo}.")
                 continue
-            uc["generar_poligono"].ejecutar(
+            generar_poligono_cobertura_uc.ejecutar(
                 GenerarPoligonoCoberturaRequest(punto=punto, escribir_kml=True)
             )
             print(f"KML generado en {config.DIR_OUTPUT}{punto.nombre}.kml")
@@ -161,7 +146,7 @@ def run() -> None:
         elif opcion == "4":
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             salida = input("Prefijo de archivos de salida: ").strip()
-            uc["encontrar_torre"].ejecutar(
+            encontrar_torre_fantasma_uc.ejecutar(
                 EncontrarTorreFantasmaRequest(
                     nombre_archivo=archivo,
                     nombre_salida=salida,
@@ -173,7 +158,7 @@ def run() -> None:
             no_conectados = input("Archivo de puntos NO CONECTADOS (sin .txt): ").strip()
             salida = input("Nombre del archivo de salida (sin extensión): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
-            uc["encontrar_relaciones"].ejecutar_dos_archivos_arbol(
+            encontrar_relaciones_uc.ejecutar_dos_archivos_arbol(
                 EncontrarRelacionesArbolRequest(
                     nombre_conectados=conectados,
                     nombre_no_conectados=no_conectados,
@@ -186,8 +171,8 @@ def run() -> None:
             archivo = input("Nombre del archivo de puntos (sin .txt): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             salida = input("Prefijo de archivos de salida: ").strip()
-            uc["encontrar_relaciones"].ejecutar_clusterizar(
-                ClusterizarRequest(
+            encontrar_relaciones_uc.ejecutar_clusterizar(
+                EncontrarRelacionesClusterizarRequest(
                     nombre_archivo=archivo,
                     distancia_maxima=dist,
                     nombre_salida=salida,

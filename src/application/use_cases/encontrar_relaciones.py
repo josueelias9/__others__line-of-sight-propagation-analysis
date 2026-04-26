@@ -38,14 +38,14 @@ class EncontrarRelacionesArbolResponse:
 
 
 @dataclass
-class ClusterizarRequest:
+class EncontrarRelacionesClusterizarRequest:
     nombre_archivo: str
     distancia_maxima: float
     nombre_salida: str
 
 
 @dataclass
-class ClusterizarResponse:
+class EncontrarRelacionesClusterizarResponse:
     redes: List[Red]
     relaciones: List[Relacion]
 
@@ -140,8 +140,8 @@ class EncontrarRelacionesUseCase:
 
     def ejecutar_clusterizar(
         self,
-        request: ClusterizarRequest,
-    ) -> ClusterizarResponse:
+        request: EncontrarRelacionesClusterizarRequest,
+    ) -> EncontrarRelacionesClusterizarResponse:
         """
         Agrupa los puntos en clusters conectados por LOS y distancia.
         """
@@ -153,4 +153,4 @@ class EncontrarRelacionesUseCase:
         )
         self._kml_output.escribir_rutas(relaciones, request.nombre_salida + "_rutas", altitud_absoluta=True)
         self._txt_output.escribir_relaciones(relaciones, request.nombre_salida + "_rutas")
-        return ClusterizarResponse(redes=redes, relaciones=relaciones)
+        return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)
