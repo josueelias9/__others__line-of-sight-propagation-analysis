@@ -9,3 +9,18 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace
+    command: sleep infinity
+    
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace
+    command: sleep infinity

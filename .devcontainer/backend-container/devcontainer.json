@@ -1,0 +1,21 @@
+{
+  "name": "Backend Container",
+  "dockerComposeFile": ["../../docker-compose.yml"],
+  "service": "backend",
+  "shutdownAction": "none",
+  "workspaceFolder": "/workspace/backend",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mechatroner.rainbow-csv",
+        "Gruntfuggly.todo-tree",
+        "hediet.vscode-drawio",
+        "ms-python.python",
+        "RandomFractalsInc.geo-data-viewer"
+      ],
+      "settings": {
+        "workbench.colorTheme": "Monokai"
+      }
+    }
+  }
+}
