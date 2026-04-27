@@ -8,8 +8,6 @@ from domain.entities.red import Red
 from domain.entities.relacion import Relacion
 from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
-from domain.services.line_of_sight_service import LineOfSightService
-from domain.services.network_analysis_service import NetworkAnalysisService
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +75,7 @@ class EncontrarRelacionesUseCase:
             puntos_elev, _ = self._elevation_repo.obtener_perfil_de_puntos(
                 p1, p2, self._muestras
             )
-            return LineOfSightService.verificar_linea_de_vista(puntos_elev, p1, p2)
+            return Relacion(p1, p2).verificar_linea_de_vista(puntos_elev)
         except Exception as exc:
             logger.warning(
                 "error al verificar LOS entre '%s' y '%s': %s",
@@ -129,7 +127,7 @@ class EncontrarRelacionesUseCase:
         for p in no_conectados:
             p.conectado = False
 
-        exitosas, sin_conexion = NetworkAnalysisService.encontrar_menor_relacion(
+        exitosas, sin_conexion = Red.encontrar_menor_relacion(
             lista1=conectados,
             lista2=no_conectados,
             distancia_maxima=request.distancia_maxima,
@@ -157,7 +155,7 @@ class EncontrarRelacionesUseCase:
         """
         logger.info("🟢")
         puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
-        redes, relaciones = NetworkAnalysisService.clusterizar(
+        redes, relaciones = Red.clusterizar(
             lista=puntos,
             verifica_los=self._verificar_los,
             distancia_maxima=request.distancia_maxima,

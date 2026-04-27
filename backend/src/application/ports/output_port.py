@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from application.gateways.geometry_gateway import AreaGeometrica
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto
@@ -55,8 +56,8 @@ class KmlOutputPort(ABC):
         """Genera un KML con los polígonos de cobertura."""
 
     @abstractmethod
-    def escribir_wkt(self, wkt_dict: dict, nombre: str) -> None:
-        """Genera un KML a partir de un diccionario WKT (mapping de Shapely)."""
+    def escribir_area(self, area: AreaGeometrica, nombre: str) -> None:
+        """Genera un KML a partir de un AreaGeometrica."""
 
 
 class TxtOutputPort(ABC):

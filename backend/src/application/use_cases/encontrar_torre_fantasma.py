@@ -3,9 +3,7 @@ from dataclasses import dataclass, field
 from itertools import combinations
 from typing import List, Optional, Tuple
 
-from shapely.geometry import mapping
-from shapely.geometry.polygon import Polygon
-
+from application.gateways.geometry_gateway import AreaGeometrica, GeometryGateway
 from application.ports.output_port import KmlOutputPort, TxtOutputPort
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaRequest,
@@ -58,12 +56,14 @@ class EncontrarTorreFantasmaUseCase:
         self,
         punto_repo: PuntoGateway,
         cobertura_uc: GenerarPoligonoCoberturaUseCase,
+        geometry_gw: GeometryGateway,
         kml_output: KmlOutputPort,
         txt_output: TxtOutputPort,
         distancia_maxima: float,
     ) -> None:
         self._punto_repo = punto_repo
         self._cobertura_uc = cobertura_uc
+        self._geometry_gw = geometry_gw
         self._kml_output = kml_output
         self._txt_output = txt_output
         self._distancia_maxima = distancia_maxima
@@ -95,7 +95,7 @@ class EncontrarTorreFantasmaUseCase:
 
                 area, poligono = self._intersectar_coberturas(list(tupla))
                 if area:
-                    self._kml_output.escribir_wkt(mapping(poligono), request.nombre_salida)
+                    self._kml_output.escribir_area(poligono, request.nombre_salida)
                     self._txt_output.escribir_puntos(list(tupla), request.nombre_salida + "_puntos")
                     logger.info("¡área encontrada!")
                     return EncontrarTorreFantasmaResponse(encontrado=True)
@@ -117,10 +117,9 @@ class EncontrarTorreFantasmaUseCase:
 
         for i, nc in enumerate(no_conectados):
             logger.debug("Nodo no conectado %d: %s", i, nc.nombre)
-            cobertura_nc = self._cobertura_uc.ejecutar(
-                GenerarPoligonoCoberturaRequest(punto=nc)
-            ).poligono
-            cobertura_actual = cobertura_nc
+            resp_nc = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=nc))
+            area_nc = self._geometry_gw.poligonos_a_area(resp_nc.poligono, resp_nc.estructura)
+            area_actual = area_nc
 
             candidatos = sorted(
                 [Relacion(nc, c) for c in conectados if Relacion(nc, c).distancia < self._distancia_maxima * 2],
@@ -128,19 +127,18 @@ class EncontrarTorreFantasmaUseCase:
             )
 
             for j, rel in enumerate(candidatos):
-                cobertura_c = self._cobertura_uc.ejecutar(
+                resp_c = self._cobertura_uc.ejecutar(
                     GenerarPoligonoCoberturaRequest(punto=rel.punto_final)
-                ).poligono
-                interseccion = cobertura_actual.intersection(cobertura_c)
-                if interseccion.wkt != "GEOMETRYCOLLECTION EMPTY":
+                )
+                area_c = self._geometry_gw.poligonos_a_area(resp_c.poligono, resp_c.estructura)
+                interseccion = self._geometry_gw.intersectar(area_actual, area_c)
+                if not interseccion.vacia:
                     nombre = f"{nc.nombre}-{rel.punto_final.nombre}"
-                    self._kml_output.escribir_wkt(
-                        mapping(interseccion), request.nombre_salida_prefijo + nombre
-                    )
+                    self._kml_output.escribir_area(interseccion, request.nombre_salida_prefijo + nombre)
                     logger.info("→ intersección encontrada con %s", rel.punto_final.nombre)
                     break
                 else:
-                    cobertura_actual = cobertura_nc
+                    area_actual = area_nc
 
         return EncontrarTorreFantasmaDosArchivosResponse()
 
@@ -155,22 +153,18 @@ class EncontrarTorreFantasmaUseCase:
 
     def _intersectar_coberturas(
         self, puntos: List[Punto]
-    ) -> Tuple[bool, Optional[Polygon]]:
+    ) -> Tuple[bool, Optional[AreaGeometrica]]:
         if not puntos:
             return False, None
 
-        resultado = self._cobertura_uc.ejecutar(
-            GenerarPoligonoCoberturaRequest(punto=puntos[0])
-        ).poligono
+        resp = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=puntos[0]))
+        resultado = self._geometry_gw.poligonos_a_area(resp.poligono, resp.estructura)
         for pt in puntos[1:]:
             logger.debug("intersectando con cobertura de %s con id %s", pt.nombre, pt.ubigeo)
-            cobertura = self._cobertura_uc.ejecutar(
-                GenerarPoligonoCoberturaRequest(punto=pt)
-            ).poligono
-            resultado = resultado.intersection(cobertura)
-            if resultado.wkt == "GEOMETRYCOLLECTION EMPTY":
-                return False, None
-            if resultado.wkt == "POLYGON EMPTY":
+            resp = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=pt))
+            cobertura = self._geometry_gw.poligonos_a_area(resp.poligono, resp.estructura)
+            resultado = self._geometry_gw.intersectar(resultado, cobertura)
+            if resultado.vacia:
                 return False, None
 
         return True, resultado

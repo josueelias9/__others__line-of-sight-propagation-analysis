@@ -11,7 +11,8 @@
         "Gruntfuggly.todo-tree",
         "hediet.vscode-drawio",
         "ms-python.python",
-        "RandomFractalsInc.geo-data-viewer"
+        "RandomFractalsInc.geo-data-viewer",
+        "bierner.markdown-mermaid"
       ],
       "settings": {
         "workbench.colorTheme": "Monokai"

@@ -1,6 +1,7 @@
 import sys
 from typing import List
 
+from application.gateways.geometry_gateway import AreaGeometrica
 from application.ports.output_port import KmlOutputPort
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
@@ -222,10 +223,8 @@ class KmlWriter(KmlOutputPort):
             f.write("\t</Folder>\n</Document>\n")
             f.write(_KML_FOOTER)
 
-    def escribir_wkt(self, wkt_dict: dict, nombre: str) -> None:
+    def escribir_area(self, area: AreaGeometrica, nombre: str) -> None:
         ruta = self._directorio + nombre + ".kml"
-        tipo = wkt_dict.get("type", "")
-        coords = wkt_dict.get("coordinates", [])
 
         with open(ruta, "w", encoding="utf-8") as f:
             f.write(_KML_HEADER)
@@ -234,9 +233,9 @@ class KmlWriter(KmlOutputPort):
                 "\t<Style><LineStyle><color>ff0000ff</color></LineStyle></Style>\n"
             )
 
-            if tipo == "MultiPolygon":
+            if len(area.anillos) > 1:
                 f.write("\t<MultiGeometry>\n")
-                for poligono in coords:
+                for poligono in area.anillos:
                     f.write(
                         "\t\t<Polygon>\n"
                         "\t\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
@@ -245,27 +244,23 @@ class KmlWriter(KmlOutputPort):
                         f.write(f"{c[0]},{c[1]} ")
                     f.write("</coordinates></LinearRing></outerBoundaryIs>\n")
                     for anillo in poligono[1:]:
-                        f.write(
-                            "\t\t\t<innerBoundaryIs><LinearRing><coordinates>\n"
-                        )
+                        f.write("\t\t\t<innerBoundaryIs><LinearRing><coordinates>\n")
                         for c in anillo:
                             f.write(f"{c[0]},{c[1]} ")
                         f.write("</coordinates></LinearRing></innerBoundaryIs>\n")
                     f.write("\t\t</Polygon>\n")
                 f.write("\t</MultiGeometry>\n")
-
-            elif tipo == "Polygon":
+            elif area.anillos:
+                poligono = area.anillos[0]
                 f.write(
                     "\t<Polygon>\n"
                     "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
                 )
-                for c in coords[0]:
+                for c in poligono[0]:
                     f.write(f"{c[0]},{c[1]} ")
                 f.write("</coordinates></LinearRing></outerBoundaryIs>\n")
-                for anillo in coords[1:]:
-                    f.write(
-                        "\t\t<innerBoundaryIs><LinearRing><coordinates>\n"
-                    )
+                for anillo in poligono[1:]:
+                    f.write("\t\t<innerBoundaryIs><LinearRing><coordinates>\n")
                     for c in anillo:
                         f.write(f"{c[0]},{c[1]} ")
                     f.write("</coordinates></LinearRing></innerBoundaryIs>\n")

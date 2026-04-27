@@ -38,6 +38,7 @@ from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaUseCase,
 )
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
+from infrastructure.geometry.shapely_geometry_repository import ShapelyGeometryRepository
 from infrastructure.output.kml_writer import KmlWriter
 from infrastructure.output.txt_writer import TxtWriter
 from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
@@ -56,6 +57,7 @@ elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
 punto_repo = CsvPuntoRepository(directorio=config.DIR_INPUT)
 kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
 txt_output = TxtWriter(directorio=config.DIR_OUTPUT)
+geometry_repo = ShapelyGeometryRepository()
 
 asignar_alturas_uc = AsignarAlturasUseCase(
     punto_repo=punto_repo,
@@ -81,6 +83,7 @@ generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
 encontrar_torre_fantasma_uc = EncontrarTorreFantasmaUseCase(
     punto_repo=punto_repo,
     cobertura_uc=generar_poligono_cobertura_uc,
+    geometry_gw=geometry_repo,
     kml_output=kml_output,
     txt_output=txt_output,
     distancia_maxima=config.DISTANCIA_KM,

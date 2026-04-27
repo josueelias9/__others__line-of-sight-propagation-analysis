@@ -1,13 +1,11 @@
 from dataclasses import dataclass, field
 import logging
 
-from shapely.geometry.polygon import Polygon
-
 from application.ports.output_port import KmlOutputPort
 from domain.entities.estructura import Estructura
+from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
-from domain.services.polygon_analysis_service import PolygonAnalysisService
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,8 @@ class GenerarPoligonoCoberturaRequest:
 
 @dataclass
 class GenerarPoligonoCoberturaResponse:
-    poligono: Polygon
+    poligono: Poligonos
+    estructura: Estructura
 
 
 class GenerarPoligonoCoberturaUseCase:
@@ -68,16 +67,14 @@ class GenerarPoligonoCoberturaUseCase:
 
         self._llenar_matriz_los(estructura)
 
-        servicio = PolygonAnalysisService(estructura)
-        poligonos = servicio.extraer_poligonos()
+        poligonos = estructura.extraer_poligonos()
         logger.debug(f"Polígonos extraídos: {len(poligonos.lista_de_poligonitos)}")
-        poligono_shapely = servicio.convertir_a_shapely(poligonos)
 
         if request.escribir_kml:
             self._kml_output.escribir_poligonos(poligonos, estructura, request.punto.nombre)
             self._kml_output.escribir_malla_cobertura(estructura, request.punto.nombre + "_malla")
         logger.info("🔴")
-        return GenerarPoligonoCoberturaResponse(poligono=poligono_shapely)
+        return GenerarPoligonoCoberturaResponse(poligono=poligonos, estructura=estructura)
 
     # ------------------------------------------------------------------ privado
 
