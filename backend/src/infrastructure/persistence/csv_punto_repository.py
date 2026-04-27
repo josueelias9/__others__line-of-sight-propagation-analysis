@@ -53,9 +53,19 @@ class CsvPuntoRepository(PuntoGateway):
         return [p for p in self.leer_puntos() if p.tipo == tipo]
 
     def leer_relaciones(self) -> List[Relacion]:
-        raise NotImplementedError(
-            "CsvPuntoRepository: leer_relaciones no está implementado para el formato CSV."
-        )
+        puntos_dict = {p.nombre: p for p in self.leer_puntos()}
+        relaciones: List[Relacion] = []
+        ruta = self._directorio + "relacion.csv"
+        with open(ruta, encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f)
+            for numero_linea, fila in enumerate(reader, start=2):
+                try:
+                    p_ini = puntos_dict[fila["punto_inicial_id"]]
+                    p_fin = puntos_dict[fila["punto_final_id"]]
+                    relaciones.append(Relacion(p_ini, p_fin))
+                except (KeyError, ValueError) as exc:
+                    logger.warning("línea %d ignorada: %s", numero_linea, exc)
+        return relaciones
 
     def guardar_puntos(self, puntos: List[Punto]) -> None:
         ruta = self._directorio + "punto.csv"

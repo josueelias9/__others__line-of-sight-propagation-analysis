@@ -1,0 +1,6 @@
+services:
+  frontend:
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace
+    

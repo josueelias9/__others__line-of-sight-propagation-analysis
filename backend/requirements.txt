@@ -6,6 +6,8 @@ numpy==2.4.4
 requests==2.27.1
 Shapely==2.1.2
 urllib3==1.26.8
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
 
 
 # sudo apt-get install -y libgeos-dev && pip install --force-reinstall shapely
