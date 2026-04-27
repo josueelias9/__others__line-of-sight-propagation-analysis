@@ -136,14 +136,97 @@ function Legend() {
         </div>
 
         {/* Footer */}
-        <div className="pt-2 border-t border-white/10">
+        <div className="pt-2 border-t border-white/10 space-y-1">
+          <p className="text-gray-500 text-xs text-center">
+            Botón central + arrastrar para rotar
+          </p>
           <p className="text-gray-600 text-xs text-center">
-            Google Maps JavaScript API
+            Cambia a &ldquo;Terrain&rdquo; para ver el relieve
           </p>
         </div>
       </div>
     </div>
   );
+}
+
+// ─── Map controls: tilt/rotate buttons + middle-mouse rotation ───────────────
+
+function MapControls() {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    // ── Tilt / Rotate buttons via native map.controls (igual que el ejemplo de Google) ──
+    const buttons: [string, string, number, google.maps.ControlPosition][] = [
+      ["Rotate Left",  "rotate",  20, google.maps.ControlPosition.LEFT_CENTER],
+      ["Rotate Right", "rotate", -20, google.maps.ControlPosition.RIGHT_CENTER],
+      ["Tilt Down",    "tilt",    20, google.maps.ControlPosition.TOP_CENTER],
+      ["Tilt Up",      "tilt",   -20, google.maps.ControlPosition.BOTTOM_CENTER],
+    ];
+
+    const addedDivs: { position: google.maps.ControlPosition; div: HTMLDivElement }[] = [];
+
+    buttons.forEach(([text, mode, amount, position]) => {
+      const div = document.createElement("div");
+      const btn = document.createElement("button");
+      btn.textContent = text;
+      btn.style.cssText =
+        "background:#fff;border:none;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.3);" +
+        "cursor:pointer;font-size:14px;font-weight:600;margin:8px;padding:8px 12px;";
+      btn.addEventListener("click", () => {
+        if (mode === "rotate") map.setHeading((map.getHeading() ?? 0) + amount);
+        if (mode === "tilt")   map.setTilt((map.getTilt() ?? 0) + amount);
+      });
+      div.appendChild(btn);
+      map.controls[position].push(div);
+      addedDivs.push({ position, div });
+    });
+
+    // ── Middle-mouse drag → rotate ─────────────────────────────────────────────
+    const container = map.getDiv();
+    let activePointerId: number | null = null;
+    let lastX = 0;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 1) return;
+      e.preventDefault();
+      activePointerId = e.pointerId;
+      lastX = e.clientX;
+      container.setPointerCapture(e.pointerId);
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      if (e.pointerId !== activePointerId) return;
+      map.setHeading((map.getHeading() ?? 0) + (e.clientX - lastX) * 0.5);
+      lastX = e.clientX;
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.pointerId !== activePointerId) return;
+      activePointerId = null;
+      container.releasePointerCapture(e.pointerId);
+    };
+
+    container.addEventListener("pointerdown", onPointerDown);
+    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener("pointerup", onPointerUp);
+    container.addEventListener("pointercancel", onPointerUp);
+
+    return () => {
+      // Eliminar botones de los slots nativos
+      addedDivs.forEach(({ position, div }) => {
+        const arr = map.controls[position];
+        for (let i = 0; i < arr.getLength(); i++) {
+          if (arr.getAt(i) === div) { arr.removeAt(i); break; }
+        }
+      });
+      container.removeEventListener("pointerdown", onPointerDown);
+      container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("pointerup", onPointerUp);
+      container.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [map]);
+
+  return null;
 }
 
 // ─── Custom marker pin ─────────────────────────────────────────────────────────
@@ -164,28 +247,33 @@ function MarkerPin() {
 // ─── Root component ────────────────────────────────────────────────────────────
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? "";
+// "90f87356969d889c" es el Map ID demo público de Google (vector map con tilt/rotation)
+const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || "90f87356969d889c";
 
 export default function MapView() {
   return (
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
         <Map
-          mapId={MAP_ID || undefined}
+          mapId={MAP_ID}
           defaultZoom={16}
           defaultCenter={CENTER}
           mapTypeId="satellite"
-          tilt={45}
-          heading={20}
-          disableDefaultUI={false}
+          defaultTilt={45}
+          defaultHeading={20}
           gestureHandling="greedy"
+          rotateControl={true}
+          mapTypeControl={true}
+          mapTypeControlOptions={{
+            mapTypeIds: ["satellite", "hybrid", "terrain", "roadmap"],
+          }}
           style={{ width: "100%", height: "100%" }}
         >
           <MapOverlays />
-
           <AdvancedMarker position={POINT} title="Plaza Mayor de Lima">
             <MarkerPin />
           </AdvancedMarker>
+          <MapControls />
         </Map>
       </APIProvider>
 

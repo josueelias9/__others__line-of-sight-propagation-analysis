@@ -12,7 +12,7 @@ services:
     volumes:
       # Mount the root folder that contains .git
       - .:/workspace
-    command: sleep infinity
+    container_name: frontend-container
     
   backend:
     build: ./backend
@@ -24,3 +24,4 @@ services:
       # Mount the root folder that contains .git
       - .:/workspace
     command: sleep infinity
+    container_name: backend-container
