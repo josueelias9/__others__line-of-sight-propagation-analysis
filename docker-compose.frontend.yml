@@ -4,3 +4,6 @@ services:
       # Mount the root folder that contains .git
       - .:/workspace
     
+  backend:
+    profiles:
+      - avoid

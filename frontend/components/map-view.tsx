@@ -6,6 +6,7 @@ import {
   Map,
   AdvancedMarker,
   useMap,
+  useApiIsLoaded,
 } from "@vis.gl/react-google-maps";
 
 // ─── Backend types ─────────────────────────────────────────────────────────────
@@ -75,9 +76,110 @@ function MapOverlays({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: 
   return null;
 }
 
+// ─── 3D Map View ─────────────────────────────────────────────────────────────
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+function Map3DView({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: RelacionData[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const apiLoaded = useApiIsLoaded();
+
+  useEffect(() => {
+    if (!apiLoaded || !containerRef.current) return;
+
+    const container = containerRef.current;
+    let map3d: any;
+    let cancelled = false;
+
+    (async () => {
+      // Igual al tutorial oficial: importLibrary('maps3d') → new Map3DElement
+      const { Map3DElement, Marker3DElement, Polyline3DElement, AltitudeMode } =
+        await (google.maps as any).importLibrary("maps3d");
+
+      if (cancelled) return;
+
+      // mode: 'HYBRID' activa los tiles fotorrealistas 3D con relieve real
+      map3d = new Map3DElement({
+        center: { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng, altitude: 3500 },
+        tilt: 67.5,
+        range: 18000,
+        heading: 20,
+        mode: "HYBRID",
+      });
+      map3d.style.cssText = "width:100%;height:100%;display:block;";
+      container.appendChild(map3d);
+
+      // Índice de puntos para polilíneas
+      const idx: Record<string, PuntoData> = {};
+      puntos.forEach((p) => { idx[p.nombre] = p; });
+
+      // Marcadores extruídos a la altitud real de cada antena
+      puntos.forEach((p) => {
+        const marker = new Marker3DElement({
+          position: {
+            lat: p.latitud,
+            lng: p.longitud,
+            altitude: p.metros_sobre_nivel_mar + p.altura_antena,
+          },
+          altitudeMode: AltitudeMode.ABSOLUTE,
+          extruded: true,
+          label: p.nombre,
+        });
+        map3d.appendChild(marker);
+      });
+
+      // Polilíneas que unen antenas flotando a su altitud real
+      relaciones.forEach((r) => {
+        const ini = idx[r.punto_inicial];
+        const fin = idx[r.punto_final];
+        if (!ini || !fin) return;
+        const line = new Polyline3DElement({
+          altitudeMode: AltitudeMode.ABSOLUTE,
+          strokeColor: "#22D3EE",
+          strokeWidth: 6,
+          geodesic: true,
+          drawsWhenOccluded: true,
+        });
+        line.coordinates = [
+          { lat: ini.latitud, lng: ini.longitud, altitude: ini.metros_sobre_nivel_mar + ini.altura_antena },
+          { lat: fin.latitud, lng: fin.longitud, altitude: fin.metros_sobre_nivel_mar + fin.altura_antena },
+        ];
+        map3d.appendChild(line);
+      });
+    })().catch(console.error);
+
+    return () => {
+      cancelled = true;
+      if (map3d && container.contains(map3d)) container.removeChild(map3d);
+    };
+  }, [apiLoaded, puntos, relaciones]);
+
+  return (
+    <div className="relative w-full h-full bg-gray-950">
+      {!apiLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-white/60 text-sm animate-pulse">Cargando vista 3D…</p>
+        </div>
+      )}
+      <div ref={containerRef} className="w-full h-full" />
+    </div>
+  );
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 // ─── Legend panel ─────────────────────────────────────────────────────────────
 
-function Legend({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: RelacionData[] }) {
+function Legend({
+  puntos,
+  relaciones,
+  view3D,
+  onToggle3D,
+}: {
+  puntos: PuntoData[];
+  relaciones: RelacionData[];
+  view3D: boolean;
+  onToggle3D: () => void;
+}) {
   const transportes = puntos.filter((p) => p.tipo === "transporte").length;
   const accesos = puntos.filter((p) => p.tipo === "acceso").length;
 
@@ -118,9 +220,22 @@ function Legend({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: Relac
           </div>
         </div>
 
-        <div className="pt-2 border-t border-white/10 space-y-1">
-          <p className="text-gray-500 text-xs text-center">Botón central + arrastrar para rotar</p>
-          <p className="text-gray-600 text-xs text-center">Cambia a &ldquo;Terrain&rdquo; para ver el relieve</p>
+        <div className="pt-2 border-t border-white/10 space-y-2">
+          <button
+            onClick={onToggle3D}
+            className={`w-full py-2 px-3 rounded-xl text-sm font-semibold transition-all ${
+              view3D
+                ? "bg-cyan-500 text-gray-950 shadow-lg shadow-cyan-500/40"
+                : "bg-white/10 text-white hover:bg-white/20"
+            }`}
+          >
+            {view3D ? "← Vista 2D" : "Vista 3D ↗"}
+          </button>
+          <p className="text-gray-500 text-xs text-center">
+            {view3D
+              ? "Clic + arrastrar para rotar y volar"
+              : "Botón central + arrastrar para rotar"}
+          </p>
         </div>
       </div>
     </div>
@@ -235,6 +350,7 @@ const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || "90f87356969d889c";
 export default function MapView() {
   const [puntos, setPuntos] = useState<PuntoData[]>([]);
   const [relaciones, setRelaciones] = useState<RelacionData[]>([]);
+  const [view3D, setView3D] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -251,36 +367,45 @@ export default function MapView() {
   return (
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
-        <Map
-          mapId={MAP_ID}
-          defaultZoom={13}
-          defaultCenter={DEFAULT_CENTER}
-          mapTypeId="satellite"
-          defaultTilt={45}
-          defaultHeading={20}
-          gestureHandling="greedy"
-          rotateControl={true}
-          mapTypeControl={true}
-          mapTypeControlOptions={{
-            mapTypeIds: ["satellite", "hybrid", "terrain", "roadmap"],
-          }}
-          style={{ width: "100%", height: "100%" }}
-        >
-          <MapOverlays puntos={puntos} relaciones={relaciones} />
-          {puntos.map((p) => (
-            <AdvancedMarker
-              key={p.nombre}
-              position={{ lat: p.latitud, lng: p.longitud }}
-              title={`${p.nombre} (${p.tipo})`}
-            >
-              <MarkerPin tipo={p.tipo} />
-            </AdvancedMarker>
-          ))}
-          <MapControls />
-        </Map>
+        {view3D ? (
+          <Map3DView puntos={puntos} relaciones={relaciones} />
+        ) : (
+          <Map
+            mapId={MAP_ID}
+            defaultZoom={13}
+            defaultCenter={DEFAULT_CENTER}
+            mapTypeId="satellite"
+            defaultTilt={45}
+            defaultHeading={20}
+            gestureHandling="greedy"
+            rotateControl={true}
+            mapTypeControl={true}
+            mapTypeControlOptions={{
+              mapTypeIds: ["satellite", "hybrid", "terrain", "roadmap"],
+            }}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <MapOverlays puntos={puntos} relaciones={relaciones} />
+            {puntos.map((p) => (
+              <AdvancedMarker
+                key={p.nombre}
+                position={{ lat: p.latitud, lng: p.longitud }}
+                title={`${p.nombre} (${p.tipo})`}
+              >
+                <MarkerPin tipo={p.tipo} />
+              </AdvancedMarker>
+            ))}
+            <MapControls />
+          </Map>
+        )}
       </APIProvider>
 
-      <Legend puntos={puntos} relaciones={relaciones} />
+      <Legend
+        puntos={puntos}
+        relaciones={relaciones}
+        view3D={view3D}
+        onToggle3D={() => setView3D((v) => !v)}
+      />
     </div>
   );
 }
