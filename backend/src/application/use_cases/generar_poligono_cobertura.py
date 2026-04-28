@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 import logging
+from typing import Any, Protocol
 
-from application.ports.output_port import KmlOutputPort
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto
@@ -12,13 +14,26 @@ logger = logging.getLogger(__name__)
 @dataclass
 class GenerarPoligonoCoberturaRequest:
     punto: Punto
-    escribir_kml: bool = False
 
 
 @dataclass
 class GenerarPoligonoCoberturaResponse:
     poligono: Poligonos
     estructura: Estructura
+
+
+class CoberturaOutputBoundary(Protocol):
+    """
+    Puerto de salida del caso de uso GenerarPoligonoCoberturaUseCase.
+
+    Cualquier adaptador (presenter, passtrhrought, etc.) que implemente
+    `presentar()` satisface este protocolo estructuralmente.
+
+    Pertenece a la capa de Aplicación.
+    """
+
+    def presentar(self, response: GenerarPoligonoCoberturaResponse) -> Any:
+        ...
 
 
 class GenerarPoligonoCoberturaUseCase:
@@ -37,25 +52,21 @@ class GenerarPoligonoCoberturaUseCase:
     def __init__(
         self,
         elevation_repo: ElevationGateway,
-        kml_output: KmlOutputPort,
+        output_boundary: CoberturaOutputBoundary,
         numero_de_ldv: int,
         muestras: int,
         distancia_grados: float,
         altura_torre_fantasma: float,
     ) -> None:
         self._elevation_repo = elevation_repo
-        self._kml_output = kml_output
+        self._output_boundary = output_boundary
         self._numero_de_ldv = numero_de_ldv
         self._muestras = muestras
         self._distancia_grados = distancia_grados
         self._altura_torre_fantasma = altura_torre_fantasma
 
-    def ejecutar(self, request: GenerarPoligonoCoberturaRequest) -> GenerarPoligonoCoberturaResponse:
-        """
-        Calcula y devuelve el polígono de cobertura del punto.
-
-        Si `request.escribir_kml` es True, también genera el archivo KML.
-        """
+    def ejecutar(self, request: GenerarPoligonoCoberturaRequest) -> Any:
+        """Calcula el polígono de cobertura y delega la presentación al output boundary."""
         logger.info("🟢")
         estructura = Estructura(
             n=self._numero_de_ldv,
@@ -70,11 +81,9 @@ class GenerarPoligonoCoberturaUseCase:
         poligonos = estructura.extraer_poligonos()
         logger.debug(f"Polígonos extraídos: {len(poligonos.lista_de_poligonitos)}")
 
-        if request.escribir_kml:
-            self._kml_output.escribir_poligonos(poligonos, estructura, request.punto.nombre)
-            self._kml_output.escribir_malla_cobertura(estructura, request.punto.nombre + "_malla")
+        response = GenerarPoligonoCoberturaResponse(poligono=poligonos, estructura=estructura)
         logger.info("🔴")
-        return GenerarPoligonoCoberturaResponse(poligono=poligonos, estructura=estructura)
+        return self._output_boundary.presentar(response)
 
     # ------------------------------------------------------------------ privado
 

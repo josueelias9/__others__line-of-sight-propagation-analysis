@@ -7,6 +7,7 @@ from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
+from interface.presenters.cobertura_presenter import CoberturaViewModel
 
 # ── plantillas KML ────────────────────────────────────────────────────────────
 
@@ -269,8 +270,79 @@ class KmlWriter(KmlOutputPort):
             f.write("</Placemark>\n")
             f.write(_KML_FOOTER)
 
-    # ------------------------------------------------------------------ consola helper
+    # ------------------------------------------------------------------ adaptador de ViewModel
 
+    def escribir_cobertura(self, viewmodel: CoberturaViewModel) -> None:
+        """
+        Punto de entrada para el presenter de cobertura.
+
+        Escribe dos archivos KML a partir del CoberturaViewModel:
+          - <nombre>.kml       : polígonos de cobertura.
+          - <nombre>_malla.kml : cuadriláteros de la malla polar.
+        """
+        self._escribir_poligonos_vm(viewmodel, viewmodel.nombre)
+        self._escribir_malla_vm(viewmodel, viewmodel.nombre + "_malla")
+
+    def _escribir_poligonos_vm(self, viewmodel: CoberturaViewModel, nombre: str) -> None:
+        ruta = self._directorio + nombre + ".kml"
+        with open(ruta, "w", encoding="utf-8") as f:
+            f.write(_KML_HEADER)
+            f.write(
+                "<Document>\n"
+                f"\t<name>{nombre}.kml</name>\n"
+                '\t<Style id="s_ylw-pushpin">\n'
+                '\t\t<IconStyle><scale>1.1</scale></IconStyle>\n'
+                "\t</Style>\n"
+                "\t<Folder><name>ww</name><open>1</open>\n"
+            )
+            for poli in viewmodel.poligonos:
+                f.write(
+                    f"<Placemark><name>{poli.nombre}</name>\n"
+                    '\t<styleUrl>#s_ylw-pushpin</styleUrl>\n'
+                    "\t<Polygon><tessellate>1</tessellate>\n"
+                    "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
+                )
+                for c in poli.coordenadas:
+                    f.write(f"{c.longitud},{c.latitud},0 ")
+                f.write(
+                    "\n\t\t</coordinates></LinearRing></outerBoundaryIs>\n"
+                    "\t</Polygon>\n</Placemark>\n"
+                )
+            f.write("\t</Folder>\n</Document>\n")
+            f.write(_KML_FOOTER)
+
+    def _escribir_malla_vm(self, viewmodel: CoberturaViewModel, nombre: str) -> None:
+        ruta = self._directorio + nombre + ".kml"
+        with open(ruta, "w", encoding="utf-8") as f:
+            f.write(_KML_HEADER)
+            f.write(
+                "<Document>\n"
+                "\t<name>cuadrilateros.kml</name>\n"
+                '\t<Style id="sh_ylw-pushpin">\n'
+                "\t\t<PolyStyle><color>80ffffff</color></PolyStyle>\n"
+                "\t</Style>\n"
+                "\t<Folder><name>Lugares temporales</name><open>1</open>\n"
+            )
+            for celda in viewmodel.malla:
+                coords = " ".join(
+                    f"{c.longitud},{c.latitud},0" for c in celda.coordenadas
+                )
+                f.write(
+                    f'\t\t<Placemark>\n'
+                    f'\t\t\t<name>{celda.nombre}</name>\n'
+                    '\t\t\t<styleUrl>#sh_ylw-pushpin</styleUrl>\n'
+                    "\t\t\t<Polygon><tessellate>1</tessellate>\n"
+                    "\t\t\t\t<outerBoundaryIs><LinearRing>\n"
+                    f"\t\t\t\t\t<coordinates>{coords}</coordinates>\n"
+                    "\t\t\t\t</LinearRing></outerBoundaryIs>\n"
+                    "\t\t\t</Polygon>\n"
+                    "\t\t</Placemark>\n"
+                )
+            f.write("\t</Folder>\n</Document>\n")
+            f.write(_KML_FOOTER)
+
+    # ------------------------------------------------------------------ consola helper
+    # TODO esto no tiene nada que con KML, revisar
     def imprimir_matriz(self, matriz: List[List[int]]) -> None:
         """Imprime la matriz de estado en consola (creciendo de abajo a arriba)."""
         filas = len(matriz)

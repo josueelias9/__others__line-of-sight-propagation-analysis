@@ -35,8 +35,11 @@ from application.use_cases.encontrar_torre_fantasma import (
 )
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaRequest,
+    GenerarPoligonoCoberturaResponse,
+    CoberturaOutputBoundary,
     GenerarPoligonoCoberturaUseCase,
 )
+from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from infrastructure.geometry.shapely_geometry_repository import ShapelyGeometryRepository
 from infrastructure.output.kml_writer import KmlWriter
@@ -47,6 +50,16 @@ from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+# ── Presenters / adaptadores de salida ───────────────────────────────────────
+
+class _PassthroughCoberturaPresenter:
+    """Implementa CoberturaOutputBoundary devolviendo el response tal cual.
+    Usada por use cases internos que necesitan los objetos de dominio."""
+
+    def presentar(self, response: GenerarPoligonoCoberturaResponse) -> GenerarPoligonoCoberturaResponse:
+        return response
 
 
 # ── Ensamblado del contenedor de dependencias ─────────────────────────────────
@@ -71,9 +84,22 @@ encontrar_relaciones_uc = EncontrarRelacionesUseCase(
     muestras=config.MUESTRAS,
 )
 
+cobertura_presenter = GenerarPoligonoCoberturaPresenter()
+
+# Instancia con el presenter real: devuelve CoberturaViewModel (CLI opción 3 / FastAPI)
 generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
     elevation_repo=elevation_repo,
-    kml_output=kml_output,
+    output_boundary=cobertura_presenter,
+    numero_de_ldv=config.NUMERO_DE_LDV,
+    muestras=config.MUESTRAS,
+    distancia_grados=config.de_km_a_grados(config.DISTANCIA_KM),
+    altura_torre_fantasma=config.ALTURA_TORRE_FANTASMA,
+)
+
+# Instancia con passthrough: devuelve GenerarPoligonoCoberturaResponse (callers internos)
+_cobertura_uc_interno = GenerarPoligonoCoberturaUseCase(
+    elevation_repo=elevation_repo,
+    output_boundary=_PassthroughCoberturaPresenter(),
     numero_de_ldv=config.NUMERO_DE_LDV,
     muestras=config.MUESTRAS,
     distancia_grados=config.de_km_a_grados(config.DISTANCIA_KM),
@@ -82,7 +108,7 @@ generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
 
 encontrar_torre_fantasma_uc = EncontrarTorreFantasmaUseCase(
     punto_repo=punto_repo,
-    cobertura_uc=generar_poligono_cobertura_uc,
+    cobertura_uc=_cobertura_uc_interno,
     geometry_gw=geometry_repo,
     kml_output=kml_output,
     txt_output=txt_output,
@@ -139,9 +165,10 @@ def run() -> None:
             except StopIteration:
                 print(f"No se encontró un punto con ubigeo={ubigeo}.")
                 continue
-            generar_poligono_cobertura_uc.ejecutar(
-                GenerarPoligonoCoberturaRequest(punto=punto, escribir_kml=True)
-            )
+            response = generar_poligono_cobertura_uc.ejecutar(
+                GenerarPoligonoCoberturaRequest(punto=punto)
+            )  # returns CoberturaViewModel via presenter
+            kml_output.escribir_cobertura(response)
             print(f"KML generado en {config.DIR_OUTPUT}{punto.nombre}.kml")
 
 
