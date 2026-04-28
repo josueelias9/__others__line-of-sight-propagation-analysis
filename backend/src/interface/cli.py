@@ -35,11 +35,11 @@ from application.use_cases.encontrar_torre_fantasma import (
 )
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaRequest,
-    GenerarPoligonoCoberturaResponse,
-    CoberturaOutputBoundary,
     GenerarPoligonoCoberturaUseCase,
 )
+from application.ports.output_port import CoberturaOutputBoundary
 from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
+from interface.presenters.passthrough_presenter import PassthroughCoberturaPresenter
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from infrastructure.geometry.shapely_geometry_repository import ShapelyGeometryRepository
 from infrastructure.output.kml_writer import KmlWriter
@@ -50,16 +50,6 @@ from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-# ── Presenters / adaptadores de salida ───────────────────────────────────────
-
-class _PassthroughCoberturaPresenter:
-    """Implementa CoberturaOutputBoundary devolviendo el response tal cual.
-    Usada por use cases internos que necesitan los objetos de dominio."""
-
-    def presentar(self, response: GenerarPoligonoCoberturaResponse) -> GenerarPoligonoCoberturaResponse:
-        return response
 
 
 # ── Ensamblado del contenedor de dependencias ─────────────────────────────────
@@ -84,13 +74,11 @@ encontrar_relaciones_uc = EncontrarRelacionesUseCase(
     muestras=config.MUESTRAS,
 )
 
-cobertura_presenter = GenerarPoligonoCoberturaPresenter()
-
 # Instancia con el presenter real: devuelve CoberturaViewModel (CLI opción 3 / FastAPI)
 generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
     elevation_repo=elevation_repo,
     punto_repo=punto_repo,
-    output_boundary=cobertura_presenter,
+    output_boundary=GenerarPoligonoCoberturaPresenter(),
     numero_de_ldv=config.NUMERO_DE_LDV,
     muestras=config.MUESTRAS,
     distancia_grados=config.de_km_a_grados(config.DISTANCIA_KM),
@@ -101,7 +89,7 @@ generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
 _cobertura_uc_interno = GenerarPoligonoCoberturaUseCase(
     elevation_repo=elevation_repo,
     punto_repo=punto_repo,
-    output_boundary=_PassthroughCoberturaPresenter(),
+    output_boundary=PassthroughCoberturaPresenter(),
     numero_de_ldv=config.NUMERO_DE_LDV,
     muestras=config.MUESTRAS,
     distancia_grados=config.de_km_a_grados(config.DISTANCIA_KM),

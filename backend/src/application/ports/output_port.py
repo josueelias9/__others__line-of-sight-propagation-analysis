@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, List
 
 from application.gateways.geometry_gateway import AreaGeometrica
 from domain.entities.estructura import Estructura
@@ -71,3 +71,19 @@ class TxtOutputPort(ABC):
     def escribir_puntos(self, puntos: List[Punto], nombre: str) -> None:
         """Persiste una lista de Punto en formato CSV con ';'."""
 
+
+# PARA EL PRESENTER
+
+class CoberturaOutputBoundary(ABC):
+    """
+    Puerto de salida del caso de uso GenerarPoligonoCoberturaUseCase.
+
+    Cualquier adaptador (presenter, passthrough, etc.) que herede de esta clase
+    e implemente `presentar()` puede inyectarse en el caso de uso.
+
+    Pertenece a la capa de Aplicación.
+    """
+
+    @abstractmethod
+    def presentar(self, response: Any) -> Any:
+        """Transforma el response del caso de uso en el formato de salida deseado."""

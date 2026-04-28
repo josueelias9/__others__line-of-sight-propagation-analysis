@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import logging
-from typing import Any, Protocol
+from typing import Any
 
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.punto_gateway import PuntoGateway
+from application.ports.output_port import CoberturaOutputBoundary
 
 logger = logging.getLogger(__name__)
 
@@ -21,20 +22,6 @@ class GenerarPoligonoCoberturaRequest:
 class GenerarPoligonoCoberturaResponse:
     poligono: Poligonos
     estructura: Estructura
-
-
-class CoberturaOutputBoundary(Protocol):
-    """
-    Puerto de salida del caso de uso GenerarPoligonoCoberturaUseCase.
-
-    Cualquier adaptador (presenter, passtrhrought, etc.) que implemente
-    `presentar()` satisface este protocolo estructuralmente.
-
-    Pertenece a la capa de Aplicación.
-    """
-
-    def presentar(self, response: GenerarPoligonoCoberturaResponse) -> Any:
-        ...
 
 
 class GenerarPoligonoCoberturaUseCase:

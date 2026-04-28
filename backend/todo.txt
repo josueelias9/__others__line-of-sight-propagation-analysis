@@ -1,0 +1,1 @@
+TODO agregar validador de poligonos (esta cerrado o no?)

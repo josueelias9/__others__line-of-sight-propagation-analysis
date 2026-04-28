@@ -16,8 +16,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List
 
+from application.ports.output_port import CoberturaOutputBoundary
 from application.use_cases.generar_poligono_cobertura import (
-    CoberturaOutputBoundary,
     GenerarPoligonoCoberturaResponse,
 )
 from domain.entities.estructura import Estructura
@@ -53,7 +53,7 @@ class CoberturaViewModel:
 
 # ── Presenter ─────────────────────────────────────────────────────────────────
 
-class GenerarPoligonoCoberturaPresenter:
+class GenerarPoligonoCoberturaPresenter(CoberturaOutputBoundary):
     """
     Implementa CoberturaOutputBoundary.
 
