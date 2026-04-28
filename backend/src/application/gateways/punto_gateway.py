@@ -38,3 +38,7 @@ class PuntoGateway(ABC):
     def actualizar_conectado(self, puntos: List[Punto]) -> None:
         """Actualiza únicamente el campo `conectado` de los Punto indicados en punto.csv,
         sin modificar los demás campos ni los puntos no presentes en la lista."""
+
+    @abstractmethod
+    def agregar_punto(self, punto: Punto) -> Punto:
+        """Persiste un nuevo Punto asignándole un ubigeo único y lo devuelve con ese valor."""

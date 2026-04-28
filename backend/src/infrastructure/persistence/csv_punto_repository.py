@@ -111,3 +111,12 @@ class CsvPuntoRepository(PuntoGateway):
             if p.ubigeo in conectado_map:
                 p.conectado = conectado_map[p.ubigeo]
         self.guardar_puntos(todos)
+
+    def agregar_punto(self, punto: Punto) -> Punto:
+        """Agrega un nuevo Punto al CSV asignándole el siguiente ubigeo disponible."""
+        todos = self.leer_puntos()
+        siguiente_ubigeo = max((p.ubigeo for p in todos), default=0) + 1
+        punto.ubigeo = siguiente_ubigeo
+        todos.append(punto)
+        self.guardar_puntos(todos)
+        return punto

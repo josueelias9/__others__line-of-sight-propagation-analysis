@@ -16,6 +16,7 @@ import { Map3DView } from "./map/map-3d-view";
 import { Legend } from "./map/legend";
 import { MapControls } from "./map/map-controls";
 import { MarkerPin } from "./map/marker-pin";
+import { AddPuntoPanel } from "./map/add-punto-panel";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
@@ -27,6 +28,8 @@ export default function MapView() {
   const [relaciones, setRelaciones] = useState<RelacionData[]>([]);
   const [view3D, setView3D] = useState(false);
   const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null);
+  const [pickingMode, setPickingMode] = useState(false);
+  const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -59,7 +62,13 @@ export default function MapView() {
             mapTypeControlOptions={{
               mapTypeIds: ["satellite", "hybrid", "terrain", "roadmap"],
             }}
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", cursor: pickingMode ? "crosshair" : "" }}
+            onClick={(e) => {
+              if (pickingMode && e.detail.latLng) {
+                setPickedCoords({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
+                setPickingMode(false);
+              }
+            }}
           >
             <MapOverlays puntos={puntos} relaciones={relaciones} />
             <CoberturaOverlays data={cobertura} />
@@ -77,6 +86,14 @@ export default function MapView() {
         )}
       </APIProvider>
 
+      {pickingMode && (
+        <div className="absolute inset-x-0 top-5 z-10 flex justify-center pointer-events-none">
+          <div className="bg-cyan-500 text-gray-950 font-bold text-sm px-5 py-2.5 rounded-2xl shadow-xl shadow-cyan-500/40">
+            Haz clic en el mapa para ubicar el punto
+          </div>
+        </div>
+      )}
+
       <Legend
         puntos={puntos}
         relaciones={relaciones}
@@ -84,6 +101,12 @@ export default function MapView() {
         onToggle3D={() => setView3D((v) => !v)}
       />
       <CoberturaPanel puntos={puntos} onResult={setCobertura} />
+      <AddPuntoPanel
+        onAdded={(nuevo) => setPuntos((prev) => [...prev, nuevo])}
+        onRequestPick={() => setPickingMode(true)}
+        pickedCoords={pickedCoords}
+        onPickConsumed={() => setPickedCoords(null)}
+      />
     </div>
   );
 }

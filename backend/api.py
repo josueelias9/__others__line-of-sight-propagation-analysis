@@ -19,6 +19,10 @@ from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaUseCase,
     GenerarPoligonoCoberturaRequest,
 )
+from application.use_cases.agregar_punto import (
+    AgregarPuntoUseCase,
+    AgregarPuntoRequest,
+)
 
 app = FastAPI(title="Line of Sight API")
 
@@ -45,6 +49,15 @@ class PuntoOut(BaseModel):
     conectado: bool
 
 
+class PuntoIn(BaseModel):
+    nombre: str
+    longitud: float
+    latitud: float
+    altura_antena: float = 15.0
+    tipo: str
+    green_asociado: Optional[str] = ""
+
+
 class RelacionOut(BaseModel):
     punto_inicial: str
     punto_final: str
@@ -67,6 +80,33 @@ def get_puntos():
         )
         for p in _repo.leer_puntos()
     ]
+
+
+@app.post("/api/puntos", response_model=PuntoOut, status_code=201)
+def post_punto(body: PuntoIn):
+    use_case = AgregarPuntoUseCase(punto_repo=_repo)
+    response = use_case.ejecutar(
+        AgregarPuntoRequest(
+            nombre=body.nombre,
+            longitud=body.longitud,
+            latitud=body.latitud,
+            altura_antena=body.altura_antena,
+            tipo=body.tipo,
+            green_asociado=body.green_asociado or "",
+        )
+    )
+    p = response.punto
+    return PuntoOut(
+        ubigeo=p.ubigeo,
+        nombre=p.nombre,
+        longitud=p.longitud,
+        latitud=p.latitud,
+        altura_antena=p.altura_antena,
+        tipo=p.tipo,
+        metros_sobre_nivel_mar=p.metros_sobre_nivel_mar,
+        green_asociado=p.green_asociado,
+        conectado=p.conectado,
+    )
 
 
 @app.get("/api/relaciones", response_model=List[RelacionOut])
