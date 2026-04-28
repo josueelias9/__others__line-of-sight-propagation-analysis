@@ -12,6 +12,7 @@ import {
 // ─── Backend types ─────────────────────────────────────────────────────────────
 
 interface PuntoData {
+  ubigeo: number;
   nombre: string;
   longitud: number;
   latitud: number;
@@ -26,6 +27,37 @@ interface RelacionData {
   punto_inicial: string;
   punto_final: string;
   distancia: number;
+}
+
+// ─── Cobertura types ───────────────────────────────────────────────────────────
+
+interface CoordGeo {
+  longitud: number;
+  latitud: number;
+}
+
+interface PoligonoViewModel {
+  nombre: string;
+  coordenadas: CoordGeo[];
+}
+
+interface CeldaMallaViewModel {
+  nombre: string;
+  coordenadas: CoordGeo[];
+}
+
+interface CoberturaViewModel {
+  nombre: string;
+  poligonos: PoligonoViewModel[];
+  malla: CeldaMallaViewModel[];
+}
+
+interface CoberturaForm {
+  ubigeo: string;
+  numero_de_ldv: string;
+  muestras: string;
+  distancia_km: string;
+  altura_torre_fantasma: string;
 }
 
 // ─── Config ────────────────────────────────────────────────────────────────────
@@ -76,29 +108,226 @@ function MapOverlays({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: 
   return null;
 }
 
-// ─── 3D Map View ─────────────────────────────────────────────────────────────
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// ─── Cobertura overlays ────────────────────────────────────────────────────────
 
-function Map3DView({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: RelacionData[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const apiLoaded = useApiIsLoaded();
+function CoberturaOverlays({ data }: { data: CoberturaViewModel | null }) {
+  const map = useMap();
+  const mallaCellsRef = useRef<google.maps.Polygon[]>([]);
+  const poligonosRef = useRef<google.maps.Polygon[]>([]);
 
   useEffect(() => {
-    if (!apiLoaded || !containerRef.current) return;
+    mallaCellsRef.current.forEach((p) => p.setMap(null));
+    poligonosRef.current.forEach((p) => p.setMap(null));
+    mallaCellsRef.current = [];
+    poligonosRef.current = [];
 
+    if (!map || !data) return;
+
+    mallaCellsRef.current = data.malla.map(
+      (celda) =>
+        new google.maps.Polygon({
+          paths: celda.coordenadas.map((c) => ({ lat: c.latitud, lng: c.longitud })),
+          strokeColor: "#34D399",
+          strokeOpacity: 0.4,
+          strokeWeight: 1,
+          fillColor: "#34D399",
+          fillOpacity: 0.25,
+          map,
+        })
+    );
+
+    poligonosRef.current = data.poligonos.map(
+      (poli) =>
+        new google.maps.Polygon({
+          paths: poli.coordenadas.map((c) => ({ lat: c.latitud, lng: c.longitud })),
+          strokeColor: "#FBBF24",
+          strokeOpacity: 0.9,
+          strokeWeight: 2,
+          fillOpacity: 0,
+          map,
+        })
+    );
+
+    return () => {
+      mallaCellsRef.current.forEach((p) => p.setMap(null));
+      poligonosRef.current.forEach((p) => p.setMap(null));
+    };
+  }, [map, data]);
+
+  return null;
+}
+
+// ─── Cobertura panel (sidebar form) ───────────────────────────────────────────
+
+interface CoberturaPanel {
+  puntos: PuntoData[];
+  onResult: (data: CoberturaViewModel) => void;
+}
+
+function CoberturaPanel({ puntos, onResult }: CoberturaPanel) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [form, setForm] = useState<CoberturaForm>({
+    ubigeo: "",
+    numero_de_ldv: "72",
+    muestras: "100",
+    distancia_km: "15",
+    altura_torre_fantasma: "15",
+  });
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const body = {
+        ubigeo: parseInt(form.ubigeo),
+        numero_de_ldv: parseInt(form.numero_de_ldv),
+        muestras: parseInt(form.muestras),
+        distancia_km: parseFloat(form.distancia_km),
+        altura_torre_fantasma: parseFloat(form.altura_torre_fantasma),
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/cobertura`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const detail = await res.text();
+        throw new Error(`HTTP ${res.status}: ${detail}`);
+      }
+
+      const data: CoberturaViewModel = await res.json();
+      onResult(data);
+      setOpen(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const paramFields: { name: keyof CoberturaForm; label: string }[] = [
+    { name: "numero_de_ldv", label: "Líneas de vista" },
+    { name: "muestras", label: "Muestras" },
+    { name: "distancia_km", label: "Distancia (km)" },
+    { name: "altura_torre_fantasma", label: "Torre fantasma (m)" },
+  ];
+
+  return (
+    <div className="absolute top-5 right-5 z-10 w-72 rounded-2xl overflow-hidden shadow-2xl">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full bg-gray-900/90 backdrop-blur-xl border border-white/10 px-5 py-4 text-left"
+      >
+        <span className="text-white font-bold text-base tracking-tight">
+          Análisis de Cobertura
+        </span>
+        <p className="text-gray-400 text-xs mt-0.5">
+          {open ? "▲ Cerrar" : "▼ Configurar y generar"}
+        </p>
+      </button>
+
+      {open && (
+        <>
+          <div className="h-px bg-white/10" />
+          <form
+            onSubmit={handleSubmit}
+            className="bg-gray-900/85 backdrop-blur-xl border-x border-b border-white/10 rounded-b-2xl px-5 py-4 space-y-3 max-h-[70vh] overflow-y-auto"
+          >
+            {/* Selector de punto */}
+            <div>
+              <label className="text-gray-400 text-xs block mb-0.5">Punto</label>
+              <select
+                name="ubigeo"
+                value={form.ubigeo}
+                onChange={handleChange}
+                required
+                className="w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60"
+              >
+                <option value="" disabled>Seleccionar punto…</option>
+                {puntos.map((p) => (
+                  <option key={p.ubigeo} value={p.ubigeo}>
+                    [{p.ubigeo}] {p.nombre} ({p.tipo})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Parámetros de análisis */}
+            {paramFields.map(({ name, label }) => (
+              <div key={name}>
+                <label className="text-gray-400 text-xs block mb-0.5">{label}</label>
+                <input
+                  name={name}
+                  value={form[name]}
+                  onChange={handleChange}
+                  type="number"
+                  step="any"
+                  required
+                  className="w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60"
+                />
+              </div>
+            ))}
+
+            {error && (
+              <p className="text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !form.ubigeo}
+              className="w-full mt-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl py-2 transition-colors"
+            >
+              {loading ? "Calculando…" : "Generar cobertura"}
+            </button>
+          </form>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── 3D Map View ─────────────────────────────────────────────────────────────/* eslint-disable @typescript-eslint/no-explicit-any */
+
+function Map3DView({
+  puntos,
+  relaciones,
+  cobertura,
+}: {
+  puntos: PuntoData[];
+  relaciones: RelacionData[];
+  cobertura: CoberturaViewModel | null;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const map3dRef = useRef<any>(null);
+  const coberturaElemsRef = useRef<any[]>([]);
+  const apiLoaded = useApiIsLoaded();
+  const [mapReady, setMapReady] = useState(false);
+
+  // ── Efecto 1: construye mapa, marcadores y líneas (estable) ───────────────
+  useEffect(() => {
+    if (!apiLoaded || !containerRef.current) return;
     const container = containerRef.current;
-    let map3d: any;
     let cancelled = false;
 
     (async () => {
-      // Igual al tutorial oficial: importLibrary('maps3d') → new Map3DElement
       const { Map3DElement, Marker3DElement, Polyline3DElement, AltitudeMode } =
         await (google.maps as any).importLibrary("maps3d");
-
       if (cancelled) return;
 
-      // mode: 'HYBRID' activa los tiles fotorrealistas 3D con relieve real
-      map3d = new Map3DElement({
+      const map3d = new Map3DElement({
         center: { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng, altitude: 3500 },
         tilt: 67.5,
         range: 18000,
@@ -107,51 +336,97 @@ function Map3DView({ puntos, relaciones }: { puntos: PuntoData[]; relaciones: Re
       });
       map3d.style.cssText = "width:100%;height:100%;display:block;";
       container.appendChild(map3d);
+      map3dRef.current = map3d;
 
-      // Índice de puntos para polilíneas
       const idx: Record<string, PuntoData> = {};
       puntos.forEach((p) => { idx[p.nombre] = p; });
 
-      // Marcadores extruídos a la altitud real de cada antena
       puntos.forEach((p) => {
         const marker = new Marker3DElement({
-          position: {
-            lat: p.latitud,
-            lng: p.longitud,
-            altitude: p.metros_sobre_nivel_mar + p.altura_antena,
-          },
-          altitudeMode: AltitudeMode.ABSOLUTE,
+          position: { lat: p.latitud, lng: p.longitud, altitude: p.altura_antena },
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
           extruded: true,
           label: p.nombre,
         });
         map3d.appendChild(marker);
       });
 
-      // Polilíneas que unen antenas flotando a su altitud real
       relaciones.forEach((r) => {
         const ini = idx[r.punto_inicial];
         const fin = idx[r.punto_final];
         if (!ini || !fin) return;
         const line = new Polyline3DElement({
-          altitudeMode: AltitudeMode.ABSOLUTE,
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
           strokeColor: "#22D3EE",
           strokeWidth: 6,
           geodesic: true,
           drawsWhenOccluded: true,
         });
         line.coordinates = [
-          { lat: ini.latitud, lng: ini.longitud, altitude: ini.metros_sobre_nivel_mar + ini.altura_antena },
-          { lat: fin.latitud, lng: fin.longitud, altitude: fin.metros_sobre_nivel_mar + fin.altura_antena },
+          { lat: ini.latitud, lng: ini.longitud, altitude: ini.altura_antena },
+          { lat: fin.latitud, lng: fin.longitud, altitude: fin.altura_antena },
         ];
         map3d.appendChild(line);
       });
+
+      setMapReady(true);
     })().catch(console.error);
 
     return () => {
       cancelled = true;
-      if (map3d && container.contains(map3d)) container.removeChild(map3d);
+      if (map3dRef.current && container.contains(map3dRef.current)) {
+        container.removeChild(map3dRef.current);
+      }
+      map3dRef.current = null;
+      setMapReady(false);
     };
   }, [apiLoaded, puntos, relaciones]);
+
+  // ── Efecto 2: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
+  useEffect(() => {
+    coberturaElemsRef.current.forEach((el) => el.remove());
+    coberturaElemsRef.current = [];
+
+    if (!mapReady || !map3dRef.current || !cobertura) return;
+    const map3d = map3dRef.current;
+
+    (async () => {
+      const { Polygon3DElement, AltitudeMode } =
+        await (google.maps as any).importLibrary("maps3d");
+
+      cobertura.malla.forEach((celda) => {
+        const poly = new Polygon3DElement({
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          fillColor: "rgba(52,211,153,0.45)",
+          strokeColor: "#34D399",
+          strokeWidth: 2,
+          outerCoordinates: celda.coordenadas.map((c) => ({
+            lat: c.latitud,
+            lng: c.longitud,
+            altitude: 10,
+          })),
+        });
+        map3d.appendChild(poly);
+        coberturaElemsRef.current.push(poly);
+      });
+
+      cobertura.poligonos.forEach((poli) => {
+        const poly = new Polygon3DElement({
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          fillColor: "rgba(0,0,0,0)",
+          strokeColor: "#FBBF24",
+          strokeWidth: 4,
+          outerCoordinates: poli.coordenadas.map((c) => ({
+            lat: c.latitud,
+            lng: c.longitud,
+            altitude: 15,
+          })),
+        });
+        map3d.appendChild(poly);
+        coberturaElemsRef.current.push(poly);
+      });
+    })().catch(console.error);
+  }, [mapReady, cobertura]);
 
   return (
     <div className="relative w-full h-full bg-gray-950">
@@ -351,6 +626,7 @@ export default function MapView() {
   const [puntos, setPuntos] = useState<PuntoData[]>([]);
   const [relaciones, setRelaciones] = useState<RelacionData[]>([]);
   const [view3D, setView3D] = useState(false);
+  const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -368,7 +644,7 @@ export default function MapView() {
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
         {view3D ? (
-          <Map3DView puntos={puntos} relaciones={relaciones} />
+          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} />
         ) : (
           <Map
             mapId={MAP_ID}
@@ -386,6 +662,7 @@ export default function MapView() {
             style={{ width: "100%", height: "100%" }}
           >
             <MapOverlays puntos={puntos} relaciones={relaciones} />
+            <CoberturaOverlays data={cobertura} />
             {puntos.map((p) => (
               <AdvancedMarker
                 key={p.nombre}
@@ -406,6 +683,7 @@ export default function MapView() {
         view3D={view3D}
         onToggle3D={() => setView3D((v) => !v)}
       />
+      <CoberturaPanel puntos={puntos} onResult={setCobertura} />
     </div>
   );
 }

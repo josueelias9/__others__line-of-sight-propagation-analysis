@@ -8,12 +8,13 @@ from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
+from application.gateways.punto_gateway import PuntoGateway
 
 logger = logging.getLogger(__name__)
 
 @dataclass
 class GenerarPoligonoCoberturaRequest:
-    punto: Punto
+    ubigeo: int
 
 
 @dataclass
@@ -52,6 +53,7 @@ class GenerarPoligonoCoberturaUseCase:
     def __init__(
         self,
         elevation_repo: ElevationGateway,
+        punto_repo: PuntoGateway,
         output_boundary: CoberturaOutputBoundary,
         numero_de_ldv: int,
         muestras: int,
@@ -59,6 +61,7 @@ class GenerarPoligonoCoberturaUseCase:
         altura_torre_fantasma: float,
     ) -> None:
         self._elevation_repo = elevation_repo
+        self._punto_repo = punto_repo
         self._output_boundary = output_boundary
         self._numero_de_ldv = numero_de_ldv
         self._muestras = muestras
@@ -68,11 +71,16 @@ class GenerarPoligonoCoberturaUseCase:
     def ejecutar(self, request: GenerarPoligonoCoberturaRequest) -> Any:
         """Calcula el polígono de cobertura y delega la presentación al output boundary."""
         logger.info("🟢")
+        puntos = self._punto_repo.leer_puntos()
+        try:
+            punto = next(p for p in puntos if p.ubigeo == request.ubigeo)
+        except StopIteration:
+            raise ValueError(f"No se encontró un punto con ubigeo={request.ubigeo}")
         estructura = Estructura(
             n=self._numero_de_ldv,
             m=self._muestras,
             r=self._distancia_grados,
-            punto_cero=request.punto,
+            punto_cero=punto,
             altura_torre_fantasma=self._altura_torre_fantasma,
         )
 

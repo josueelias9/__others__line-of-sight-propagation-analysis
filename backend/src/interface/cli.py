@@ -89,6 +89,7 @@ cobertura_presenter = GenerarPoligonoCoberturaPresenter()
 # Instancia con el presenter real: devuelve CoberturaViewModel (CLI opción 3 / FastAPI)
 generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
     elevation_repo=elevation_repo,
+    punto_repo=punto_repo,
     output_boundary=cobertura_presenter,
     numero_de_ldv=config.NUMERO_DE_LDV,
     muestras=config.MUESTRAS,
@@ -99,6 +100,7 @@ generar_poligono_cobertura_uc = GenerarPoligonoCoberturaUseCase(
 # Instancia con passthrough: devuelve GenerarPoligonoCoberturaResponse (callers internos)
 _cobertura_uc_interno = GenerarPoligonoCoberturaUseCase(
     elevation_repo=elevation_repo,
+    punto_repo=punto_repo,
     output_boundary=_PassthroughCoberturaPresenter(),
     numero_de_ldv=config.NUMERO_DE_LDV,
     muestras=config.MUESTRAS,
@@ -159,17 +161,16 @@ def run() -> None:
 
         elif opcion == "3":
             puntos = punto_repo.leer_puntos()
-            ubigeo = int(input("Ubigeo del punto: ").strip())
-            try:
-                punto = next(p for p in puntos if p.ubigeo == ubigeo)
-            except StopIteration:
-                print(f"No se encontró un punto con ubigeo={ubigeo}.")
-                continue
+            print("\nPuntos disponibles:")
+            for p in puntos:
+                print(f"  [{p.ubigeo:>3}] {p.nombre} ({p.tipo})")
+            ubigeo = int(input("\nUbigeo del punto: ").strip())
             response = generar_poligono_cobertura_uc.ejecutar(
-                GenerarPoligonoCoberturaRequest(punto=punto)
+                GenerarPoligonoCoberturaRequest(ubigeo=ubigeo)
             )  # returns CoberturaViewModel via presenter
             kml_output.escribir_cobertura(response)
-            print(f"KML generado en {config.DIR_OUTPUT}{punto.nombre}.kml")
+            punto_nombre = next((p.nombre for p in puntos if p.ubigeo == ubigeo), str(ubigeo))
+            print(f"KML generado en {config.DIR_OUTPUT}{punto_nombre}.kml")
 
 
         # TODO queda pendiente ya que hay problemas (ver bug.log)

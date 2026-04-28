@@ -8,6 +8,7 @@ Shapely==2.1.2
 urllib3==1.26.8
 fastapi==0.115.12
 uvicorn[standard]==0.34.2
+srtm.py==0.3.7
 
 
 # sudo apt-get install -y libgeos-dev && pip install --force-reinstall shapely
