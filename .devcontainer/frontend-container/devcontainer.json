@@ -3,5 +3,12 @@
   "dockerComposeFile": ["../../docker-compose.yml","../../docker-compose.frontend.yml"],
   "service": "frontend",
   "shutdownAction": "none",
-  "workspaceFolder": "/workspace/frontend"
+  "workspaceFolder": "/workspace/frontend",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "workbench.colorTheme": "Monokai"
+      }
+    }
+  }
 }
