@@ -119,7 +119,7 @@ export function Map3DView({
       cobertura.poligonos.forEach((poli) => {
         const poly = new Polygon3DElement({
           altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
-          fillColor: "rgba(0,0,0,0)",
+          fillColor: "rgba(251,191,36,0.2)",
           strokeColor: "#FBBF24",
           strokeWidth: 4,
           outerCoordinates: poli.coordenadas.map((c) => ({

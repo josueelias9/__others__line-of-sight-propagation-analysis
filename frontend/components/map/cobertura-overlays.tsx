@@ -37,7 +37,8 @@ export function CoberturaOverlays({ data }: { data: CoberturaViewModel | null })
           strokeColor: "#FBBF24",
           strokeOpacity: 0.9,
           strokeWeight: 2,
-          fillOpacity: 0,
+          fillColor: "#FBBF24",
+          fillOpacity: 0.15,
           map,
         })
     );
