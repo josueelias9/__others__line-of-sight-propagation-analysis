@@ -20,6 +20,7 @@ export function Map3DView({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const map3dRef = useRef<any>(null);
+  const libRef = useRef<any>(null);
   const coberturaElemsRef = useRef<any[]>([]);
   const arbolLinesRef = useRef<any[]>([]);
   const apiLoaded = useApiIsLoaded();
@@ -32,9 +33,10 @@ export function Map3DView({
     let cancelled = false;
 
     (async () => {
-      const { Map3DElement, Marker3DElement, Polyline3DElement, AltitudeMode } =
-        await (google.maps as any).importLibrary("maps3d");
+      const lib = await (google.maps as any).importLibrary("maps3d");
       if (cancelled) return;
+      libRef.current = lib;
+      const { Map3DElement, Marker3DElement, Polyline3DElement, AltitudeMode } = lib;
 
       const map3d = new Map3DElement({
         center: { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng, altitude: 3500 },
@@ -74,17 +76,17 @@ export function Map3DView({
         const fin = idx[r.punto_final];
         if (!ini || !fin) return;
         const line = new Polyline3DElement({
-          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          altitudeMode: "ABSOLUTE",
           strokeColor: "#22D3EE",
           strokeWidth: 6,
           geodesic: true,
-          drawsWhenOccluded: true,
+          drawsOccludedSegments: true,
         });
         line.coordinates = [
-          { lat: ini.latitud, lng: ini.longitud, altitude: ini.altura_antena },
-          { lat: fin.latitud, lng: fin.longitud, altitude: fin.altura_antena },
+          { lat: ini.latitud, lng: ini.longitud, altitude: ini.metros_sobre_nivel_mar + ini.altura_antena },
+          { lat: fin.latitud, lng: fin.longitud, altitude: fin.metros_sobre_nivel_mar + fin.altura_antena },
         ];
-        map3d.appendChild(line);
+        map3d.append(line);
       });
 
       setMapReady(true);
@@ -96,6 +98,7 @@ export function Map3DView({
         container.removeChild(map3dRef.current);
       }
       map3dRef.current = null;
+      libRef.current = null;
       setMapReady(false);
     };
   }, [apiLoaded, puntos, relaciones]);
@@ -105,35 +108,31 @@ export function Map3DView({
     arbolLinesRef.current.forEach((el) => el.remove());
     arbolLinesRef.current = [];
 
-    if (!mapReady || !map3dRef.current || arbolRelaciones.length === 0) return;
+    if (!mapReady || !map3dRef.current || !libRef.current || arbolRelaciones.length === 0) return;
     const map3d = map3dRef.current;
+    const { Polyline3DElement } = libRef.current;
 
     const idx: Record<string, PuntoData> = {};
     puntos.forEach((p) => { idx[p.nombre] = p; });
 
-    (async () => {
-      const { Polyline3DElement, AltitudeMode } =
-        await (google.maps as any).importLibrary("maps3d");
-
-      arbolRelaciones.forEach((r) => {
-        const ini = idx[r.punto_inicial];
-        const fin = idx[r.punto_final];
-        if (!ini || !fin) return;
-        const line = new Polyline3DElement({
-          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
-          strokeColor: "#FACC15",
-          strokeWidth: 8,
-          geodesic: true,
-          drawsWhenOccluded: true,
-        });
-        line.coordinates = [
-          { lat: ini.latitud, lng: ini.longitud, altitude: ini.altura_antena },
-          { lat: fin.latitud, lng: fin.longitud, altitude: fin.altura_antena },
-        ];
-        map3d.appendChild(line);
-        arbolLinesRef.current.push(line);
+    arbolRelaciones.forEach((r) => {
+      const ini = idx[r.punto_inicial];
+      const fin = idx[r.punto_final];
+      if (!ini || !fin) return;
+      const line = new Polyline3DElement({
+        altitudeMode: "ABSOLUTE",
+        strokeColor: "#FACC15",
+        strokeWidth: 8,
+        geodesic: true,
+        drawsOccludedSegments: true,
       });
-    })().catch(console.error);
+      line.coordinates = [
+        { lat: ini.latitud, lng: ini.longitud, altitude: ini.metros_sobre_nivel_mar + ini.altura_antena },
+        { lat: fin.latitud, lng: fin.longitud, altitude: fin.metros_sobre_nivel_mar + fin.altura_antena },
+      ];
+      map3d.append(line);
+      arbolLinesRef.current.push(line);
+    });
   }, [mapReady, arbolRelaciones, puntos]);
 
   // ── Efecto 3: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
@@ -145,38 +144,36 @@ export function Map3DView({
     const map3d = map3dRef.current;
 
     (async () => {
-      const { Polygon3DElement, AltitudeMode } =
+      const { Polygon3DElement } =
         await (google.maps as any).importLibrary("maps3d");
 
       cobertura.malla.forEach((celda) => {
         const poly = new Polygon3DElement({
-          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          altitudeMode: "CLAMP_TO_GROUND",
           fillColor: "rgba(52,211,153,0.45)",
           strokeColor: "#34D399",
           strokeWidth: 2,
           outerCoordinates: celda.coordenadas.map((c) => ({
             lat: c.latitud,
             lng: c.longitud,
-            altitude: 10,
           })),
         });
-        map3d.appendChild(poly);
+        map3d.append(poly);
         coberturaElemsRef.current.push(poly);
       });
 
       cobertura.poligonos.forEach((poli) => {
         const poly = new Polygon3DElement({
-          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          altitudeMode: "CLAMP_TO_GROUND",
           fillColor: "rgba(251,191,36,0.2)",
           strokeColor: "#FBBF24",
           strokeWidth: 4,
           outerCoordinates: poli.coordenadas.map((c) => ({
             lat: c.latitud,
             lng: c.longitud,
-            altitude: 15,
           })),
         });
-        map3d.appendChild(poly);
+        map3d.append(poly);
         coberturaElemsRef.current.push(poly);
       });
     })().catch(console.error);
