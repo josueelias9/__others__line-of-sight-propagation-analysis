@@ -1,0 +1,33 @@
+# Copy this file to terraform.tfvars and fill in the values.
+# Never commit terraform.tfvars to version control.
+
+# ── General ───────────────────────────────────────────────────────────────────
+project  = "los"
+env      = "dev"
+location = "eastus"
+image_tag = "latest"
+
+# ── Database ──────────────────────────────────────────────────────────────────
+db_name     = "los_db"
+db_username = "losadmin"
+db_password = "CHANGE_ME_strong_password_1!"
+
+# ── pgAdmin ───────────────────────────────────────────────────────────────────
+pgadmin_email    = "admin@example.com"
+pgadmin_password = "CHANGE_ME_pgadmin_password"
+
+# ── Frontend / Google Maps ────────────────────────────────────────────────────
+next_public_google_maps_api_key = "YOUR_GOOGLE_MAPS_API_KEY"
+next_public_google_maps_map_id  = "YOUR_GOOGLE_MAPS_MAP_ID"
+
+# Obtain this from `./run.sh output -raw backend_url` after the first apply,
+# then re-apply so the frontend image can embed the correct URL.
+next_public_backend_url = ""
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+log_level = "INFO"
+
+# ── Tags ──────────────────────────────────────────────────────────────────────
+tags = {
+  owner = "your-team"
+}

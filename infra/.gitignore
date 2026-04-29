@@ -1,0 +1,12 @@
+# Terraform state and provider cache
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfstate.d/
+*.tfplan
+
+# Secrets — never commit these
+terraform.tfvars
+*.auto.tfvars
+.env
