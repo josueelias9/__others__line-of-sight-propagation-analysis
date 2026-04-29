@@ -20,7 +20,7 @@ for _p in (_ROOT, _SRC, _PROYECTO):
         sys.path.insert(0, _p)
 
 import config
-from interface.cli import run  # noqa: E402
+from cli.cli import run  # noqa: E402
 
 if __name__ == "__main__":
     config.setup_logging()

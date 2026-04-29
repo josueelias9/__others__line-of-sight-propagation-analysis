@@ -7,11 +7,12 @@ import {
   AdvancedMarker,
 } from "@vis.gl/react-google-maps";
 
-import type { PuntoData, RelacionData, CoberturaViewModel } from "./map/types";
+import type { PuntoData, RelacionData, CoberturaViewModel, ArbolResult } from "./map/types";
 import { BACKEND_URL, DEFAULT_CENTER } from "./map/config";
 import { MapOverlays } from "./map/map-overlays";
 import { CoberturaOverlays } from "./map/cobertura-overlays";
 import { CoberturaPanel } from "./map/cobertura-panel";
+import { ArbolPanel } from "./map/arbol-panel";
 import { Map3DView } from "./map/map-3d-view";
 import { Legend } from "./map/legend";
 import { MapControls } from "./map/map-controls";
@@ -28,6 +29,7 @@ export default function MapView() {
   const [relaciones, setRelaciones] = useState<RelacionData[]>([]);
   const [view3D, setView3D] = useState(false);
   const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null);
+  const [arbolResult, setArbolResult] = useState<ArbolResult | null>(null);
   const [pickingMode, setPickingMode] = useState(false);
   const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -47,7 +49,7 @@ export default function MapView() {
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
         {view3D ? (
-          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} />
+          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} />
         ) : (
           <Map
             mapId={MAP_ID}
@@ -70,7 +72,12 @@ export default function MapView() {
               }
             }}
           >
-            <MapOverlays puntos={puntos} relaciones={relaciones} />
+            <MapOverlays
+              puntos={puntos}
+              relaciones={relaciones}
+              arbolRelaciones={arbolResult?.relaciones_exitosas ?? []}
+            
+            />
             <CoberturaOverlays data={cobertura} />
             {puntos.map((p) => (
               <AdvancedMarker
@@ -100,7 +107,10 @@ export default function MapView() {
         view3D={view3D}
         onToggle3D={() => setView3D((v) => !v)}
       />
-      <CoberturaPanel puntos={puntos} onResult={setCobertura} />
+      <div className="absolute top-5 right-5 z-10 flex flex-col gap-2 w-72">
+        <CoberturaPanel puntos={puntos} onResult={setCobertura} />
+        <ArbolPanel puntos={puntos} onResult={setArbolResult} />
+      </div>
       <AddPuntoPanel
         onAdded={(nuevo) => setPuntos((prev) => [...prev, nuevo])}
         onRequestPick={() => setPickingMode(true)}

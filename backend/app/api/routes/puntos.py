@@ -4,7 +4,9 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from app.core import config
 from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
+from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from application.use_cases.agregar_punto import AgregarPuntoUseCase, AgregarPuntoRequest
+from application.use_cases.asignar_alturas import AsignarAlturasUseCase
 
 router = APIRouter()
 
@@ -75,3 +77,24 @@ def post_punto(body: PuntoIn):
         green_asociado=p.green_asociado,
         conectado=p.conectado,
     )
+
+
+@router.post("/alturas", response_model=List[PuntoOut])
+def post_alturas():
+    elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
+    use_case = AsignarAlturasUseCase(punto_repo=_repo, elevation_repo=elevation_repo)
+    response = use_case.ejecutar()
+    return [
+        PuntoOut(
+            ubigeo=p.ubigeo,
+            nombre=p.nombre,
+            longitud=p.longitud,
+            latitud=p.latitud,
+            altura_antena=p.altura_antena,
+            tipo=p.tipo,
+            metros_sobre_nivel_mar=p.metros_sobre_nivel_mar,
+            green_asociado=p.green_asociado,
+            conectado=p.conectado,
+        )
+        for p in response.puntos
+    ]

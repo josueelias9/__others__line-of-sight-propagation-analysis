@@ -69,7 +69,7 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
   ];
 
   return (
-    <div className="absolute top-5 right-5 z-10 w-72 rounded-2xl overflow-hidden shadow-2xl">
+    <div className="w-72 rounded-2xl overflow-hidden shadow-2xl">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full bg-gray-900/90 backdrop-blur-xl border border-white/10 px-5 py-4 text-left"

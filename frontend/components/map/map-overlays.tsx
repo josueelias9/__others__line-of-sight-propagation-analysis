@@ -2,14 +2,16 @@
 
 import { useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
-import type { PuntoData, RelacionData } from "./types";
+import type { PuntoData, RelacionData, RelacionArbolOut } from "./types";
 
 export function MapOverlays({
   puntos,
   relaciones,
+  arbolRelaciones = [],
 }: {
   puntos: PuntoData[];
   relaciones: RelacionData[];
+  arbolRelaciones?: RelacionArbolOut[];
 }) {
   const map = useMap();
   const linesRef = useRef<google.maps.Polyline[]>([]);
@@ -23,9 +25,14 @@ export function MapOverlays({
     const idx: Record<string, PuntoData> = {};
     puntos.forEach((p) => { idx[p.nombre] = p; });
 
-    relaciones.forEach((r) => {
-      const ini = idx[r.punto_inicial];
-      const fin = idx[r.punto_final];
+    const drawLine = (
+      puntoInicial: string,
+      puntoFinal: string,
+      color: string,
+      weight: number,
+    ) => {
+      const ini = idx[puntoInicial];
+      const fin = idx[puntoFinal];
       if (!ini || !fin) return;
       const line = new google.maps.Polyline({
         path: [
@@ -33,19 +40,22 @@ export function MapOverlays({
           { lat: fin.latitud, lng: fin.longitud },
         ],
         geodesic: true,
-        strokeColor: "#22D3EE",
+        strokeColor: color,
         strokeOpacity: 0.9,
-        strokeWeight: 3,
+        strokeWeight: weight,
         map,
       });
       linesRef.current.push(line);
-    });
+    };
+
+    relaciones.forEach((r) => drawLine(r.punto_inicial, r.punto_final, "#22D3EE", 3));
+    arbolRelaciones.forEach((r) => drawLine(r.punto_inicial, r.punto_final, "#FACC15", 5));
 
     return () => {
       linesRef.current.forEach((l) => l.setMap(null));
       linesRef.current = [];
     };
-  }, [map, puntos, relaciones]);
+  }, [map, puntos, relaciones, arbolRelaciones]);
 
   return null;
 }

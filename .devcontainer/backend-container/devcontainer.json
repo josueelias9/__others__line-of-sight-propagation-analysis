@@ -12,7 +12,8 @@
         "hediet.vscode-drawio",
         "ms-python.python",
         "RandomFractalsInc.geo-data-viewer",
-        "bierner.markdown-mermaid"
+        "bierner.markdown-mermaid",
+        "humao.rest-client"
       ],
       "settings": {
         "workbench.colorTheme": "Monokai"

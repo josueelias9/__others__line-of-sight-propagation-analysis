@@ -4,21 +4,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
-import type { PuntoData, RelacionData, CoberturaViewModel } from "./types";
+import type { PuntoData, RelacionData, CoberturaViewModel, RelacionArbolOut } from "./types";
 import { DEFAULT_CENTER } from "./config";
 
 export function Map3DView({
   puntos,
   relaciones,
   cobertura,
+  arbolRelaciones = [],
 }: {
   puntos: PuntoData[];
   relaciones: RelacionData[];
   cobertura: CoberturaViewModel | null;
+  arbolRelaciones?: RelacionArbolOut[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const map3dRef = useRef<any>(null);
   const coberturaElemsRef = useRef<any[]>([]);
+  const arbolLinesRef = useRef<any[]>([]);
   const apiLoaded = useApiIsLoaded();
   const [mapReady, setMapReady] = useState(false);
 
@@ -88,7 +91,43 @@ export function Map3DView({
     };
   }, [apiLoaded, puntos, relaciones]);
 
-  // ── Efecto 2: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
+  // ── Efecto 2: agrega/elimina líneas del árbol de conexión ──────────────────
+  useEffect(() => {
+    arbolLinesRef.current.forEach((el) => el.remove());
+    arbolLinesRef.current = [];
+
+    if (!mapReady || !map3dRef.current || arbolRelaciones.length === 0) return;
+    const map3d = map3dRef.current;
+
+    const idx: Record<string, PuntoData> = {};
+    puntos.forEach((p) => { idx[p.nombre] = p; });
+
+    (async () => {
+      const { Polyline3DElement, AltitudeMode } =
+        await (google.maps as any).importLibrary("maps3d");
+
+      arbolRelaciones.forEach((r) => {
+        const ini = idx[r.punto_inicial];
+        const fin = idx[r.punto_final];
+        if (!ini || !fin) return;
+        const line = new Polyline3DElement({
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          strokeColor: "#FACC15",
+          strokeWidth: 8,
+          geodesic: true,
+          drawsWhenOccluded: true,
+        });
+        line.coordinates = [
+          { lat: ini.latitud, lng: ini.longitud, altitude: ini.altura_antena },
+          { lat: fin.latitud, lng: fin.longitud, altitude: fin.altura_antena },
+        ];
+        map3d.appendChild(line);
+        arbolLinesRef.current.push(line);
+      });
+    })().catch(console.error);
+  }, [mapReady, arbolRelaciones, puntos]);
+
+  // ── Efecto 3: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
   useEffect(() => {
     coberturaElemsRef.current.forEach((el) => el.remove());
     coberturaElemsRef.current = [];
