@@ -72,3 +72,12 @@ export interface ArbolResult {
   relaciones_exitosas: RelacionArbolOut[];
   puntos_sin_conexion: PuntoSinConexionOut[];
 }
+
+// ─── Multipolígonos guardados ──────────────────────────────────────────────────
+
+export interface MultipoligonoData {
+  id: number;
+  punto_ubigeo: number;
+  punto_nombre: string;
+  geojson: GeoJsonFeature;
+}

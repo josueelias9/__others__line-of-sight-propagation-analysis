@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from domain.entities.estructura import Estructura
+from application.gateways.cobertura_guardada_gateway import CoberturaGuardadaGateway
 from application.gateways.elevation_gateway import ElevationGateway
 from application.gateways.geometry_gateway import GeometryGateway
 from application.gateways.punto_gateway import PuntoGateway
@@ -47,6 +48,7 @@ class GenerarPoligonoCoberturaUseCase:
         muestras: int,
         distancia_grados: float,
         altura_torre_fantasma: float,
+        cobertura_repo: Optional[CoberturaGuardadaGateway] = None,
     ) -> None:
         self._elevation_repo = elevation_repo
         self._punto_repo = punto_repo
@@ -56,6 +58,7 @@ class GenerarPoligonoCoberturaUseCase:
         self._muestras = muestras
         self._distancia_grados = distancia_grados
         self._altura_torre_fantasma = altura_torre_fantasma
+        self._cobertura_repo = cobertura_repo
 
     def ejecutar(self, request: GenerarPoligonoCoberturaRequest) -> Any:
         """Calcula el polígono de cobertura y delega la presentación al output boundary."""
@@ -73,6 +76,9 @@ class GenerarPoligonoCoberturaUseCase:
 
         geojson = self._geometry_gateway.estructura_a_geojson(estructura)
         malla_geojson = self._geometry_gateway.estructura_a_malla_geojson(estructura)
+
+        if self._cobertura_repo and geojson.get("geometry") is not None:
+            self._cobertura_repo.guardar(punto.ubigeo, geojson)
 
         response = GenerarPoligonoCoberturaResponse(
             nombre=punto.nombre,

@@ -7,7 +7,7 @@ import {
   AdvancedMarker,
 } from "@vis.gl/react-google-maps";
 
-import type { PuntoData, RelacionData, CoberturaViewModel, ArbolResult } from "./map/types";
+import type { PuntoData, RelacionData, CoberturaViewModel, ArbolResult, MultipoligonoData } from "./map/types";
 import { BACKEND_URL, DEFAULT_CENTER } from "./map/config";
 import { MapOverlays } from "./map/map-overlays";
 import { CoberturaOverlays } from "./map/cobertura-overlays";
@@ -18,6 +18,8 @@ import { Legend } from "./map/legend";
 import { MapControls } from "./map/map-controls";
 import { MarkerPin } from "./map/marker-pin";
 import { AddPuntoPanel } from "./map/add-punto-panel";
+import { MultipoligonoPanel } from "./map/multipoligono-panel";
+import { MultipoligonoOverlays } from "./map/multipoligono-overlays";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
@@ -31,6 +33,7 @@ export default function MapView() {
   const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null);
   const [showMalla, setShowMalla] = useState(false);
   const [arbolResult, setArbolResult] = useState<ArbolResult | null>(null);
+  const [multipoligonos, setMultipoligonos] = useState<MultipoligonoData[]>([]);
   const [pickingMode, setPickingMode] = useState(false);
   const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [tipoFiltro, setTipoFiltro] = useState("");
@@ -54,7 +57,7 @@ export default function MapView() {
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
         {view3D ? (
-          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} showMalla={showMalla} />
+          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} showMalla={showMalla} multipoligonos={multipoligonos} />
         ) : (
           <Map
             mapId={MAP_ID}
@@ -84,6 +87,7 @@ export default function MapView() {
             
             />
             <CoberturaOverlays data={cobertura} showMalla={showMalla} />
+            <MultipoligonoOverlays items={multipoligonos} />
             {puntos.map((p) => (
               <AdvancedMarker
                 key={p.nombre}
@@ -129,6 +133,9 @@ export default function MapView() {
           </button>
         )}
         <ArbolPanel puntos={puntos} onResult={setArbolResult} />
+        <MultipoligonoPanel
+          onVisibleItemsChange={setMultipoligonos}
+        />
       </div>
       <AddPuntoPanel
         onAdded={(nuevo) => setPuntos((prev) => [...prev, nuevo])}

@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
-import type { PuntoData, RelacionData, CoberturaViewModel, RelacionArbolOut } from "./types";
+import type { PuntoData, RelacionData, CoberturaViewModel, RelacionArbolOut, MultipoligonoData } from "./types";
 import { DEFAULT_CENTER } from "./config";
 
 export function Map3DView({
@@ -13,18 +13,21 @@ export function Map3DView({
   cobertura,
   arbolRelaciones = [],
   showMalla = false,
+  multipoligonos = [],
 }: {
   puntos: PuntoData[];
   relaciones: RelacionData[];
   cobertura: CoberturaViewModel | null;
   arbolRelaciones?: RelacionArbolOut[];
   showMalla?: boolean;
+  multipoligonos?: MultipoligonoData[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const map3dRef = useRef<any>(null);
   const libRef = useRef<any>(null);
   const coberturaElemsRef = useRef<any[]>([]);
   const arbolLinesRef = useRef<any[]>([]);
+  const multipoligonosElemsRef = useRef<any[]>([]);
   const apiLoaded = useApiIsLoaded();
   const [mapReady, setMapReady] = useState(false);
 
@@ -190,6 +193,53 @@ export function Map3DView({
       }
     })().catch(console.error);
   }, [mapReady, cobertura, showMalla]);
+
+  // ── Efecto 4: polígonos guardados de la DB ─────────────────────────────────
+  const SAVED_COLORS = [
+    "#60A5FA", "#F472B6", "#A78BFA", "#FB923C",
+    "#34D399", "#FACC15", "#F87171", "#2DD4BF",
+  ];
+
+  useEffect(() => {
+    multipoligonosElemsRef.current.forEach((el) => el.remove());
+    multipoligonosElemsRef.current = [];
+
+    if (!mapReady || !map3dRef.current || multipoligonos.length === 0) return;
+    const map3d = map3dRef.current;
+
+    (async () => {
+      const { Polygon3DElement } =
+        await (google.maps as any).importLibrary("maps3d");
+
+      multipoligonos.forEach((item) => {
+        const hex = SAVED_COLORS[item.id % SAVED_COLORS.length];
+        const { geometry } = item.geojson;
+        if (!geometry) return;
+
+        const polygons: [number, number][][][] =
+          geometry.type === "Polygon"
+            ? [geometry.coordinates]
+            : geometry.coordinates;
+
+        polygons.forEach(([outerRing, ...innerRings]) => {
+          const poly = new Polygon3DElement({
+            altitudeMode: "CLAMP_TO_GROUND",
+            fillColor: hex + "30",
+            strokeColor: hex,
+            strokeWidth: 3,
+          });
+          poly.outerCoordinates = outerRing.map(([lng, lat]: [number, number]) => ({ lat, lng }));
+          if (innerRings.length > 0) {
+            poly.innerCoordinates = innerRings.map((ring: [number, number][]) =>
+              ring.map(([lng, lat]) => ({ lat, lng }))
+            );
+          }
+          map3d.append(poly);
+          multipoligonosElemsRef.current.push(poly);
+        });
+      });
+    })().catch(console.error);
+  }, [mapReady, multipoligonos]);
 
   return (
     <div className="relative w-full h-full bg-gray-950">

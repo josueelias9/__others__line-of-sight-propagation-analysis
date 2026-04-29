@@ -25,3 +25,9 @@ CREATE TABLE IF NOT EXISTS relacion (
     punto_final_id    INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
     distancia         DOUBLE PRECISION NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS multipoligono (
+    id           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    punto_ubigeo INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
+    geojson      JSONB NOT NULL
+);
