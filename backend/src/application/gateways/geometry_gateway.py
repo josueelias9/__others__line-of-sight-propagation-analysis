@@ -41,6 +41,10 @@ class GeometryGateway(ABC):
         """Une las celdas con LOS=1 y devuelve un Feature GeoJSON (EPSG:4326)."""
 
     @abstractmethod
+    def estructura_a_malla_geojson(self, estructura: Estructura) -> dict:
+        """Devuelve un FeatureCollection GeoJSON con cada celda visible (LOS=1) como Feature."""
+
+    @abstractmethod
     def intersectar(
         self,
         a1: AreaGeometrica,

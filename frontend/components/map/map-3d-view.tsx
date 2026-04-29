@@ -147,20 +147,20 @@ export function Map3DView({
       const { Polygon3DElement } =
         await (google.maps as any).importLibrary("maps3d");
 
-      cobertura.malla.forEach((celda) => {
-        const poly = new Polygon3DElement({
-          altitudeMode: "CLAMP_TO_GROUND",
-          fillColor: "rgba(52,211,153,0.45)",
-          strokeColor: "#34D399",
-          strokeWidth: 2,
-          outerCoordinates: celda.coordenadas.map((c) => ({
-            lat: c.latitud,
-            lng: c.longitud,
-          })),
+      const mallaGeom = cobertura.malla_geojson.geometry;
+      if (mallaGeom && mallaGeom.type === "MultiPolygon") {
+        mallaGeom.coordinates.forEach(([outerRing]) => {
+          const poly = new Polygon3DElement({
+            altitudeMode: "CLAMP_TO_GROUND",
+            fillColor: "rgba(52,211,153,0.45)",
+            strokeColor: "#34D399",
+            strokeWidth: 2,
+          });
+          poly.outerCoordinates = outerRing.map(([lng, lat]) => ({ lat, lng }));
+          map3d.append(poly);
+          coberturaElemsRef.current.push(poly);
         });
-        map3d.append(poly);
-        coberturaElemsRef.current.push(poly);
-      });
+      }
 
       const { geometry } = cobertura.geojson;
       if (geometry) {

@@ -1,5 +1,6 @@
 from shapely.geometry import mapping
 from shapely.geometry.polygon import Polygon
+from shapely.geometry import MultiPolygon
 from shapely.ops import unary_union
 
 from application.gateways.geometry_gateway import AreaGeometrica, GeometryGateway
@@ -23,6 +24,28 @@ class ShapelyGeometryRepository(GeometryGateway):
         if geom.is_empty:
             return {"type": "Feature", "geometry": None, "properties": {}}
         return {"type": "Feature", "geometry": mapping(geom), "properties": {}}
+
+    def estructura_a_malla_geojson(self, estructura: Estructura) -> dict:
+        fg = estructura.estructura_figuras_geome
+        ultimo_i = len(fg) - 1
+        polygons = []
+        for i in range(estructura.n):
+            for j in range(1, estructura.m):
+                if estructura.estructura_matricial[i][j] != 1:
+                    continue
+                next_i = 0 if i == ultimo_i else i + 1
+                p00, p0m = fg[i][j], fg[i][j - 1]
+                ppm, pp0 = fg[next_i][j - 1], fg[next_i][j]
+                polygons.append(Polygon([
+                    (p00.longitud, p00.latitud),
+                    (p0m.longitud, p0m.latitud),
+                    (ppm.longitud, ppm.latitud),
+                    (pp0.longitud, pp0.latitud),
+                ]))
+        if not polygons:
+            return {"type": "Feature", "geometry": None, "properties": {}}
+        multipoly = MultiPolygon(polygons)
+        return {"type": "Feature", "geometry": mapping(multipoly), "properties": {}}
 
     def intersectar(
         self,

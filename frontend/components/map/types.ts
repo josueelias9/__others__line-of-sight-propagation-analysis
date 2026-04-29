@@ -20,16 +20,6 @@ export interface RelacionData {
 
 // ─── Cobertura types ───────────────────────────────────────────────────────────
 
-export interface CoordGeo {
-  longitud: number;
-  latitud: number;
-}
-
-export interface CeldaMallaViewModel {
-  nombre: string;
-  coordenadas: CoordGeo[];
-}
-
 export interface GeoJsonGeometryPolygon {
   type: "Polygon";
   coordinates: [number, number][][];
@@ -51,7 +41,7 @@ export interface GeoJsonFeature {
 export interface CoberturaViewModel {
   nombre: string;
   geojson: GeoJsonFeature;
-  malla: CeldaMallaViewModel[];
+  malla_geojson: GeoJsonFeature;
 }
 
 export interface CoberturaForm {

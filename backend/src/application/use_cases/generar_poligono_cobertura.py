@@ -19,8 +19,9 @@ class GenerarPoligonoCoberturaRequest:
 
 @dataclass
 class GenerarPoligonoCoberturaResponse:
+    nombre: str
     geojson: dict
-    estructura: Estructura
+    malla_geojson: dict
 
 
 class GenerarPoligonoCoberturaUseCase:
@@ -71,8 +72,13 @@ class GenerarPoligonoCoberturaUseCase:
         self._llenar_matriz_los(estructura)
 
         geojson = self._geometry_gateway.estructura_a_geojson(estructura)
+        malla_geojson = self._geometry_gateway.estructura_a_malla_geojson(estructura)
 
-        response = GenerarPoligonoCoberturaResponse(geojson=geojson, estructura=estructura)
+        response = GenerarPoligonoCoberturaResponse(
+            nombre=punto.nombre,
+            geojson=geojson,
+            malla_geojson=malla_geojson,
+        )
         logger.info("🔴")
         return self._output_boundary.presentar(response)
 

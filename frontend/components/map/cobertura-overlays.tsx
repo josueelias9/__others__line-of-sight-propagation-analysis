@@ -43,18 +43,13 @@ export function CoberturaOverlays({ data }: { data: CoberturaViewModel | null })
 
     if (!map || !data) return;
 
-    mallaCellsRef.current = data.malla.map(
-      (celda) =>
-        new google.maps.Polygon({
-          paths: celda.coordenadas.map((c) => ({ lat: c.latitud, lng: c.longitud })),
-          strokeColor: "#34D399",
-          strokeOpacity: 0.4,
-          strokeWeight: 1,
-          fillColor: "#34D399",
-          fillOpacity: 0.25,
-          map,
-        })
-    );
+    mallaCellsRef.current = geojsonToGooglePolygons(data.malla_geojson, map, {
+      strokeColor: "#34D399",
+      strokeOpacity: 0.4,
+      strokeWeight: 1,
+      fillColor: "#34D399",
+      fillOpacity: 0.25,
+    });
 
     geojsonPolysRef.current = geojsonToGooglePolygons(data.geojson, map, {
       strokeColor: "#FBBF24",
