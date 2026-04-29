@@ -23,6 +23,10 @@ class ShapelyGeometryRepository(GeometryGateway):
         geom = self._estructura_a_shapely(estructura)
         if geom.is_empty:
             return {"type": "Feature", "geometry": None, "properties": {}}
+        # TODO it is all good, but it can be improved ===>
+        epsilon = estructura.r / estructura.m
+        geom = geom.buffer(epsilon, resolution=16).buffer(-epsilon, resolution=16)
+        # <===
         return {"type": "Feature", "geometry": mapping(geom), "properties": {}}
 
     def estructura_a_malla_geojson(self, estructura: Estructura) -> dict:
