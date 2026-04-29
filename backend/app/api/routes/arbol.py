@@ -4,7 +4,8 @@ from typing import List
 from fastapi import APIRouter
 
 from app.core import config
-from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
+from infrastructure.persistence.database import SessionDep
+from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from infrastructure.output.kml_writer import KmlWriter
 from application.use_cases.encontrar_relaciones import (
@@ -13,8 +14,6 @@ from application.use_cases.encontrar_relaciones import (
 )
 
 router = APIRouter()
-
-_repo = CsvPuntoRepository(config.DIR_INPUT)
 
 
 class ArbolRequest(BaseModel):
@@ -44,15 +43,16 @@ class ArbolResponse(BaseModel):
 
 
 @router.post("", response_model=ArbolResponse)
-def post_arbol(body: ArbolRequest):
+def post_arbol(body: ArbolRequest, session: SessionDep):
     import os
     os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
+    repo = PgPuntoRepository(session)
     elevation_repo = SrtmElevationRepository(body.muestras)
     kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
 
     use_case = EncontrarRelacionesUseCase(
-        punto_repo=_repo,
+        punto_repo=repo,
         elevation_repo=elevation_repo,
         kml_output=kml_output,
         muestras=body.muestras,

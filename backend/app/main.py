@@ -1,5 +1,6 @@
 import os
 import sys
+from contextlib import asynccontextmanager
 
 # Añade src/ y la raíz al path para importaciones de dominio e infraestructura
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,7 +17,13 @@ from app.core.config import setup_logging
 
 setup_logging()
 
-app = FastAPI(title="Line of Sight API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+
+
+app = FastAPI(title="Line of Sight API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

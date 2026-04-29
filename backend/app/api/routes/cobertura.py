@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
 from app.core import config
-from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
+from infrastructure.persistence.database import SessionDep
+from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
 from application.use_cases.generar_poligono_cobertura import (
@@ -13,8 +14,6 @@ from application.use_cases.generar_poligono_cobertura import (
 )
 
 router = APIRouter()
-
-_repo = CsvPuntoRepository(config.DIR_INPUT)
 
 
 class CoberturaRequest(BaseModel):
@@ -26,14 +25,15 @@ class CoberturaRequest(BaseModel):
 
 
 @router.post("")
-def post_cobertura(body: CoberturaRequest):
+def post_cobertura(body: CoberturaRequest, session: SessionDep):
     distancia_grados = config.de_km_a_grados(body.distancia_km)
+    repo = PgPuntoRepository(session)
     elevation_repo = SrtmElevationRepository(body.muestras)
     presenter = GenerarPoligonoCoberturaPresenter()
 
     use_case = GenerarPoligonoCoberturaUseCase(
         elevation_repo=elevation_repo,
-        punto_repo=_repo,
+        punto_repo=repo,
         output_boundary=presenter,
         numero_de_ldv=body.numero_de_ldv,
         muestras=body.muestras,

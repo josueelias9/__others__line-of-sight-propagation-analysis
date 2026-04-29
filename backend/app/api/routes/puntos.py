@@ -3,14 +3,13 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
 from app.core import config
-from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
+from infrastructure.persistence.database import SessionDep
+from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from application.use_cases.agregar_punto import AgregarPuntoUseCase, AgregarPuntoRequest
 from application.use_cases.asignar_alturas import AsignarAlturasUseCase
 
 router = APIRouter()
-
-_repo = CsvPuntoRepository(config.DIR_INPUT)
 
 
 class PuntoOut(BaseModel):
@@ -35,7 +34,8 @@ class PuntoIn(BaseModel):
 
 
 @router.get("", response_model=List[PuntoOut])
-def get_puntos():
+def get_puntos(session: SessionDep):
+    repo = PgPuntoRepository(session)
     return [
         PuntoOut(
             ubigeo=p.ubigeo,
@@ -48,13 +48,14 @@ def get_puntos():
             green_asociado=p.green_asociado,
             conectado=p.conectado,
         )
-        for p in _repo.leer_puntos()
+        for p in repo.leer_puntos()
     ]
 
 
 @router.post("", response_model=PuntoOut, status_code=201)
-def post_punto(body: PuntoIn):
-    use_case = AgregarPuntoUseCase(punto_repo=_repo)
+def post_punto(body: PuntoIn, session: SessionDep):
+    repo = PgPuntoRepository(session)
+    use_case = AgregarPuntoUseCase(punto_repo=repo)
     response = use_case.ejecutar(
         AgregarPuntoRequest(
             nombre=body.nombre,
