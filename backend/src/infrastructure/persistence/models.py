@@ -3,6 +3,13 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
+class PuntoTypeTable(SQLModel, table=True):
+    __tablename__ = "punto_type"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(unique=True)
+
+
 class PuntoTable(SQLModel, table=True):
     __tablename__ = "punto"
 
@@ -11,7 +18,7 @@ class PuntoTable(SQLModel, table=True):
     longitud: float
     latitud: float
     altura_antena: float
-    tipo: str
+    punto_type_id: int = Field(foreign_key="punto_type.id")
     metros_sobre_nivel_mar: float
     green_asociado: str = Field(default="")
     conectado: bool = Field(default=False)

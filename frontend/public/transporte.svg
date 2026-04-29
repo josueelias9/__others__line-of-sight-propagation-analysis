@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <!-- Blue circular badge -->
+  <rect width="56" height="56" rx="28" fill="#1565C0"/>
+
+  <!-- Tower left leg -->
+  <line x1="17" y1="47" x2="28" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <!-- Tower right leg -->
+  <line x1="39" y1="47" x2="28" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Horizontal cross members -->
+  <line x1="19" y1="40" x2="37" y2="40" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="21" y1="33" x2="35" y2="33" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="23" y1="26" x2="33" y2="26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="25" y1="19" x2="31" y2="19" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Diagonal X bracing between levels -->
+  <line x1="19" y1="40" x2="23" y2="33" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="37" y1="40" x2="33" y2="33" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="21" y1="33" x2="25" y2="26" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="35" y1="33" x2="31" y2="26" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="23" y1="40" x2="19" y2="33" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="33" y1="40" x2="37" y2="33" stroke="white" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Top mast extension -->
+  <line x1="28" y1="10" x2="28" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Parabolic dish (arc + support lines) -->
+  <path d="M23 8 Q28 4 33 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <line x1="28" y1="6" x2="23" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="28" y1="6" x2="33" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Base platform -->
+  <line x1="13" y1="47" x2="43" y2="47" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

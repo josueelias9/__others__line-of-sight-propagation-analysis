@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from app.core import config
 from infrastructure.persistence.database import SessionDep
 from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
@@ -34,8 +34,9 @@ class PuntoIn(BaseModel):
 
 
 @router.get("", response_model=List[PuntoOut])
-def get_puntos(session: SessionDep):
+def get_puntos(session: SessionDep, tipo: Optional[str] = Query(None)):
     repo = PgPuntoRepository(session)
+    puntos = repo.leer_puntos_por_tipo(tipo) if tipo else repo.leer_puntos()
     return [
         PuntoOut(
             ubigeo=p.ubigeo,
@@ -48,7 +49,7 @@ def get_puntos(session: SessionDep):
             green_asociado=p.green_asociado,
             conectado=p.conectado,
         )
-        for p in repo.leer_puntos()
+        for p in puntos
     ]
 
 

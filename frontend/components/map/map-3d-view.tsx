@@ -57,6 +57,15 @@ export function Map3DView({
           extruded: true,
           label: p.nombre,
         });
+
+        const svgImg = document.createElement("img");
+        svgImg.src = p.tipo === "transporte" ? "/transporte.svg" : "/acceso.svg";
+        svgImg.width = 32;
+        svgImg.height = 32;
+        const tmpl = document.createElement("template");
+        tmpl.content.append(svgImg);
+        marker.append(tmpl);
+
         map3d.appendChild(marker);
       });
 

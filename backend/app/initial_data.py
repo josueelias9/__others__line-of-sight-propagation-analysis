@@ -6,40 +6,68 @@ import sys
 from sqlmodel import Session, select, SQLModel
 
 from src.infrastructure.persistence.database import engine
-from src.infrastructure.persistence.models import PuntoTable
+from src.infrastructure.persistence.models import PuntoTable, PuntoTypeTable
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-PUNTOS_INICIALES = [
-    PuntoTable(ubigeo=11, nombre="transporte1", longitud=-78.426652, latitud=-6.884226, altura_antena=15.0, tipo="transporte", metros_sobre_nivel_mar=3733.0, green_asociado="",           conectado=True),
-    PuntoTable(ubigeo=12, nombre="transporte2", longitud=-78.438926, latitud=-6.900705, altura_antena=15.0, tipo="transporte", metros_sobre_nivel_mar=3984.0, green_asociado="",           conectado=True),
-    PuntoTable(ubigeo=13, nombre="transporte3", longitud=-78.454004, latitud=-6.937299, altura_antena=15.0, tipo="transporte", metros_sobre_nivel_mar=4103.0, green_asociado="",           conectado=True),
-    PuntoTable(ubigeo=1,  nombre="acceso1",     longitud=-78.397267, latitud=-6.898882, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3825.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=2,  nombre="acceso2",     longitud=-78.424352, latitud=-6.893104, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3848.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=3,  nombre="acceso3",     longitud=-78.420674, latitud=-6.922061, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3853.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=4,  nombre="acceso4",     longitud=-78.447779, latitud=-6.890579, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3737.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=5,  nombre="acceso5",     longitud=-78.461209, latitud=-6.886364, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3673.0, green_asociado="transporte", conectado=False),
-    PuntoTable(ubigeo=6,  nombre="acceso6",     longitud=-78.455400, latitud=-6.918098, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3934.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=7,  nombre="acceso7",     longitud=-78.477435, latitud=-6.914850, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=4024.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=8,  nombre="acceso8",     longitud=-78.504492, latitud=-6.901809, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3752.0, green_asociado="",           conectado=False),
-    PuntoTable(ubigeo=9,  nombre="acceso9",     longitud=-78.431883, latitud=-6.915703, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=4076.0, green_asociado="transporte", conectado=False),
-    PuntoTable(ubigeo=10, nombre="acceso10",    longitud=-78.436611, latitud=-6.895702, altura_antena=15.0, tipo="acceso",     metros_sobre_nivel_mar=3870.0, green_asociado="",           conectado=False),
+TIPOS_INICIALES = [
+    PuntoTypeTable(name="acceso"),
+    PuntoTypeTable(name="transporte"),
+]
+
+# (ubigeo, nombre, longitud, latitud, altura_antena, tipo_name, msnm, green_asociado, conectado)
+_PUNTOS_DATA = [
+    (11, "transporte1", -78.426652, -6.884226, 15.0, "transporte", 3733.0, "",           True),
+    (12, "transporte2", -78.438926, -6.900705, 15.0, "transporte", 3984.0, "",           True),
+    (13, "transporte3", -78.454004, -6.937299, 15.0, "transporte", 4103.0, "",           True),
+    (1,  "acceso1",     -78.397267, -6.898882, 15.0, "acceso",     3825.0, "",           False),
+    (2,  "acceso2",     -78.424352, -6.893104, 15.0, "acceso",     3848.0, "",           False),
+    (3,  "acceso3",     -78.420674, -6.922061, 15.0, "acceso",     3853.0, "",           False),
+    (4,  "acceso4",     -78.447779, -6.890579, 15.0, "acceso",     3737.0, "",           False),
+    (5,  "acceso5",     -78.461209, -6.886364, 15.0, "acceso",     3673.0, "transporte", False),
+    (6,  "acceso6",     -78.455400, -6.918098, 15.0, "acceso",     3934.0, "",           False),
+    (7,  "acceso7",     -78.477435, -6.914850, 15.0, "acceso",     4024.0, "",           False),
+    (8,  "acceso8",     -78.504492, -6.901809, 15.0, "acceso",     3752.0, "",           False),
+    (9,  "acceso9",     -78.431883, -6.915703, 15.0, "acceso",     4076.0, "transporte", False),
+    (10, "acceso10",    -78.436611, -6.895702, 15.0, "acceso",     3870.0, "",           False),
 ]
 
 
 def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
 
+    # Seed punto_type if empty
+    existing_tipos = session.exec(select(PuntoTypeTable)).all()
+    if not existing_tipos:
+        for tipo in TIPOS_INICIALES:
+            session.add(tipo)
+        session.commit()
+        logger.info("Seeded %d punto_type rows.", len(TIPOS_INICIALES))
+
+    # Build id lookup map
+    tipo_map = {t.name: t.id for t in session.exec(select(PuntoTypeTable)).all()}
+
+    # Seed puntos if empty
     existing = session.exec(select(PuntoTable)).first()
     if existing:
         logger.info("Initial data already present, skipping seed.")
         return
 
-    for punto in PUNTOS_INICIALES:
-        session.add(punto)
+    for ubigeo, nombre, longitud, latitud, altura_antena, tipo_name, msnm, green, conectado in _PUNTOS_DATA:
+        session.add(PuntoTable(
+            ubigeo=ubigeo,
+            nombre=nombre,
+            longitud=longitud,
+            latitud=latitud,
+            altura_antena=altura_antena,
+            punto_type_id=tipo_map[tipo_name],
+            metros_sobre_nivel_mar=msnm,
+            green_asociado=green,
+            conectado=conectado,
+        ))
     session.commit()
-    logger.info("Seeded %d puntos.", len(PUNTOS_INICIALES))
+    logger.info("Seeded %d puntos.", len(_PUNTOS_DATA))
 
 
 def init() -> None:

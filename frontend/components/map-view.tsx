@@ -32,18 +32,22 @@ export default function MapView() {
   const [arbolResult, setArbolResult] = useState<ArbolResult | null>(null);
   const [pickingMode, setPickingMode] = useState(false);
   const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [tipoFiltro, setTipoFiltro] = useState("");
 
   useEffect(() => {
     const load = async () => {
+      const pUrl = tipoFiltro
+        ? `${BACKEND_URL}/api/puntos?tipo=${encodeURIComponent(tipoFiltro)}`
+        : `${BACKEND_URL}/api/puntos`;
       const [pRes, rRes] = await Promise.all([
-        fetch(`${BACKEND_URL}/api/puntos`),
+        fetch(pUrl),
         fetch(`${BACKEND_URL}/api/relaciones`),
       ]);
       if (pRes.ok) setPuntos(await pRes.json());
       if (rRes.ok) setRelaciones(await rRes.json());
     };
     load().catch(console.error);
-  }, []);
+  }, [tipoFiltro]);
 
   return (
     <div className="relative w-full h-full bg-gray-950">
@@ -106,6 +110,8 @@ export default function MapView() {
         relaciones={relaciones}
         view3D={view3D}
         onToggle3D={() => setView3D((v) => !v)}
+        tipoFiltro={tipoFiltro}
+        onFiltroChange={setTipoFiltro}
       />
       <div className="absolute top-5 right-5 z-10 flex flex-col gap-2 w-72">
         <CoberturaPanel puntos={puntos} onResult={setCobertura} />

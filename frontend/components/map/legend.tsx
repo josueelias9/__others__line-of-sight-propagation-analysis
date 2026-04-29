@@ -7,11 +7,15 @@ export function Legend({
   relaciones,
   view3D,
   onToggle3D,
+  tipoFiltro,
+  onFiltroChange,
 }: {
   puntos: PuntoData[];
   relaciones: RelacionData[];
   view3D: boolean;
   onToggle3D: () => void;
+  tipoFiltro: string;
+  onFiltroChange: (tipo: string) => void;
 }) {
   const transportes = puntos.filter((p) => p.tipo === "transporte").length;
   const accesos = puntos.filter((p) => p.tipo === "acceso").length;
@@ -26,6 +30,27 @@ export function Legend({
       <div className="h-px bg-white/10" />
 
       <div className="bg-gray-900/85 backdrop-blur-xl border-x border-b border-white/10 rounded-b-2xl px-5 py-4 space-y-3">
+        {/* Filtro de tipo */}
+        <div className="flex gap-1.5">
+          {(["" , "transporte", "acceso"] as const).map((t) => (
+            <button
+              key={t || "todos"}
+              onClick={() => onFiltroChange(t)}
+              className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all ${
+                tipoFiltro === t
+                  ? t === "transporte"
+                    ? "bg-amber-400 text-gray-950"
+                    : t === "acceso"
+                    ? "bg-cyan-400 text-gray-950"
+                    : "bg-white text-gray-950"
+                  : "bg-white/10 text-gray-300 hover:bg-white/20"
+              }`}
+            >
+              {t === "" ? "Todos" : t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </div>
+
         {/* Transporte */}
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 rounded-full bg-amber-400 shadow-lg shadow-amber-400/60 ring-2 ring-amber-300/40 flex-shrink-0" />

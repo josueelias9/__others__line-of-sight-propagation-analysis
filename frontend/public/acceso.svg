@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <!-- Orange circular badge -->
+  <rect width="56" height="56" rx="28" fill="#E65100"/>
+
+  <!-- Center mast -->
+  <line x1="28" y1="47" x2="28" y2="9" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Upper cross arm -->
+  <line x1="18" y1="20" x2="38" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <!-- Upper panel antennas (angled outward-down) -->
+  <line x1="18" y1="20" x2="13" y2="27" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="38" y1="20" x2="43" y2="27" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Lower cross arm -->
+  <line x1="20" y1="31" x2="36" y2="31" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <!-- Lower panel antennas (angled outward-down) -->
+  <line x1="20" y1="31" x2="15" y2="38" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="36" y1="31" x2="41" y2="38" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Top omni-antenna dot -->
+  <circle cx="28" cy="8" r="2.5" fill="white"/>
+
+  <!-- Base foot plates -->
+  <line x1="22" y1="47" x2="34" y2="47" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
