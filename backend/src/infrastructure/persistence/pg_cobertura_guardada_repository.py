@@ -28,6 +28,23 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
         distancia_km: float,
         altura_torre_fantasma: float,
     ) -> int:
+        existing = self._session.exec(
+            select(MultipoligonoTable).where(
+                MultipoligonoTable.punto_ubigeo == punto_ubigeo
+            )
+        ).first()
+
+        if existing:
+            existing.geojson = geojson
+            existing.numero_de_ldv = numero_de_ldv
+            existing.muestras = muestras
+            existing.distancia_km = distancia_km
+            existing.altura_torre_fantasma = altura_torre_fantasma
+            self._session.add(existing)
+            self._session.commit()
+            self._session.refresh(existing)
+            return existing.id
+
         row = MultipoligonoTable(
             punto_ubigeo=punto_ubigeo,
             geojson=geojson,
