@@ -82,9 +82,10 @@ def post_punto(body: PuntoIn, session: SessionDep):
 
 
 @router.post("/alturas", response_model=List[PuntoOut])
-def post_alturas():
+def post_alturas(session: SessionDep):
+    repo = PgPuntoRepository(session)
     elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
-    use_case = AsignarAlturasUseCase(punto_repo=_repo, elevation_repo=elevation_repo)
+    use_case = AsignarAlturasUseCase(punto_repo=repo, elevation_repo=elevation_repo)
     response = use_case.ejecutar()
     return [
         PuntoOut(
