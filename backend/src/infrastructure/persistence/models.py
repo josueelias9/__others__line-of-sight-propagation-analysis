@@ -41,3 +41,7 @@ class MultipoligonoTable(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     punto_ubigeo: int = Field(foreign_key="punto.ubigeo")
     geojson: dict = Field(default_factory=dict, sa_column=Column(JSONB, nullable=False))
+    numero_de_ldv: int = Field(default=0)
+    muestras: int = Field(default=0)
+    distancia_km: float = Field(default=0.0)
+    altura_torre_fantasma: float = Field(default=0.0)

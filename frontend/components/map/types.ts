@@ -80,4 +80,8 @@ export interface MultipoligonoData {
   punto_ubigeo: number;
   punto_nombre: string;
   geojson: GeoJsonFeature;
+  numero_de_ldv: number;
+  muestras: number;
+  distancia_km: number;
+  altura_torre_fantasma: number;
 }

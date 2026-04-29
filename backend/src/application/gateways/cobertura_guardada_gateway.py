@@ -14,6 +14,10 @@ class CoberturaGuardada:
     punto_ubigeo: int
     punto_nombre: str
     geojson: Dict[str, Any]
+    numero_de_ldv: int
+    muestras: int
+    distancia_km: float
+    altura_torre_fantasma: float
 
 
 class CoberturaGuardadaGateway(ABC):
@@ -25,8 +29,16 @@ class CoberturaGuardadaGateway(ABC):
     """
 
     @abstractmethod
-    def guardar(self, punto_ubigeo: int, geojson: Dict[str, Any]) -> int:
-        """Persiste el geojson de cobertura y devuelve el id generado."""
+    def guardar(
+        self,
+        punto_ubigeo: int,
+        geojson: Dict[str, Any],
+        numero_de_ldv: int,
+        muestras: int,
+        distancia_km: float,
+        altura_torre_fantasma: float,
+    ) -> int:
+        """Persiste el geojson de cobertura con sus parámetros y devuelve el id generado."""
 
     @abstractmethod
     def listar(self) -> List[CoberturaGuardada]:

@@ -36,6 +36,10 @@ class CoberturaGuardadaOut(BaseModel):
     punto_ubigeo: int
     punto_nombre: str
     geojson: Dict[str, Any]
+    numero_de_ldv: int
+    muestras: int
+    distancia_km: float
+    altura_torre_fantasma: float
 
 
 @router.post("")
@@ -74,6 +78,10 @@ def get_coberturas(session: SessionDep):
             punto_ubigeo=c.punto_ubigeo,
             punto_nombre=c.punto_nombre,
             geojson=c.geojson,
+            numero_de_ldv=c.numero_de_ldv,
+            muestras=c.muestras,
+            distancia_km=c.distancia_km,
+            altura_torre_fantasma=c.altura_torre_fantasma,
         )
         for c in items
     ]

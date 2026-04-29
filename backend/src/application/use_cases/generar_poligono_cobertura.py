@@ -78,7 +78,14 @@ class GenerarPoligonoCoberturaUseCase:
         malla_geojson = self._geometry_gateway.estructura_a_malla_geojson(estructura)
 
         if self._cobertura_repo and geojson.get("geometry") is not None:
-            self._cobertura_repo.guardar(punto.ubigeo, geojson)
+            self._cobertura_repo.guardar(
+                punto_ubigeo=punto.ubigeo,
+                geojson=geojson,
+                numero_de_ldv=self._numero_de_ldv,
+                muestras=self._muestras,
+                distancia_km=round(self._distancia_grados * 111.0, 2),
+                altura_torre_fantasma=self._altura_torre_fantasma,
+            )
 
         response = GenerarPoligonoCoberturaResponse(
             nombre=punto.nombre,

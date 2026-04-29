@@ -19,8 +19,23 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def guardar(self, punto_ubigeo: int, geojson: Dict[str, Any]) -> int:
-        row = MultipoligonoTable(punto_ubigeo=punto_ubigeo, geojson=geojson)
+    def guardar(
+        self,
+        punto_ubigeo: int,
+        geojson: Dict[str, Any],
+        numero_de_ldv: int,
+        muestras: int,
+        distancia_km: float,
+        altura_torre_fantasma: float,
+    ) -> int:
+        row = MultipoligonoTable(
+            punto_ubigeo=punto_ubigeo,
+            geojson=geojson,
+            numero_de_ldv=numero_de_ldv,
+            muestras=muestras,
+            distancia_km=distancia_km,
+            altura_torre_fantasma=altura_torre_fantasma,
+        )
         self._session.add(row)
         self._session.commit()
         self._session.refresh(row)
@@ -45,6 +60,10 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
                 punto_ubigeo=r.punto_ubigeo,
                 punto_nombre=puntos_map.get(r.punto_ubigeo, str(r.punto_ubigeo)),
                 geojson=r.geojson,
+                numero_de_ldv=r.numero_de_ldv,
+                muestras=r.muestras,
+                distancia_km=r.distancia_km,
+                altura_torre_fantasma=r.altura_torre_fantasma,
             )
             for r in rows
         ]

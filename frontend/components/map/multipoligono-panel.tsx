@@ -19,6 +19,7 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<MultipoligonoData[]>([]);
   const [visibleIds, setVisibleIds] = useState<Set<number>>(new Set());
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -103,37 +104,55 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
             {items.map((item) => {
               const color = ITEM_COLORS[item.id % ITEM_COLORS.length];
               const active = visibleIds.has(item.id);
+              const expanded = expandedId === item.id;
               return (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 bg-gray-800/40 rounded-xl px-3 py-2"
-                >
-                  {/* color swatch + toggle */}
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className="shrink-0 w-4 h-4 rounded-sm border-2 transition-opacity"
-                    style={{
-                      backgroundColor: active ? color : "transparent",
-                      borderColor: color,
-                      opacity: active ? 1 : 0.6,
-                    }}
-                    title={active ? "Ocultar" : "Mostrar"}
-                  />
+                <div key={item.id} className="bg-gray-800/40 rounded-xl overflow-hidden">
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    {/* color swatch + toggle */}
+                    <button
+                      onClick={() => toggleItem(item.id)}
+                      className="shrink-0 w-4 h-4 rounded-sm border-2 transition-opacity"
+                      style={{
+                        backgroundColor: active ? color : "transparent",
+                        borderColor: color,
+                        opacity: active ? 1 : 0.6,
+                      }}
+                      title={active ? "Ocultar" : "Mostrar"}
+                    />
 
-                  {/* info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-xs font-medium truncate">{item.punto_nombre}</p>
-                    <p className="text-gray-500 text-xs">#{item.id} · ubigeo {item.punto_ubigeo}</p>
+                    {/* info — click to expand */}
+                    <button
+                      onClick={() => setExpandedId(expanded ? null : item.id)}
+                      className="flex-1 min-w-0 text-left"
+                    >
+                      <p className="text-white text-xs font-medium truncate">{item.punto_nombre}</p>
+                      <p className="text-gray-500 text-xs">#{item.id} · {item.distancia_km} km · {expanded ? "▲" : "▼"}</p>
+                    </button>
+
+                    {/* delete */}
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="shrink-0 text-red-400 hover:text-red-300 text-xs px-1.5 py-1 rounded-lg hover:bg-red-400/10 transition-colors"
+                      title="Eliminar"
+                    >
+                      ✕
+                    </button>
                   </div>
 
-                  {/* delete */}
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="shrink-0 text-red-400 hover:text-red-300 text-xs px-1.5 py-1 rounded-lg hover:bg-red-400/10 transition-colors"
-                    title="Eliminar"
-                  >
-                    ✕
-                  </button>
+                  {expanded && (
+                    <div className="border-t border-white/5 px-3 pb-2 pt-1.5 grid grid-cols-2 gap-x-4 gap-y-1">
+                      <span className="text-gray-500 text-xs">Punto</span>
+                      <span className="text-gray-200 text-xs font-medium">{item.punto_nombre}</span>
+                      <span className="text-gray-500 text-xs">Distancia</span>
+                      <span className="text-gray-200 text-xs">{item.distancia_km} km</span>
+                      <span className="text-gray-500 text-xs">Torre fantasma</span>
+                      <span className="text-gray-200 text-xs">{item.altura_torre_fantasma} m</span>
+                      <span className="text-gray-500 text-xs">Líneas de vista</span>
+                      <span className="text-gray-200 text-xs">{item.numero_de_ldv}</span>
+                      <span className="text-gray-500 text-xs">Muestras</span>
+                      <span className="text-gray-200 text-xs">{item.muestras}</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
