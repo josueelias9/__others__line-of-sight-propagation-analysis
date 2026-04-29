@@ -162,20 +162,30 @@ export function Map3DView({
         coberturaElemsRef.current.push(poly);
       });
 
-      cobertura.poligonos.forEach((poli) => {
-        const poly = new Polygon3DElement({
-          altitudeMode: "CLAMP_TO_GROUND",
-          fillColor: "rgba(251,191,36,0.2)",
-          strokeColor: "#FBBF24",
-          strokeWidth: 4,
-          outerCoordinates: poli.coordenadas.map((c) => ({
-            lat: c.latitud,
-            lng: c.longitud,
-          })),
+      const { geometry } = cobertura.geojson;
+      if (geometry) {
+        const polygons: [number, number][][][] =
+          geometry.type === "Polygon"
+            ? [geometry.coordinates]
+            : geometry.coordinates;
+
+        polygons.forEach(([outerRing, ...innerRings]) => {
+          const poly = new Polygon3DElement({
+            altitudeMode: "CLAMP_TO_GROUND",
+            fillColor: "rgba(251,191,36,0.2)",
+            strokeColor: "#FBBF24",
+            strokeWidth: 4,
+          });
+          poly.outerCoordinates = outerRing.map(([lng, lat]) => ({ lat, lng }));
+          if (innerRings.length > 0) {
+            poly.innerCoordinates = innerRings.map((ring) =>
+              ring.map(([lng, lat]) => ({ lat, lng }))
+            );
+          }
+          map3d.append(poly);
+          coberturaElemsRef.current.push(poly);
         });
-        map3d.append(poly);
-        coberturaElemsRef.current.push(poly);
-      });
+      }
     })().catch(console.error);
   }, [mapReady, cobertura]);
 

@@ -285,6 +285,18 @@ class KmlWriter(KmlOutputPort):
 
     def _escribir_poligonos_vm(self, viewmodel: CoberturaViewModel, nombre: str) -> None:
         ruta = self._directorio + nombre + ".kml"
+        geom = viewmodel.geojson.get("geometry") or {}
+        tipo = geom.get("type", "")
+        coords = geom.get("coordinates", [])
+
+        # Normalizar a lista de polígonos (cada uno es lista de anillos)
+        if tipo == "Polygon":
+            poligonos_coords = [coords]
+        elif tipo == "MultiPolygon":
+            poligonos_coords = coords
+        else:
+            poligonos_coords = []
+
         with open(ruta, "w", encoding="utf-8") as f:
             f.write(_KML_HEADER)
             f.write(
@@ -295,19 +307,25 @@ class KmlWriter(KmlOutputPort):
                 "\t</Style>\n"
                 "\t<Folder><name>ww</name><open>1</open>\n"
             )
-            for poli in viewmodel.poligonos:
+            for idx, anillos in enumerate(poligonos_coords):
+                exterior = anillos[0]
                 f.write(
-                    f"<Placemark><name>{poli.nombre}</name>\n"
+                    f"<Placemark><name>{idx}</name>\n"
                     '\t<styleUrl>#s_ylw-pushpin</styleUrl>\n'
                     "\t<Polygon><tessellate>1</tessellate>\n"
                     "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
                 )
-                for c in poli.coordenadas:
-                    f.write(f"{c.longitud},{c.latitud},0 ")
+                for lng, lat in exterior:
+                    f.write(f"{lng},{lat},0 ")
                 f.write(
                     "\n\t\t</coordinates></LinearRing></outerBoundaryIs>\n"
-                    "\t</Polygon>\n</Placemark>\n"
                 )
+                for hueco in anillos[1:]:
+                    f.write("\t\t<innerBoundaryIs><LinearRing><coordinates>\n")
+                    for lng, lat in hueco:
+                        f.write(f"{lng},{lat},0 ")
+                    f.write("\n\t\t</coordinates></LinearRing></innerBoundaryIs>\n")
+                f.write("\t</Polygon>\n</Placemark>\n")
             f.write("\t</Folder>\n</Document>\n")
             f.write(_KML_FOOTER)
 

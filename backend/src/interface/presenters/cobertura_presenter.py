@@ -14,7 +14,7 @@ Pertenece a la capa de Interfaz.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import Any, Dict, List
 
 from application.ports.output_port import CoberturaOutputBoundary
 from application.use_cases.generar_poligono_cobertura import (
@@ -32,12 +32,6 @@ class CoordGeo:
 
 
 @dataclass
-class PoligonoViewModel:
-    nombre: str
-    coordenadas: List[CoordGeo] = field(default_factory=list)
-
-
-@dataclass
 class CeldaMallaViewModel:
     """Un cuadrilátero de la malla de cobertura (anillo cerrado: 5 coords)."""
     nombre: str
@@ -47,7 +41,7 @@ class CeldaMallaViewModel:
 @dataclass
 class CoberturaViewModel:
     nombre: str
-    poligonos: List[PoligonoViewModel] = field(default_factory=list)
+    geojson: Dict[str, Any] = field(default_factory=dict)
     malla: List[CeldaMallaViewModel] = field(default_factory=list)
 
 
@@ -57,9 +51,8 @@ class GenerarPoligonoCoberturaPresenter(CoberturaOutputBoundary):
     """
     Implementa CoberturaOutputBoundary.
 
-    Extrae las coordenadas geográficas del response del caso de uso y
-    produce un CoberturaViewModel con datos planos listos para cualquier
-    adaptador de salida (KmlWriter o FastAPI).
+    Produce un CoberturaViewModel con el GeoJSON unificado (unary_union)
+    y la malla polar de celdas con LOS, listos para FastAPI o KmlWriter.
     """
 
     def presentar(self, response: GenerarPoligonoCoberturaResponse) -> CoberturaViewModel:
@@ -68,25 +61,11 @@ class GenerarPoligonoCoberturaPresenter(CoberturaOutputBoundary):
 
         return CoberturaViewModel(
             nombre=estructura.punto_cero.nombre,
-            poligonos=self._extraer_poligonos(response, fg),
+            geojson=response.geojson,
             malla=self._extraer_malla(estructura, fg),
         )
 
     # ------------------------------------------------------------------ helpers
-
-    def _extraer_poligonos(
-        self,
-        response: GenerarPoligonoCoberturaResponse,
-        fg: list,
-    ) -> List[PoligonoViewModel]:
-        result: List[PoligonoViewModel] = []
-        for idx, poli in enumerate(response.poligono.lista_de_poligonitos):
-            coords = [
-                CoordGeo(longitud=fg[c[0]][c[1]].longitud, latitud=fg[c[0]][c[1]].latitud)
-                for c in poli.lista_de_puntos
-            ]
-            result.append(PoligonoViewModel(nombre=str(idx), coordenadas=coords))
-        return result
 
     def _extraer_malla(
         self,

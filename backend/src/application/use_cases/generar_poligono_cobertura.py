@@ -5,9 +5,8 @@ import logging
 from typing import Any
 
 from domain.entities.estructura import Estructura
-from domain.entities.poligonos import Poligonos
-from domain.entities.punto import Punto
 from application.gateways.elevation_gateway import ElevationGateway
+from application.gateways.geometry_gateway import GeometryGateway
 from application.gateways.punto_gateway import PuntoGateway
 from application.ports.output_port import CoberturaOutputBoundary
 
@@ -20,7 +19,7 @@ class GenerarPoligonoCoberturaRequest:
 
 @dataclass
 class GenerarPoligonoCoberturaResponse:
-    poligono: Poligonos
+    geojson: dict
     estructura: Estructura
 
 
@@ -41,6 +40,7 @@ class GenerarPoligonoCoberturaUseCase:
         self,
         elevation_repo: ElevationGateway,
         punto_repo: PuntoGateway,
+        geometry_gateway: GeometryGateway,
         output_boundary: CoberturaOutputBoundary,
         numero_de_ldv: int,
         muestras: int,
@@ -49,6 +49,7 @@ class GenerarPoligonoCoberturaUseCase:
     ) -> None:
         self._elevation_repo = elevation_repo
         self._punto_repo = punto_repo
+        self._geometry_gateway = geometry_gateway
         self._output_boundary = output_boundary
         self._numero_de_ldv = numero_de_ldv
         self._muestras = muestras
@@ -69,10 +70,9 @@ class GenerarPoligonoCoberturaUseCase:
 
         self._llenar_matriz_los(estructura)
 
-        poligonos = estructura.extraer_poligonos()
-        logger.debug(f"Polígonos extraídos: {len(poligonos.lista_de_poligonitos)}")
+        geojson = self._geometry_gateway.estructura_a_geojson(estructura)
 
-        response = GenerarPoligonoCoberturaResponse(poligono=poligonos, estructura=estructura)
+        response = GenerarPoligonoCoberturaResponse(geojson=geojson, estructura=estructura)
         logger.info("🔴")
         return self._output_boundary.presentar(response)
 

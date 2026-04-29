@@ -118,7 +118,7 @@ class EncontrarTorreFantasmaUseCase:
         for i, nc in enumerate(no_conectados):
             logger.debug("Nodo no conectado %d: %s", i, nc.nombre)
             resp_nc = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=nc))
-            area_nc = self._geometry_gw.poligonos_a_area(resp_nc.poligono, resp_nc.estructura)
+            area_nc = self._geometry_gw.estructura_a_area(resp_nc.estructura)
             area_actual = area_nc
 
             candidatos = sorted(
@@ -130,7 +130,7 @@ class EncontrarTorreFantasmaUseCase:
                 resp_c = self._cobertura_uc.ejecutar(
                     GenerarPoligonoCoberturaRequest(punto=rel.punto_final)
                 )
-                area_c = self._geometry_gw.poligonos_a_area(resp_c.poligono, resp_c.estructura)
+                area_c = self._geometry_gw.estructura_a_area(resp_c.estructura)
                 interseccion = self._geometry_gw.intersectar(area_actual, area_c)
                 if not interseccion.vacia:
                     nombre = f"{nc.nombre}-{rel.punto_final.nombre}"
@@ -158,11 +158,11 @@ class EncontrarTorreFantasmaUseCase:
             return False, None
 
         resp = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=puntos[0]))
-        resultado = self._geometry_gw.poligonos_a_area(resp.poligono, resp.estructura)
+        resultado = self._geometry_gw.estructura_a_area(resp.estructura)
         for pt in puntos[1:]:
             logger.debug("intersectando con cobertura de %s con id %s", pt.nombre, pt.ubigeo)
             resp = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=pt))
-            cobertura = self._geometry_gw.poligonos_a_area(resp.poligono, resp.estructura)
+            cobertura = self._geometry_gw.estructura_a_area(resp.estructura)
             resultado = self._geometry_gw.intersectar(resultado, cobertura)
             if resultado.vacia:
                 return False, None

@@ -41,6 +41,14 @@ class GeometryGateway(ABC):
         """Convierte un Poligonos de dominio a un AreaGeometrica."""
 
     @abstractmethod
+    def estructura_a_area(self, estructura: Estructura) -> AreaGeometrica:
+        """Une las celdas con LOS=1 en un AreaGeometrica (unary_union)."""
+
+    @abstractmethod
+    def estructura_a_geojson(self, estructura: Estructura) -> dict:
+        """Une las celdas con LOS=1 y devuelve un Feature GeoJSON (EPSG:4326)."""
+
+    @abstractmethod
     def intersectar(
         self,
         a1: AreaGeometrica,

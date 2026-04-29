@@ -7,6 +7,7 @@ from app.core import config
 from infrastructure.persistence.database import SessionDep
 from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
+from infrastructure.geometry.shapely_geometry_repository import ShapelyGeometryRepository
 from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaUseCase,
@@ -34,6 +35,7 @@ def post_cobertura(body: CoberturaRequest, session: SessionDep):
     use_case = GenerarPoligonoCoberturaUseCase(
         elevation_repo=elevation_repo,
         punto_repo=repo,
+        geometry_gateway=ShapelyGeometryRepository(),
         output_boundary=presenter,
         numero_de_ldv=body.numero_de_ldv,
         muestras=body.muestras,

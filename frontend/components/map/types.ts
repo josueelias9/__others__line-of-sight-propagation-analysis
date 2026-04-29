@@ -25,19 +25,32 @@ export interface CoordGeo {
   latitud: number;
 }
 
-export interface PoligonoViewModel {
-  nombre: string;
-  coordenadas: CoordGeo[];
-}
-
 export interface CeldaMallaViewModel {
   nombre: string;
   coordenadas: CoordGeo[];
 }
 
+export interface GeoJsonGeometryPolygon {
+  type: "Polygon";
+  coordinates: [number, number][][];
+}
+
+export interface GeoJsonGeometryMultiPolygon {
+  type: "MultiPolygon";
+  coordinates: [number, number][][][];
+}
+
+export type GeoJsonGeometry = GeoJsonGeometryPolygon | GeoJsonGeometryMultiPolygon;
+
+export interface GeoJsonFeature {
+  type: "Feature";
+  geometry: GeoJsonGeometry | null;
+  properties: Record<string, unknown>;
+}
+
 export interface CoberturaViewModel {
   nombre: string;
-  poligonos: PoligonoViewModel[];
+  geojson: GeoJsonFeature;
   malla: CeldaMallaViewModel[];
 }
 
