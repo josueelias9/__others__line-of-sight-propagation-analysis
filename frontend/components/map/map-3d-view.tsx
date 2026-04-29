@@ -12,11 +12,13 @@ export function Map3DView({
   relaciones,
   cobertura,
   arbolRelaciones = [],
+  showMalla = false,
 }: {
   puntos: PuntoData[];
   relaciones: RelacionData[];
   cobertura: CoberturaViewModel | null;
   arbolRelaciones?: RelacionArbolOut[];
+  showMalla?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const map3dRef = useRef<any>(null);
@@ -148,7 +150,7 @@ export function Map3DView({
         await (google.maps as any).importLibrary("maps3d");
 
       const mallaGeom = cobertura.malla_geojson.geometry;
-      if (mallaGeom && mallaGeom.type === "MultiPolygon") {
+      if (showMalla && mallaGeom && mallaGeom.type === "MultiPolygon") {
         mallaGeom.coordinates.forEach(([outerRing]) => {
           const poly = new Polygon3DElement({
             altitudeMode: "CLAMP_TO_GROUND",
@@ -187,7 +189,7 @@ export function Map3DView({
         });
       }
     })().catch(console.error);
-  }, [mapReady, cobertura]);
+  }, [mapReady, cobertura, showMalla]);
 
   return (
     <div className="relative w-full h-full bg-gray-950">

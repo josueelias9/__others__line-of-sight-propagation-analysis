@@ -29,6 +29,7 @@ export default function MapView() {
   const [relaciones, setRelaciones] = useState<RelacionData[]>([]);
   const [view3D, setView3D] = useState(false);
   const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null);
+  const [showMalla, setShowMalla] = useState(false);
   const [arbolResult, setArbolResult] = useState<ArbolResult | null>(null);
   const [pickingMode, setPickingMode] = useState(false);
   const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -53,7 +54,7 @@ export default function MapView() {
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
         {view3D ? (
-          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} />
+          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} showMalla={showMalla} />
         ) : (
           <Map
             mapId={MAP_ID}
@@ -82,7 +83,7 @@ export default function MapView() {
               arbolRelaciones={arbolResult?.relaciones_exitosas ?? []}
             
             />
-            <CoberturaOverlays data={cobertura} />
+            <CoberturaOverlays data={cobertura} showMalla={showMalla} />
             {puntos.map((p) => (
               <AdvancedMarker
                 key={p.nombre}
@@ -115,6 +116,18 @@ export default function MapView() {
       />
       <div className="absolute top-5 right-5 z-10 flex flex-col gap-2 w-72">
         <CoberturaPanel puntos={puntos} onResult={setCobertura} />
+        {cobertura && (
+          <button
+            onClick={() => setShowMalla((v) => !v)}
+            className={`w-full rounded-xl px-4 py-2 text-sm font-semibold transition-colors border ${
+              showMalla
+                ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30"
+                : "bg-gray-800/60 border-white/10 text-gray-400 hover:bg-gray-700/60"
+            }`}
+          >
+            {showMalla ? "✓ Malla visible" : "○ Malla oculta"}
+          </button>
+        )}
         <ArbolPanel puntos={puntos} onResult={setArbolResult} />
       </div>
       <AddPuntoPanel

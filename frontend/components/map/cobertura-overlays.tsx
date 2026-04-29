@@ -30,7 +30,7 @@ function geojsonToGooglePolygons(
   return [];
 }
 
-export function CoberturaOverlays({ data }: { data: CoberturaViewModel | null }) {
+export function CoberturaOverlays({ data, showMalla = false }: { data: CoberturaViewModel | null; showMalla?: boolean }) {
   const map = useMap();
   const mallaCellsRef = useRef<google.maps.Polygon[]>([]);
   const geojsonPolysRef = useRef<google.maps.Polygon[]>([]);
@@ -43,13 +43,15 @@ export function CoberturaOverlays({ data }: { data: CoberturaViewModel | null })
 
     if (!map || !data) return;
 
-    mallaCellsRef.current = geojsonToGooglePolygons(data.malla_geojson, map, {
-      strokeColor: "#34D399",
-      strokeOpacity: 0.4,
-      strokeWeight: 1,
-      fillColor: "#34D399",
-      fillOpacity: 0.25,
-    });
+    if (showMalla) {
+      mallaCellsRef.current = geojsonToGooglePolygons(data.malla_geojson, map, {
+        strokeColor: "#34D399",
+        strokeOpacity: 0.4,
+        strokeWeight: 1,
+        fillColor: "#34D399",
+        fillOpacity: 0.25,
+      });
+    }
 
     geojsonPolysRef.current = geojsonToGooglePolygons(data.geojson, map, {
       strokeColor: "#FBBF24",
@@ -63,7 +65,7 @@ export function CoberturaOverlays({ data }: { data: CoberturaViewModel | null })
       mallaCellsRef.current.forEach((p) => p.setMap(null));
       geojsonPolysRef.current.forEach((p) => p.setMap(null));
     };
-  }, [map, data]);
+  }, [map, data, showMalla]);
 
   return null;
 }
