@@ -33,14 +33,6 @@ class GeometryGateway(ABC):
     """
 
     @abstractmethod
-    def poligonos_a_area(
-        self,
-        poligonos: Poligonos,
-        estructura: Estructura,
-    ) -> AreaGeometrica:
-        """Convierte un Poligonos de dominio a un AreaGeometrica."""
-
-    @abstractmethod
     def estructura_a_area(self, estructura: Estructura) -> AreaGeometrica:
         """Une las celdas con LOS=1 en un AreaGeometrica (unary_union)."""
 

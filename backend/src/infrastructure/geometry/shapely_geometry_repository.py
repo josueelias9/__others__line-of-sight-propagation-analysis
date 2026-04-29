@@ -14,16 +14,6 @@ class ShapelyGeometryRepository(GeometryGateway):
     Pertenece a la capa de Infraestructura.
     """
 
-    def poligonos_a_area(
-        self,
-        poligonos: Poligonos,
-        estructura: Estructura,
-    ) -> AreaGeometrica:
-        resultado = Polygon()
-        for poligonito in poligonos.lista_de_poligonitos:
-            coords = estructura.coordenadas_poligonito(poligonito)
-            resultado = resultado.union(Polygon(coords))
-        return self._shapely_a_area(resultado)
 
     def estructura_a_area(self, estructura: Estructura) -> AreaGeometrica:
         return self._shapely_a_area(self._estructura_a_shapely(estructura))
