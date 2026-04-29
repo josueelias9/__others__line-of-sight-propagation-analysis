@@ -58,11 +58,7 @@ class GenerarPoligonoCoberturaUseCase:
     def ejecutar(self, request: GenerarPoligonoCoberturaRequest) -> Any:
         """Calcula el polígono de cobertura y delega la presentación al output boundary."""
         logger.info("🟢")
-        puntos = self._punto_repo.leer_puntos()
-        try:
-            punto = next(p for p in puntos if p.ubigeo == request.ubigeo)
-        except StopIteration:
-            raise ValueError(f"No se encontró un punto con ubigeo={request.ubigeo}")
+        punto = self._punto_repo.obtener_punto_por_ubigeo(request.ubigeo)
         estructura = Estructura(
             n=self._numero_de_ldv,
             m=self._muestras,

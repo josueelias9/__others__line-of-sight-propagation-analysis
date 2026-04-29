@@ -1,6 +1,6 @@
 import logging
 import csv
-from typing import List
+from typing import List, Optional
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
@@ -26,7 +26,7 @@ class CsvPuntoRepository(PuntoGateway):
 
     # ------------------------------------------------------------------ PuntoGateway
 
-    def leer_puntos(self) -> List[Punto]:
+    def leer_puntos(self, tipo: Optional[str] = None) -> List[Punto]:
         puntos: List[Punto] = []
         ruta = self._directorio + "punto.csv"
         with open(ruta, encoding="utf-8", newline="") as f:
@@ -47,10 +47,15 @@ class CsvPuntoRepository(PuntoGateway):
                     puntos.append(punto)
                 except (KeyError, ValueError) as exc:
                     logger.warning("línea %d ignorada: %s", numero_linea, exc)
+        if tipo is not None:
+            puntos = [p for p in puntos if p.tipo == tipo]
         return puntos
 
-    def leer_puntos_por_tipo(self, tipo: str) -> List[Punto]:
-        return [p for p in self.leer_puntos() if p.tipo == tipo]
+    def obtener_punto_por_ubigeo(self, ubigeo: int) -> Punto:
+        try:
+            return next(p for p in self.leer_puntos() if p.ubigeo == ubigeo)
+        except StopIteration:
+            raise ValueError(f"No se encontró un punto con ubigeo={ubigeo}")
 
     def leer_relaciones(self) -> List[Relacion]:
         puntos_dict = {p.nombre: p for p in self.leer_puntos()}

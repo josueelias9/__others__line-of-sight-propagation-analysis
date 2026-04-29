@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from sqlmodel import Session, delete, select
 
@@ -53,24 +53,27 @@ class PgPuntoRepository(PuntoGateway):
 
     # ------------------------------------------------------------------ PuntoGateway
 
-    def leer_puntos(self) -> List[Punto]:
+    def leer_puntos(self, tipo: Optional[str] = None) -> List[Punto]:
         tipo_map = _load_tipo_map(self._session)
-        rows = self._session.exec(select(PuntoTable).order_by(PuntoTable.ubigeo)).all()
+        stmt = select(PuntoTable).order_by(PuntoTable.ubigeo)
+        if tipo is not None:
+            tipo_row = self._session.exec(
+                select(PuntoTypeTable).where(PuntoTypeTable.name == tipo)
+            ).first()
+            if tipo_row is None:
+                return []
+            stmt = stmt.where(PuntoTable.punto_type_id == tipo_row.id)
+        rows = self._session.exec(stmt).all()
         return [_table_to_punto(r, tipo_map) for r in rows]
 
-    def leer_puntos_por_tipo(self, tipo: str) -> List[Punto]:
-        tipo_row = self._session.exec(
-            select(PuntoTypeTable).where(PuntoTypeTable.name == tipo)
-        ).first()
-        if tipo_row is None:
-            return []
+    def obtener_punto_por_ubigeo(self, ubigeo: int) -> Punto:
         tipo_map = _load_tipo_map(self._session)
-        rows = self._session.exec(
-            select(PuntoTable)
-            .where(PuntoTable.punto_type_id == tipo_row.id)
-            .order_by(PuntoTable.ubigeo)
-        ).all()
-        return [_table_to_punto(r, tipo_map) for r in rows]
+        row = self._session.exec(
+            select(PuntoTable).where(PuntoTable.ubigeo == ubigeo)
+        ).first()
+        if row is None:
+            raise ValueError(f"No se encontró un punto con ubigeo={ubigeo}")
+        return _table_to_punto(row, tipo_map)
 
     def leer_relaciones(self) -> List[Relacion]:
         puntos_dict = {p.ubigeo: p for p in self.leer_puntos()}

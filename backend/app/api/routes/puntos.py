@@ -36,7 +36,7 @@ class PuntoIn(BaseModel):
 @router.get("", response_model=List[PuntoOut])
 def get_puntos(session: SessionDep, tipo: Optional[str] = Query(None)):
     repo = PgPuntoRepository(session)
-    puntos = repo.leer_puntos_por_tipo(tipo) if tipo else repo.leer_puntos()
+    puntos = repo.leer_puntos(tipo)
     return [
         PuntoOut(
             ubigeo=p.ubigeo,

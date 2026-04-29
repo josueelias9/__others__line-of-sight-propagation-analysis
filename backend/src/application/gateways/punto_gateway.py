@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
@@ -14,12 +14,12 @@ class PuntoGateway(ABC):
     """
 
     @abstractmethod
-    def leer_puntos(self) -> List[Punto]:
-        """Lee y devuelve una lista de Punto desde la fuente de datos."""
+    def leer_puntos(self, tipo: Optional[str] = None) -> List[Punto]:
+        """Lee y devuelve una lista de Punto. Si se indica tipo, filtra por ese valor."""
 
     @abstractmethod
-    def leer_puntos_por_tipo(self, tipo: str) -> List[Punto]:
-        """Lee y devuelve sólo los Punto cuyo campo tipo coincida con el valor dado."""
+    def obtener_punto_por_ubigeo(self, ubigeo: int) -> Punto:
+        """Devuelve el Punto cuyo ubigeo coincide; lanza ValueError si no existe."""
 
     @abstractmethod
     def guardar_puntos(self, puntos: List[Punto]) -> None:
