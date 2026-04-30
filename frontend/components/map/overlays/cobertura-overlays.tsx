@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
 import type { CoberturaViewModel, GeoJsonFeature } from '@/app/lib/types'
+import { ITEM_COLORS } from '@/app/lib/utils'
 
 function geojsonToGooglePolygons(
     geojson: GeoJsonFeature,
@@ -50,19 +51,19 @@ export function CoberturaOverlays({
 
         if (showMalla) {
             mallaCellsRef.current = geojsonToGooglePolygons(data.malla_geojson, map, {
-                strokeColor: '#34D399',
+                strokeColor: ITEM_COLORS[4],
                 strokeOpacity: 0.4,
                 strokeWeight: 1,
-                fillColor: '#34D399',
+                fillColor: ITEM_COLORS[4],
                 fillOpacity: 0.25
             })
         }
 
         geojsonPolysRef.current = geojsonToGooglePolygons(data.geojson, map, {
-            strokeColor: '#FBBF24',
+            strokeColor: ITEM_COLORS[8],
             strokeOpacity: 0.9,
             strokeWeight: 2,
-            fillColor: '#FBBF24',
+            fillColor: ITEM_COLORS[8],
             fillOpacity: 0.15
         })
 

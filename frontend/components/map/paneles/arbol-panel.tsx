@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { PuntoData, ArbolResult } from '@/app/lib/types'
 import { BACKEND_URL } from '@/app/lib/config'
-import { PanelFrame } from '@/components/map/panel-frame'
+import { PanelFrame } from '@/components/map/panel-layout'
 
 interface ArbolPanelProps {
     puntos: PuntoData[]

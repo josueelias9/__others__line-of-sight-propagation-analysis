@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { MultipoligonoData } from '@/app/lib/types'
 import { BACKEND_URL } from '@/app/lib/config'
-import { PanelFrame } from '@/components/map/panel-frame'
+import { PanelFrame } from '@/components/map/panel-layout'
 import { ITEM_COLORS } from '@/app/lib/utils'
 
 interface MultipoligonoPanelProps {

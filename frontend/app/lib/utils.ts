@@ -6,5 +6,7 @@ export const ITEM_COLORS = [
     '#34D399',
     '#FACC15',
     '#F87171',
-    '#2DD4BF'
+    '#2DD4BF',
+    '#FBBF24',
+    '#22D3EE'
 ]

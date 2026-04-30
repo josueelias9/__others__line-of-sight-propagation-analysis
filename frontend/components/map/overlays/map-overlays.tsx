@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
 import type { PuntoData, RelacionRedData, RelacionArbolOut } from '@/app/lib/types'
 
+import { ITEM_COLORS } from '@/app/lib/utils'
+
 export function MapOverlays({
     puntos,
     redesRelaciones = [],
@@ -54,10 +56,10 @@ export function MapOverlays({
         }
 
         redesRelaciones.forEach(r =>
-            drawLine(byUbigeo[r.punto_inicial_ubigeo], byUbigeo[r.punto_final_ubigeo], '#22D3EE', 3)
+            drawLine(byUbigeo[r.punto_inicial_ubigeo], byUbigeo[r.punto_final_ubigeo], ITEM_COLORS[9], 3)
         )
         arbolRelaciones.forEach(r =>
-            drawLine(byNombre[r.punto_inicial], byNombre[r.punto_final], '#FACC15', 5)
+            drawLine(byNombre[r.punto_inicial], byNombre[r.punto_final], ITEM_COLORS[5], 5)
         )
 
         return () => {
