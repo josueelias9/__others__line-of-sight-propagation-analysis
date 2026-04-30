@@ -79,58 +79,54 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
             onSubmit={handleSubmit}
             contentClassName='max-h-[70vh] overflow-y-auto'
         >
-                        {/* Selector de punto */}
-                        <div>
-                            <label className='text-gray-400 text-xs block mb-0.5'>Punto</label>
-                            <select
-                                name='ubigeo'
-                                value={form.ubigeo}
-                                onChange={handleChange}
-                                required
-                                className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
-                            >
-                                <option value='' disabled>
-                                    Seleccionar punto…
-                                </option>
-                                {puntos.map(p => (
-                                    <option key={p.ubigeo} value={p.ubigeo}>
-                                        [{p.ubigeo}] {p.nombre} ({p.tipo})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+            {/* Selector de punto */}
+            <div>
+                <label className='text-gray-400 text-xs block mb-0.5'>Punto</label>
+                <select
+                    name='ubigeo'
+                    value={form.ubigeo}
+                    onChange={handleChange}
+                    required
+                    className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
+                >
+                    <option value='' disabled>
+                        Seleccionar punto…
+                    </option>
+                    {puntos.map(p => (
+                        <option key={p.ubigeo} value={p.ubigeo}>
+                            [{p.ubigeo}] {p.nombre} ({p.tipo})
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-                        {/* Parámetros de análisis */}
-                        {paramFields.map(({ name, label }) => (
-                            <div key={name}>
-                                <label className='text-gray-400 text-xs block mb-0.5'>
-                                    {label}
-                                </label>
-                                <input
-                                    name={name}
-                                    value={form[name]}
-                                    onChange={handleChange}
-                                    type='number'
-                                    step='any'
-                                    required
-                                    className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
-                                />
-                            </div>
-                        ))}
+            {/* Parámetros de análisis */}
+            {paramFields.map(({ name, label }) => (
+                <div key={name}>
+                    <label className='text-gray-400 text-xs block mb-0.5'>{label}</label>
+                    <input
+                        name={name}
+                        value={form[name]}
+                        onChange={handleChange}
+                        type='number'
+                        step='any'
+                        required
+                        className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
+                    />
+                </div>
+            ))}
 
-                        {error && (
-                            <p className='text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2'>
-                                {error}
-                            </p>
-                        )}
+            {error && (
+                <p className='text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2'>{error}</p>
+            )}
 
-                        <button
-                            type='submit'
-                            disabled={loading || !form.ubigeo}
-                            className='w-full mt-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl py-2 transition-colors'
-                        >
-                            {loading ? 'Calculando…' : 'Generar cobertura'}
-                        </button>
+            <button
+                type='submit'
+                disabled={loading || !form.ubigeo}
+                className='w-full mt-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl py-2 transition-colors'
+            >
+                {loading ? 'Calculando…' : 'Generar cobertura'}
+            </button>
         </PanelFrame>
     )
 }
