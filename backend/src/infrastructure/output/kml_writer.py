@@ -1,8 +1,8 @@
 import sys
 from typing import List
 
-from application.gateways.geometry_gateway import AreaGeometrica
-from application.ports.output_port import KmlOutputPort
+from application.interface.ports.geometry import AreaGeometrica
+from application.interface.ports.output import KmlOutputPort
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto

@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
-from application.gateways.punto_gateway import PuntoGateway
+from application.interface.db.punto import PuntoGateway
 
 logger = logging.getLogger(__name__)
 

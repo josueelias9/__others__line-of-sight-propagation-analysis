@@ -2,12 +2,12 @@ import logging
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from application.ports.output_port import KmlOutputPort, TxtOutputPort
+from application.interface.ports.output import KmlOutputPort, TxtOutputPort
 from domain.entities.punto import Punto
 from domain.entities.red import Red
 from domain.entities.relacion import Relacion
-from application.gateways.elevation_gateway import ElevationGateway
-from application.gateways.punto_gateway import PuntoGateway
+from application.interface.ports.elevation import ElevationGateway
+from application.interface.db.punto import PuntoGateway
 
 logger = logging.getLogger(__name__)
 

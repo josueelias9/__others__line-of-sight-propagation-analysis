@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import List
 
 from domain.entities.punto import Punto
-from application.gateways.elevation_gateway import ElevationGateway
-from application.gateways.punto_gateway import PuntoGateway
+from application.interface.ports.elevation import ElevationGateway
+from application.interface.db.punto import PuntoGateway
 
 logger = logging.getLogger(__name__)
 

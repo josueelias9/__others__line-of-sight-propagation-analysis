@@ -2,7 +2,7 @@ from typing import List
 
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
-from application.ports.output_port import TxtOutputPort
+from application.interface.ports.output import TxtOutputPort
 
 
 class TxtWriter(TxtOutputPort):

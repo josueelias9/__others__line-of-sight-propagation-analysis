@@ -5,11 +5,11 @@ import logging
 from typing import Any, Optional
 
 from domain.entities.estructura import Estructura
-from application.gateways.cobertura_guardada_gateway import CoberturaGuardadaGateway
-from application.gateways.elevation_gateway import ElevationGateway
-from application.gateways.geometry_gateway import GeometryGateway
-from application.gateways.punto_gateway import PuntoGateway
-from application.ports.output_port import CoberturaOutputBoundary
+from application.interface.db.cobertura_guardada import CoberturaGuardadaGateway
+from application.interface.ports.elevation import ElevationGateway
+from application.interface.ports.geometry import GeometryGateway
+from application.interface.db.punto import PuntoGateway
+from application.interface.ports.output import CoberturaOutputBoundary
 
 logger = logging.getLogger(__name__)
 

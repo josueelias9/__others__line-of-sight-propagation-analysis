@@ -38,7 +38,7 @@ from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaRequest,
     GenerarPoligonoCoberturaUseCase,
 )
-from application.ports.output_port import CoberturaOutputBoundary
+from application.interface.ports.output import CoberturaOutputBoundary
 from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
 from interface.presenters.passthrough_presenter import PassthroughCoberturaPresenter
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository

@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 from sqlmodel import Session, select
 
-from application.gateways.cobertura_guardada_gateway import (
+from application.interface.db.cobertura_guardada import (
     CoberturaGuardada,
     CoberturaGuardadaGateway,
 )

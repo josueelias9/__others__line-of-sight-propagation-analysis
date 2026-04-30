@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from application.gateways.geometry_gateway import AreaGeometrica
+from application.interface.ports.geometry import AreaGeometrica
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 from domain.entities.punto import Punto

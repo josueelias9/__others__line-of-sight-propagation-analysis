@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from domain.entities.punto import Punto
-from application.gateways.punto_gateway import PuntoGateway
+from application.interface.db.punto import PuntoGateway
 
 
 @dataclass

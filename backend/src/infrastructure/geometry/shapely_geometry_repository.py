@@ -3,7 +3,7 @@ from shapely.geometry.polygon import Polygon
 from shapely.geometry import MultiPolygon
 from shapely.ops import unary_union
 
-from application.gateways.geometry_gateway import AreaGeometrica, GeometryGateway
+from application.interface.ports.geometry import AreaGeometrica, GeometryGateway
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
 

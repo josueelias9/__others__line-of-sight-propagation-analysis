@@ -3,15 +3,15 @@ from dataclasses import dataclass, field
 from itertools import combinations
 from typing import List, Optional, Tuple
 
-from application.gateways.geometry_gateway import AreaGeometrica, GeometryGateway
-from application.ports.output_port import KmlOutputPort, TxtOutputPort
+from application.interface.ports.geometry import AreaGeometrica, GeometryGateway
+from application.interface.ports.output import KmlOutputPort, TxtOutputPort
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaRequest,
     GenerarPoligonoCoberturaUseCase,
 )
 from domain.entities.punto import Punto
 from domain.entities.relacion import Relacion
-from application.gateways.punto_gateway import PuntoGateway
+from application.interface.db.punto import PuntoGateway
 
 logger = logging.getLogger(__name__)
 

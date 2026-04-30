@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from application.ports.output_port import CoberturaOutputBoundary
+from application.interface.ports.output import CoberturaOutputBoundary
 from application.use_cases.generar_poligono_cobertura import GenerarPoligonoCoberturaResponse
 
 

@@ -4,7 +4,7 @@ from typing import List, Tuple
 import srtm
 
 from domain.entities.punto import Punto
-from application.gateways.elevation_gateway import ElevationGateway
+from application.interface.ports.elevation import ElevationGateway
 
 logger = logging.getLogger(__name__)
 

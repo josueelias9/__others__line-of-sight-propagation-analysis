@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
-from application.ports.output_port import CoberturaOutputBoundary
+from application.interface.ports.output import CoberturaOutputBoundary
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaResponse,
 )

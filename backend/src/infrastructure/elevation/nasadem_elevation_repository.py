@@ -8,7 +8,7 @@ from NASADEM import NASADEMConnection
 from rasters import MultiPoint, Point
 
 from domain.entities.punto import Punto
-from application.gateways.elevation_gateway import ElevationGateway
+from application.interface.ports.elevation import ElevationGateway
 
 logger = logging.getLogger(__name__)
 

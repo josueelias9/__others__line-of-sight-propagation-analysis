@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
 
-from application.gateways.cobertura_guardada_gateway import (
+from application.interface.db.cobertura_guardada import (
     CoberturaGuardada,
     CoberturaGuardadaGateway,
 )
