@@ -12,12 +12,6 @@ export interface PuntoData {
   conectado: boolean;
 }
 
-export interface RelacionData {
-  punto_inicial: string;
-  punto_final: string;
-  distancia: number;
-}
-
 // ─── Cobertura types ───────────────────────────────────────────────────────────
 
 export interface GeoJsonGeometryPolygon {
@@ -84,4 +78,18 @@ export interface MultipoligonoData {
   muestras: number;
   distancia_km: number;
   altura_torre_fantasma: number;
+}
+
+// ─── Redes ─────────────────────────────────────────────────────────────────────
+
+export interface RelacionRedData {
+  punto_inicial_ubigeo: number;
+  punto_final_ubigeo: number;
+  distancia: number;
+}
+
+export interface RedData {
+  id: number;
+  nombre: string;
+  relaciones: RelacionRedData[];
 }

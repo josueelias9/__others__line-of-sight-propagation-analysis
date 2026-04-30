@@ -2,14 +2,13 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from domain.entities.punto import Punto
-from domain.entities.relacion import Relacion
 
 
 class PuntoGateway(ABC):
     """
-    Gateway para la lectura y escritura de puntos y relaciones persistidos.
+    Gateway para la lectura y escritura de puntos persistidos.
 
-    Pertenece a la capa de Aplicación. La implementación concreta (archivos .txt)
+    Pertenece a la capa de Aplicación. La implementación concreta
     reside en la capa de Infraestructura.
     """
 
@@ -23,21 +22,11 @@ class PuntoGateway(ABC):
 
     @abstractmethod
     def guardar_puntos(self, puntos: List[Punto]) -> None:
-        """Persiste la lista de Punto en punto.csv (sobreescribe)."""
-
-    @abstractmethod
-    def leer_relaciones(self) -> List[Relacion]:
-        """Lee y devuelve una lista de Relacion desde la fuente de datos."""
-
-    @abstractmethod
-    def guardar_relaciones(self, relaciones: List[Relacion]) -> None:
-        """Persiste la lista de Relacion en relacion.csv (sobreescribe)."""
-        """Persiste la lista de Relacion en la fuente de datos (sobreescribe)."""
+        """Persiste la lista de Punto (sobreescribe)."""
 
     @abstractmethod
     def actualizar_conectado(self, puntos: List[Punto]) -> None:
-        """Actualiza únicamente el campo `conectado` de los Punto indicados en punto.csv,
-        sin modificar los demás campos ni los puntos no presentes en la lista."""
+        """Actualiza únicamente el campo `conectado` de los Punto indicados."""
 
     @abstractmethod
     def agregar_punto(self, punto: Punto) -> Punto:

@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.core import config
 from infrastructure.persistence.database import SessionDep
 from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
+from infrastructure.persistence.pg_red_repository import PgRedRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
 from infrastructure.output.kml_writer import KmlWriter
 from application.use_cases.encontrar_relaciones import (
@@ -21,6 +22,7 @@ class ArbolRequest(BaseModel):
     tipo_no_conectados: str
     distancia_maxima: float = config.DISTANCIA_KM
     muestras: int = config.MUESTRAS
+    nombre_red: str = ""
 
 
 class RelacionArbolOut(BaseModel):
@@ -48,6 +50,7 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
     os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
     repo = PgPuntoRepository(session)
+    red_repo = PgRedRepository(session)
     elevation_repo = SrtmElevationRepository(body.muestras)
     kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
 
@@ -56,6 +59,7 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
         elevation_repo=elevation_repo,
         kml_output=kml_output,
         muestras=body.muestras,
+        red_repo=red_repo,
     )
 
     result = use_case.ejecutar_dos_archivos_arbol(
@@ -63,6 +67,7 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
             tipo_conectados=body.tipo_conectados,
             tipo_no_conectados=body.tipo_no_conectados,
             distancia_maxima=body.distancia_maxima,
+            nombre_red=body.nombre_red,
         )
     )
 

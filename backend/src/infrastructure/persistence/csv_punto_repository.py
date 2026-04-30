@@ -3,7 +3,6 @@ import csv
 from typing import List, Optional
 
 from domain.entities.punto import Punto
-from domain.entities.relacion import Relacion
 from application.interface.db.punto import PuntoGateway
 
 logger = logging.getLogger(__name__)
@@ -57,21 +56,6 @@ class CsvPuntoRepository(PuntoGateway):
         except StopIteration:
             raise ValueError(f"No se encontró un punto con ubigeo={ubigeo}")
 
-    def leer_relaciones(self) -> List[Relacion]:
-        puntos_dict = {p.nombre: p for p in self.leer_puntos()}
-        relaciones: List[Relacion] = []
-        ruta = self._directorio + "relacion.csv"
-        with open(ruta, encoding="utf-8", newline="") as f:
-            reader = csv.DictReader(f)
-            for numero_linea, fila in enumerate(reader, start=2):
-                try:
-                    p_ini = puntos_dict[fila["punto_inicial_id"]]
-                    p_fin = puntos_dict[fila["punto_final_id"]]
-                    relaciones.append(Relacion(p_ini, p_fin))
-                except (KeyError, ValueError) as exc:
-                    logger.warning("línea %d ignorada: %s", numero_linea, exc)
-        return relaciones
-
     def guardar_puntos(self, puntos: List[Punto]) -> None:
         ruta = self._directorio + "punto.csv"
         _CAMPOS = [
@@ -92,19 +76,6 @@ class CsvPuntoRepository(PuntoGateway):
                     "metros_sobre_nivel_mar": p.metros_sobre_nivel_mar,
                     "green_asociado": p.green_asociado,
                     "conectado": p.conectado,
-                })
-
-    def guardar_relaciones(self, relaciones: List[Relacion]) -> None:
-        ruta = self._directorio + "relacion.csv"
-        _CAMPOS = ["punto_inicial_id", "punto_final_id", "distancia"]
-        with open(ruta, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=_CAMPOS)
-            writer.writeheader()
-            for r in relaciones:
-                writer.writerow({
-                    "punto_inicial_id": r.punto_inicial.ubigeo,
-                    "punto_final_id": r.punto_final.ubigeo,
-                    "distancia": r.distancia,
                 })
 
     def actualizar_conectado(self, puntos: List[Punto]) -> None:

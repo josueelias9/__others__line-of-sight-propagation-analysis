@@ -7,9 +7,10 @@ import { BACKEND_URL } from "./config";
 interface ArbolPanelProps {
   puntos: PuntoData[];
   onResult: (data: ArbolResult) => void;
+  onSaved?: () => void;
 }
 
-export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
+export function ArbolPanel({ puntos, onResult, onSaved }: ArbolPanelProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +21,7 @@ export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
   const [tipoNoConectados, setTipoNoConectados] = useState("");
   const [distancia, setDistancia] = useState("20");
   const [muestras, setMuestras] = useState("100");
+  const [nombreRed, setNombreRed] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +37,7 @@ export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
           tipo_no_conectados: tipoNoConectados,
           distancia_maxima: parseFloat(distancia),
           muestras: parseInt(muestras),
+          nombre_red: nombreRed,
         }),
       });
 
@@ -45,6 +48,7 @@ export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
 
       const data: ArbolResult = await res.json();
       onResult(data);
+      if (nombreRed) onSaved?.();
       setOpen(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
@@ -135,6 +139,17 @@ export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
                 onChange={(e) => setMuestras(e.target.value)}
                 required
                 className="w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400/60"
+              />
+            </div>
+
+            <div>
+              <label className="text-gray-400 text-xs block mb-0.5">Nombre de la red (opcional)</label>
+              <input
+                type="text"
+                value={nombreRed}
+                onChange={(e) => setNombreRed(e.target.value)}
+                placeholder="Ej: Red norte…"
+                className="w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-cyan-400/60"
               />
             </div>
 

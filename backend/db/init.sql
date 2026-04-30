@@ -19,13 +19,6 @@ CREATE TABLE IF NOT EXISTS punto (
     conectado             BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS relacion (
-    id                INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    punto_inicial_id  INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
-    punto_final_id    INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
-    distancia         DOUBLE PRECISION NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS multipoligono (
     id                    INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     punto_ubigeo          INTEGER          NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
@@ -34,4 +27,17 @@ CREATE TABLE IF NOT EXISTS multipoligono (
     muestras              INTEGER          NOT NULL DEFAULT 0,
     distancia_km          DOUBLE PRECISION NOT NULL DEFAULT 0,
     altura_torre_fantasma DOUBLE PRECISION NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS red (
+    id     INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS red_relacion (
+    red_id              INTEGER NOT NULL REFERENCES red(id) ON DELETE CASCADE,
+    punto_inicial_ubigeo INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
+    punto_final_ubigeo   INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
+    distancia            DOUBLE PRECISION NOT NULL,
+    PRIMARY KEY (red_id, punto_inicial_ubigeo, punto_final_ubigeo)
 );

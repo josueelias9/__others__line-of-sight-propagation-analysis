@@ -2,15 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import { useMap } from "@vis.gl/react-google-maps";
-import type { PuntoData, RelacionData, RelacionArbolOut } from "./types";
+import type { PuntoData, RelacionRedData, RelacionArbolOut } from "./types";
 
 export function MapOverlays({
   puntos,
-  relaciones,
+  redesRelaciones = [],
   arbolRelaciones = [],
 }: {
   puntos: PuntoData[];
-  relaciones: RelacionData[];
+  redesRelaciones?: RelacionRedData[];
   arbolRelaciones?: RelacionArbolOut[];
 }) {
   const map = useMap();
@@ -22,17 +22,13 @@ export function MapOverlays({
     linesRef.current.forEach((l) => l.setMap(null));
     linesRef.current = [];
 
-    const idx: Record<string, PuntoData> = {};
-    puntos.forEach((p) => { idx[p.nombre] = p; });
+    const byUbigeo: Record<number, PuntoData> = {};
+    puntos.forEach((p) => { byUbigeo[p.ubigeo] = p; });
 
-    const drawLine = (
-      puntoInicial: string,
-      puntoFinal: string,
-      color: string,
-      weight: number,
-    ) => {
-      const ini = idx[puntoInicial];
-      const fin = idx[puntoFinal];
+    const byNombre: Record<string, PuntoData> = {};
+    puntos.forEach((p) => { byNombre[p.nombre] = p; });
+
+    const drawLine = (ini: PuntoData | undefined, fin: PuntoData | undefined, color: string, weight: number) => {
       if (!ini || !fin) return;
       const line = new google.maps.Polyline({
         path: [
@@ -48,14 +44,18 @@ export function MapOverlays({
       linesRef.current.push(line);
     };
 
-    relaciones.forEach((r) => drawLine(r.punto_inicial, r.punto_final, "#22D3EE", 3));
-    arbolRelaciones.forEach((r) => drawLine(r.punto_inicial, r.punto_final, "#FACC15", 5));
+    redesRelaciones.forEach((r) =>
+      drawLine(byUbigeo[r.punto_inicial_ubigeo], byUbigeo[r.punto_final_ubigeo], "#22D3EE", 3)
+    );
+    arbolRelaciones.forEach((r) =>
+      drawLine(byNombre[r.punto_inicial], byNombre[r.punto_final], "#FACC15", 5)
+    );
 
     return () => {
       linesRef.current.forEach((l) => l.setMap(null));
       linesRef.current = [];
     };
-  }, [map, puntos, relaciones, arbolRelaciones]);
+  }, [map, puntos, redesRelaciones, arbolRelaciones]);
 
   return null;
 }

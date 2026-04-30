@@ -4,19 +4,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
-import type { PuntoData, RelacionData, CoberturaViewModel, RelacionArbolOut, MultipoligonoData } from "./types";
+import type { PuntoData, RelacionRedData, CoberturaViewModel, RelacionArbolOut, MultipoligonoData } from "./types";
 import { DEFAULT_CENTER } from "./config";
 
 export function Map3DView({
   puntos,
-  relaciones,
+  redesRelaciones = [],
   cobertura,
   arbolRelaciones = [],
   showMalla = false,
   multipoligonos = [],
 }: {
   puntos: PuntoData[];
-  relaciones: RelacionData[];
+  redesRelaciones?: RelacionRedData[];
   cobertura: CoberturaViewModel | null;
   arbolRelaciones?: RelacionArbolOut[];
   showMalla?: boolean;
@@ -54,8 +54,8 @@ export function Map3DView({
       container.appendChild(map3d);
       map3dRef.current = map3d;
 
-      const idx: Record<string, PuntoData> = {};
-      puntos.forEach((p) => { idx[p.nombre] = p; });
+      const byUbigeo: Record<number, PuntoData> = {};
+      puntos.forEach((p) => { byUbigeo[p.ubigeo] = p; });
 
       puntos.forEach((p) => {
         const marker = new Marker3DElement({
@@ -76,9 +76,9 @@ export function Map3DView({
         map3d.appendChild(marker);
       });
 
-      relaciones.forEach((r) => {
-        const ini = idx[r.punto_inicial];
-        const fin = idx[r.punto_final];
+      redesRelaciones.forEach((r) => {
+        const ini = byUbigeo[r.punto_inicial_ubigeo];
+        const fin = byUbigeo[r.punto_final_ubigeo];
         if (!ini || !fin) return;
         const line = new Polyline3DElement({
           altitudeMode: "ABSOLUTE",
@@ -106,7 +106,7 @@ export function Map3DView({
       libRef.current = null;
       setMapReady(false);
     };
-  }, [apiLoaded, puntos, relaciones]);
+  }, [apiLoaded, puntos, redesRelaciones]);
 
   // ── Efecto 2: agrega/elimina líneas del árbol de conexión ──────────────────
   useEffect(() => {

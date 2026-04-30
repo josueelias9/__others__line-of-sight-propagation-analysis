@@ -1,4 +1,4 @@
-from typing import Callable, List, Set, Tuple
+from typing import Callable, List, Optional, Set, Tuple
 
 
 class Red:
@@ -14,6 +14,8 @@ class Red:
         lista_de_relaciones: List = None,
         lista_de_nodos: List = None,
         key: int = 0,
+        nombre: str = "",
+        id: Optional[int] = None,
     ) -> None:
         self.conectado = conectado
         self.lista_de_relaciones: List = (
@@ -23,6 +25,8 @@ class Red:
             lista_de_nodos if lista_de_nodos is not None else []
         )
         self.key = key
+        self.nombre = nombre
+        self.id: Optional[int] = id
 
     # ------------------------------------------------------------------ análisis de red
 

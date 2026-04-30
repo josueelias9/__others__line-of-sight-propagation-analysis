@@ -4,9 +4,8 @@ from typing import Dict, List, Optional
 from sqlmodel import Session, delete, select
 
 from domain.entities.punto import Punto
-from domain.entities.relacion import Relacion
 from application.interface.db.punto import PuntoGateway
-from infrastructure.persistence.models import PuntoTable, PuntoTypeTable, RelacionTable
+from infrastructure.persistence.models import PuntoTable, PuntoTypeTable
 
 logger = logging.getLogger(__name__)
 
@@ -75,21 +74,8 @@ class PgPuntoRepository(PuntoGateway):
             raise ValueError(f"No se encontró un punto con ubigeo={ubigeo}")
         return _table_to_punto(row, tipo_map)
 
-    def leer_relaciones(self) -> List[Relacion]:
-        puntos_dict = {p.ubigeo: p for p in self.leer_puntos()}
-        rows = self._session.exec(select(RelacionTable)).all()
-        relaciones: List[Relacion] = []
-        for row in rows:
-            try:
-                p_ini = puntos_dict[row.punto_inicial_id]
-                p_fin = puntos_dict[row.punto_final_id]
-                relaciones.append(Relacion(p_ini, p_fin))
-            except KeyError as exc:
-                logger.warning("relacion ignorada: %s", exc)
-        return relaciones
 
     def guardar_puntos(self, puntos: List[Punto]) -> None:
-        self._session.exec(delete(RelacionTable))
         self._session.exec(delete(PuntoTable))
         for p in puntos:
             tipo_id = _get_tipo_id(self._session, p.tipo)
@@ -99,16 +85,6 @@ class PgPuntoRepository(PuntoGateway):
                 punto_type_id=tipo_id,
                 metros_sobre_nivel_mar=p.metros_sobre_nivel_mar,
                 green_asociado=p.green_asociado, conectado=p.conectado,
-            ))
-        self._session.commit()
-
-    def guardar_relaciones(self, relaciones: List[Relacion]) -> None:
-        self._session.exec(delete(RelacionTable))
-        for r in relaciones:
-            self._session.add(RelacionTable(
-                punto_inicial_id=r.punto_inicial.ubigeo,
-                punto_final_id=r.punto_final.ubigeo,
-                distancia=r.distancia,
             ))
         self._session.commit()
 

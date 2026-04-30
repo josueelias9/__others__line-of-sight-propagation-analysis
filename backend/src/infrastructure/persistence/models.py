@@ -26,15 +26,6 @@ class PuntoTable(SQLModel, table=True):
     conectado: bool = Field(default=False)
 
 
-class RelacionTable(SQLModel, table=True):
-    __tablename__ = "relacion"
-
-    id: Optional[int] = Field(default=None, primary_key=True)
-    punto_inicial_id: int = Field(foreign_key="punto.ubigeo")
-    punto_final_id: int = Field(foreign_key="punto.ubigeo")
-    distancia: float
-
-
 class MultipoligonoTable(SQLModel, table=True):
     __tablename__ = "multipoligono"
 
@@ -45,3 +36,19 @@ class MultipoligonoTable(SQLModel, table=True):
     muestras: int = Field(default=0)
     distancia_km: float = Field(default=0.0)
     altura_torre_fantasma: float = Field(default=0.0)
+
+
+class RedTable(SQLModel, table=True):
+    __tablename__ = "red"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+
+
+class RedRelacionTable(SQLModel, table=True):
+    __tablename__ = "red_relacion"
+
+    red_id: int = Field(foreign_key="red.id", primary_key=True)
+    punto_inicial_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
+    punto_final_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
+    distancia: float

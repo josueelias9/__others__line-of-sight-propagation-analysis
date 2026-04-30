@@ -8,6 +8,7 @@ from domain.entities.red import Red
 from domain.entities.relacion import Relacion
 from application.interface.ports.elevation import ElevationGateway
 from application.interface.db.punto import PuntoGateway
+from application.interface.db.red import RedGateway
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class EncontrarRelacionesArbolRequest:
     tipo_conectados: str
     tipo_no_conectados: str
     distancia_maxima: float
+    nombre_red: str = ""
 
 
 @dataclass
@@ -61,11 +63,13 @@ class EncontrarRelacionesUseCase:
         elevation_repo: ElevationGateway,
         kml_output: KmlOutputPort,
         muestras: int,
+        red_repo: RedGateway = None,
     ) -> None:
         self._punto_repo = punto_repo
         self._elevation_repo = elevation_repo
         self._kml_output = kml_output
         self._muestras = muestras
+        self._red_repo = red_repo
 
     # ------------------------------------------------------------------ verificador LOS
 
@@ -104,7 +108,6 @@ class EncontrarRelacionesUseCase:
                 logger.debug("par %d-%d evaluado", i, j)
 
         self._kml_output.escribir_rutas(relaciones, "relaciones_un_archivo", altitud_absoluta=True)
-        self._punto_repo.guardar_relaciones(relaciones)
         logger.info("🔴")
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
@@ -137,8 +140,12 @@ class EncontrarRelacionesUseCase:
             rel.punto_final.conectado = True
 
         self._kml_output.escribir_rutas(exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True)
-        self._punto_repo.guardar_relaciones(exitosas)
         self._punto_repo.actualizar_conectado(conectados + no_conectados)
+
+        if self._red_repo is not None:
+            red = Red(nombre=request.nombre_red, lista_de_relaciones=exitosas)
+            self._red_repo.guardar_red(red)
+
         logger.info("🔴")
         return EncontrarRelacionesArbolResponse(
             relaciones_exitosas=exitosas,
@@ -160,6 +167,5 @@ class EncontrarRelacionesUseCase:
             distancia_maxima=request.distancia_maxima,
         )
         self._kml_output.escribir_rutas(relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True)
-        self._punto_repo.guardar_relaciones(relaciones)
         logger.info("🔴")
         return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)

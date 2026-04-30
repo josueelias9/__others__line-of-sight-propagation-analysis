@@ -1,17 +1,17 @@
 "use client";
 
-import type { PuntoData, RelacionData } from "./types";
+import type { PuntoData } from "./types";
 
 export function Legend({
   puntos,
-  relaciones,
+  redesRelacionCount,
   view3D,
   onToggle3D,
   tipoFiltro,
   onFiltroChange,
 }: {
   puntos: PuntoData[];
-  relaciones: RelacionData[];
+  redesRelacionCount: number;
   view3D: boolean;
   onToggle3D: () => void;
   tipoFiltro: string;
@@ -74,7 +74,7 @@ export function Legend({
           <div className="w-4 h-1 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/60 flex-shrink-0" />
           <div>
             <p className="text-white text-sm font-semibold leading-none">Relaciones</p>
-            <p className="text-gray-400 text-xs">{relaciones.length} enlace{relaciones.length !== 1 ? "s" : ""}</p>
+            <p className="text-gray-400 text-xs">{redesRelacionCount} enlace{redesRelacionCount !== 1 ? "s" : ""}</p>
           </div>
         </div>
 

@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   APIProvider,
   Map,
   AdvancedMarker,
 } from "@vis.gl/react-google-maps";
 
-import type { PuntoData, RelacionData, CoberturaViewModel, ArbolResult, MultipoligonoData } from "./map/types";
+import type { PuntoData, CoberturaViewModel, ArbolResult, MultipoligonoData, RelacionRedData } from "./map/types";
 import { BACKEND_URL, DEFAULT_CENTER } from "./map/config";
 import { MapOverlays } from "./map/map-overlays";
 import { CoberturaOverlays } from "./map/cobertura-overlays";
 import { CoberturaPanel } from "./map/cobertura-panel";
 import { ArbolPanel } from "./map/arbol-panel";
+import { RedPanel } from "./map/red-panel";
 import { Map3DView } from "./map/map-3d-view";
 import { Legend } from "./map/legend";
 import { MapControls } from "./map/map-controls";
@@ -28,7 +29,6 @@ const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || "90f87356969d889c";
 
 export default function MapView() {
   const [puntos, setPuntos] = useState<PuntoData[]>([]);
-  const [relaciones, setRelaciones] = useState<RelacionData[]>([]);
   const [view3D, setView3D] = useState(false);
   const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null);
   const [showMalla, setShowMalla] = useState(false);
@@ -37,18 +37,32 @@ export default function MapView() {
   const [pickingMode, setPickingMode] = useState(false);
   const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [tipoFiltro, setTipoFiltro] = useState("");
+  const [redRefreshKey, setRedRefreshKey] = useState(0);
+  const [redesRelaciones, setRedesRelaciones] = useState<RelacionRedData[]>([]);
+
+  const highlightedUbigeos = useMemo(() => {
+    const s = new Set<number>();
+    for (const rel of redesRelaciones) {
+      s.add(rel.punto_inicial_ubigeo);
+      s.add(rel.punto_final_ubigeo);
+    }
+    return s;
+  }, [redesRelaciones]);
+
+  const handleRedSelectionChange = useCallback(
+    (relaciones: RelacionRedData[]) => {
+      setRedesRelaciones(relaciones);
+    },
+    [],
+  );
 
   useEffect(() => {
     const load = async () => {
       const pUrl = tipoFiltro
         ? `${BACKEND_URL}/api/puntos?tipo=${encodeURIComponent(tipoFiltro)}`
         : `${BACKEND_URL}/api/puntos`;
-      const [pRes, rRes] = await Promise.all([
-        fetch(pUrl),
-        fetch(`${BACKEND_URL}/api/relaciones`),
-      ]);
+      const pRes = await fetch(pUrl);
       if (pRes.ok) setPuntos(await pRes.json());
-      if (rRes.ok) setRelaciones(await rRes.json());
     };
     load().catch(console.error);
   }, [tipoFiltro]);
@@ -57,7 +71,7 @@ export default function MapView() {
     <div className="relative w-full h-full bg-gray-950">
       <APIProvider apiKey={API_KEY}>
         {view3D ? (
-          <Map3DView puntos={puntos} relaciones={relaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} showMalla={showMalla} multipoligonos={multipoligonos} />
+          <Map3DView puntos={puntos} redesRelaciones={redesRelaciones} cobertura={cobertura} arbolRelaciones={arbolResult?.relaciones_exitosas ?? []} showMalla={showMalla} multipoligonos={multipoligonos} />
         ) : (
           <Map
             mapId={MAP_ID}
@@ -82,9 +96,8 @@ export default function MapView() {
           >
             <MapOverlays
               puntos={puntos}
-              relaciones={relaciones}
+              redesRelaciones={redesRelaciones}
               arbolRelaciones={arbolResult?.relaciones_exitosas ?? []}
-            
             />
             <CoberturaOverlays data={cobertura} showMalla={showMalla} />
             <MultipoligonoOverlays items={multipoligonos} />
@@ -94,7 +107,7 @@ export default function MapView() {
                 position={{ lat: p.latitud, lng: p.longitud }}
                 title={`${p.nombre} (${p.tipo})`}
               >
-                <MarkerPin tipo={p.tipo} />
+                <MarkerPin tipo={p.tipo} highlighted={highlightedUbigeos.has(p.ubigeo)} />
               </AdvancedMarker>
             ))}
             <MapControls />
@@ -112,7 +125,7 @@ export default function MapView() {
 
       <Legend
         puntos={puntos}
-        relaciones={relaciones}
+        redesRelacionCount={redesRelaciones.length}
         view3D={view3D}
         onToggle3D={() => setView3D((v) => !v)}
         tipoFiltro={tipoFiltro}
@@ -132,7 +145,8 @@ export default function MapView() {
             {showMalla ? "✓ Malla visible" : "○ Malla oculta"}
           </button>
         )}
-        <ArbolPanel puntos={puntos} onResult={setArbolResult} />
+        <ArbolPanel puntos={puntos} onResult={setArbolResult} onSaved={() => setRedRefreshKey((k) => k + 1)} />
+        <RedPanel refreshKey={redRefreshKey} onSelectionChange={handleRedSelectionChange} />
         <MultipoligonoPanel
           onVisibleItemsChange={setMultipoligonos}
         />
