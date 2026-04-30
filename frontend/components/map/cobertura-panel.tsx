@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { PuntoData, CoberturaForm, CoberturaViewModel } from './types'
 import { BACKEND_URL } from './config'
+import { PanelFrame } from './panel-frame'
 
 interface CoberturaPanelProps {
     puntos: PuntoData[]
@@ -69,26 +70,15 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
     ]
 
     return (
-        <div className='w-72 rounded-2xl overflow-hidden shadow-2xl'>
-            <button
-                onClick={() => setOpen(v => !v)}
-                className='w-full bg-gray-900/90 backdrop-blur-xl border border-white/10 px-5 py-4 text-left'
-            >
-                <span className='text-white font-bold text-base tracking-tight'>
-                    Análisis de Cobertura
-                </span>
-                <p className='text-gray-400 text-xs mt-0.5'>
-                    {open ? '▲ Cerrar' : '▼ Configurar y generar'}
-                </p>
-            </button>
-
-            {open && (
-                <>
-                    <div className='h-px bg-white/10' />
-                    <form
-                        onSubmit={handleSubmit}
-                        className='bg-gray-900/85 backdrop-blur-xl border-x border-b border-white/10 rounded-b-2xl px-5 py-4 space-y-3 max-h-[70vh] overflow-y-auto'
-                    >
+        <PanelFrame
+            title='Análisis de Cobertura'
+            closedLabel='Configurar y generar'
+            open={open}
+            onToggle={() => setOpen(v => !v)}
+            as='form'
+            onSubmit={handleSubmit}
+            contentClassName='max-h-[70vh] overflow-y-auto'
+        >
                         {/* Selector de punto */}
                         <div>
                             <label className='text-gray-400 text-xs block mb-0.5'>Punto</label>
@@ -141,9 +131,6 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
                         >
                             {loading ? 'Calculando…' : 'Generar cobertura'}
                         </button>
-                    </form>
-                </>
-            )}
-        </div>
+        </PanelFrame>
     )
 }

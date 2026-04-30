@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { RedData, RelacionRedData } from './types'
 import { BACKEND_URL } from './config'
+import { PanelFrame } from './panel-frame'
 
 const NET_COLORS = [
     '#60A5FA',
@@ -90,23 +91,13 @@ export function RedPanel({ refreshKey = 0, onSelectionChange }: RedPanelProps) {
     }, [refreshKey])
 
     return (
-        <div className='w-72 rounded-2xl overflow-hidden shadow-2xl'>
-            <button
-                onClick={() => setOpen(v => !v)}
-                className='w-full bg-gray-900/90 backdrop-blur-xl border border-white/10 px-5 py-4 text-left'
-            >
-                <span className='text-white font-bold text-base tracking-tight'>
-                    Redes guardadas
-                </span>
-                <p className='text-gray-400 text-xs mt-0.5'>
-                    {open ? '▲ Cerrar' : '▼ Ver y seleccionar'}
-                </p>
-            </button>
-
-            {open && (
-                <>
-                    <div className='h-px bg-white/10' />
-                    <div className='bg-gray-900/85 backdrop-blur-xl border-x border-b border-white/10 rounded-b-2xl px-5 py-4 space-y-3 max-h-[60vh] overflow-y-auto'>
+        <PanelFrame
+            title='Redes guardadas'
+            closedLabel='Ver y seleccionar'
+            open={open}
+            onToggle={() => setOpen(v => !v)}
+            contentClassName='max-h-[60vh] overflow-y-auto'
+        >
                         <div className='flex items-center justify-between'>
                             <span className='text-gray-400 text-xs'>
                                 {redes.length} red{redes.length !== 1 ? 'es' : ''}
@@ -180,9 +171,6 @@ export function RedPanel({ refreshKey = 0, onSelectionChange }: RedPanelProps) {
                                 </div>
                             )
                         })}
-                    </div>
-                </>
-            )}
-        </div>
+        </PanelFrame>
     )
 }
