@@ -1,20 +1,37 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import type { MultipoligonoData } from '@/app/lib/types'
-import { BACKEND_URL } from '@/app/lib/config'
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
+import type { MultipoligonoData, RedData, RelacionRedData } from '@/app/lib/types'
 import { PanelFrame } from '@/components/map/panel-layout'
 import { ITEM_COLORS } from '@/app/lib/utils'
 
-interface MultipoligonoPanelProps {
-    onVisibleItemsChange: (items: MultipoligonoData[]) => void
+// ─── Internal generic base ─────────────────────────────────────────────────────
+
+interface GenericPanelProps<T extends { id: number }> {
+    title: string
+    endpoint: string
+    deleteEndpoint: (id: number) => string
+    countLabel: (n: number) => string
+    emptyText: string
+    renderRow: (item: T, expanded: boolean, onExpand: () => void) => ReactNode
+    details?: (item: T) => Array<[string, string]>
+    onVisibleItemsChange: (items: T[]) => void
 }
 
-export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelProps) {
+function GenericPanel<T extends { id: number }>({
+    title,
+    endpoint,
+    deleteEndpoint,
+    countLabel,
+    emptyText,
+    renderRow,
+    details,
+    onVisibleItemsChange,
+}: GenericPanelProps<T>) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [items, setItems] = useState<MultipoligonoData[]>([])
+    const [items, setItems] = useState<T[]>([])
     const [visibleIds, setVisibleIds] = useState<Set<number>>(new Set())
     const [expandedId, setExpandedId] = useState<number | null>(null)
 
@@ -22,11 +39,10 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
         setLoading(true)
         setError(null)
         try {
-            const res = await fetch(`${BACKEND_URL}/api/cobertura`)
+            const res = await fetch(endpoint)
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
-            const data: MultipoligonoData[] = await res.json()
+            const data: T[] = await res.json()
             setItems(data)
-            // auto-enable all newly loaded items
             setVisibleIds(new Set(data.map(d => d.id)))
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : String(err))
@@ -36,7 +52,7 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
     }
 
     async function handleDelete(id: number) {
-        await fetch(`${BACKEND_URL}/api/cobertura/${id}`, { method: 'DELETE' })
+        await fetch(deleteEndpoint(id), { method: 'DELETE' })
         const next = items.filter(i => i.id !== id)
         setItems(next)
         setVisibleIds(prev => {
@@ -54,10 +70,12 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
         })
     }
 
-    // Notify parent whenever visible set or items change
+    const onVisibleItemsChangeRef = useRef(onVisibleItemsChange)
+    useEffect(() => { onVisibleItemsChangeRef.current = onVisibleItemsChange })
+
     useEffect(() => {
-        onVisibleItemsChange(items.filter(i => visibleIds.has(i.id)))
-    }, [items, visibleIds, onVisibleItemsChange])
+        onVisibleItemsChangeRef.current(items.filter(i => visibleIds.has(i.id)))
+    }, [items, visibleIds])
 
     useEffect(() => {
         if (open && items.length === 0) load()
@@ -66,16 +84,14 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
 
     return (
         <PanelFrame
-            title='Coberturas guardadas'
+            title={title}
             closedLabel='Ver y seleccionar'
             open={open}
             onToggle={() => setOpen(v => !v)}
             contentClassName='max-h-[60vh] overflow-y-auto'
         >
             <div className='flex items-center justify-between'>
-                <span className='text-gray-400 text-xs'>
-                    {items.length} cobertura{items.length !== 1 ? 's' : ''}
-                </span>
+                <span className='text-gray-400 text-xs'>{countLabel(items.length)}</span>
                 <button
                     onClick={load}
                     disabled={loading}
@@ -90,7 +106,7 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
             )}
 
             {!loading && items.length === 0 && (
-                <p className='text-gray-500 text-xs text-center py-2'>Sin coberturas guardadas</p>
+                <p className='text-gray-500 text-xs text-center py-2'>{emptyText}</p>
             )}
 
             {items.map(item => {
@@ -100,32 +116,19 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
                 return (
                     <div key={item.id} className='bg-gray-800/40 rounded-xl overflow-hidden'>
                         <div className='flex items-center gap-3 px-3 py-2'>
-                            {/* color swatch + toggle */}
                             <button
                                 onClick={() => toggleItem(item.id)}
                                 className='shrink-0 w-4 h-4 rounded-sm border-2 transition-opacity'
                                 style={{
                                     backgroundColor: active ? color : 'transparent',
                                     borderColor: color,
-                                    opacity: active ? 1 : 0.6
+                                    opacity: active ? 1 : 0.6,
                                 }}
                                 title={active ? 'Ocultar' : 'Mostrar'}
                             />
-
-                            {/* info — click to expand */}
-                            <button
-                                onClick={() => setExpandedId(expanded ? null : item.id)}
-                                className='flex-1 min-w-0 text-left'
-                            >
-                                <p className='text-white text-xs font-medium truncate'>
-                                    {item.punto_nombre}
-                                </p>
-                                <p className='text-gray-500 text-xs'>
-                                    #{item.id} · {item.distancia_km} km · {expanded ? '▲' : '▼'}
-                                </p>
-                            </button>
-
-                            {/* delete */}
+                            {renderRow(item, expanded, () =>
+                                setExpandedId(expanded ? null : item.id)
+                            )}
                             <button
                                 onClick={() => handleDelete(item.id)}
                                 className='shrink-0 text-red-400 hover:text-red-300 text-xs px-1.5 py-1 rounded-lg hover:bg-red-400/10 transition-colors'
@@ -134,30 +137,92 @@ export function MultipoligonoPanel({ onVisibleItemsChange }: MultipoligonoPanelP
                                 ✕
                             </button>
                         </div>
-
-                        {expanded && (
+                        {expanded && details && (
                             <div className='border-t border-white/5 px-3 pb-2 pt-1.5 grid grid-cols-2 gap-x-4 gap-y-1'>
-                                <span className='text-gray-500 text-xs'>Punto</span>
-                                <span className='text-gray-200 text-xs font-medium'>
-                                    {item.punto_nombre}
-                                </span>
-                                <span className='text-gray-500 text-xs'>Distancia</span>
-                                <span className='text-gray-200 text-xs'>
-                                    {item.distancia_km} km
-                                </span>
-                                <span className='text-gray-500 text-xs'>Torre fantasma</span>
-                                <span className='text-gray-200 text-xs'>
-                                    {item.altura_torre_fantasma} m
-                                </span>
-                                <span className='text-gray-500 text-xs'>Líneas de vista</span>
-                                <span className='text-gray-200 text-xs'>{item.numero_de_ldv}</span>
-                                <span className='text-gray-500 text-xs'>Muestras</span>
-                                <span className='text-gray-200 text-xs'>{item.muestras}</span>
+                                {details(item).map(([label, value]) => (
+                                    <Fragment key={label}>
+                                        <span className='text-gray-500 text-xs'>{label}</span>
+                                        <span className='text-gray-200 text-xs'>{value}</span>
+                                    </Fragment>
+                                ))}
                             </div>
                         )}
                     </div>
                 )
             })}
         </PanelFrame>
+    )
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+export type SavedItemsPanelProps =
+    | {
+          kind: 'coberturas'
+          endpoint: string
+          deleteEndpoint: (id: number) => string
+          onVisibleItemsChange: (items: MultipoligonoData[]) => void
+      }
+    | {
+          kind: 'redes'
+          endpoint: string
+          deleteEndpoint: (id: number) => string
+          onVisibleItemsChange: (items: RelacionRedData[]) => void
+      }
+
+export function SavedItemsPanel(props: SavedItemsPanelProps) {
+    if (props.kind === 'coberturas') {
+        return (
+            <GenericPanel<MultipoligonoData>
+                title='Coberturas guardadas'
+                endpoint={props.endpoint}
+                deleteEndpoint={props.deleteEndpoint}
+                countLabel={n => `${n} cobertura${n !== 1 ? 's' : ''}`}
+                emptyText='Sin coberturas guardadas'
+                onVisibleItemsChange={props.onVisibleItemsChange}
+                renderRow={(item, expanded, onExpand) => (
+                    <button onClick={onExpand} className='flex-1 min-w-0 text-left'>
+                        <p className='text-white text-xs font-medium truncate'>{item.punto_nombre}</p>
+                        <p className='text-gray-500 text-xs'>
+                            #{item.id} · {item.distancia_km} km · {expanded ? '▲' : '▼'}
+                        </p>
+                    </button>
+                )}
+                details={item => [
+                    ['Punto', item.punto_nombre],
+                    ['Distancia', `${item.distancia_km} km`],
+                    ['Torre fantasma', `${item.altura_torre_fantasma} m`],
+                    ['Líneas de vista', String(item.numero_de_ldv)],
+                    ['Muestras', String(item.muestras)],
+                ]}
+            />
+        )
+    }
+
+    return (
+        <GenericPanel<RedData>
+            title='Redes guardadas'
+            endpoint={props.endpoint}
+            deleteEndpoint={props.deleteEndpoint}
+            countLabel={n => `${n} red${n !== 1 ? 'es' : ''}`}
+            emptyText='Sin redes guardadas'
+            onVisibleItemsChange={items => props.onVisibleItemsChange(items.flatMap(r => r.relaciones))}
+            renderRow={(item, expanded, onExpand) => (
+                <button onClick={onExpand} className='flex-1 min-w-0 text-left'>
+                    <p className='text-white text-xs font-medium truncate'>
+                        {item.nombre || 'sin nombre'}
+                    </p>
+                    <p className='text-gray-500 text-xs'>
+                        #{item.id} · {item.relaciones.length} enlace
+                        {item.relaciones.length !== 1 ? 's' : ''} · {expanded ? '▲' : '▼'}
+                    </p>
+                </button>
+            )}
+            details={item => [
+                ['Nombre', item.nombre || 'sin nombre'],
+                ['ID', String(item.id)],
+                ['Enlaces', String(item.relaciones.length)],
+            ]}
+        />
     )
 }

@@ -53,6 +53,11 @@ Content-Type: application/json
   "altura_torre_fantasma": 15.0
 }
 
+###
+GET {{host}}/api/cobertura
+
+
+
 # ─────────────────────────────────────────────
 # Árbol de conexión (LOS entre dos tipos)
 # ─────────────────────────────────────────────
@@ -67,3 +72,6 @@ Content-Type: application/json
   "distancia_maxima": 20.0,
   "muestras": 100
 }
+
+###
+GET {{host}}/api/redes

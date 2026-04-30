@@ -56,7 +56,12 @@ export function MapOverlays({
         }
 
         redesRelaciones.forEach(r =>
-            drawLine(byUbigeo[r.punto_inicial_ubigeo], byUbigeo[r.punto_final_ubigeo], ITEM_COLORS[9], 3)
+            drawLine(
+                byUbigeo[r.punto_inicial_ubigeo],
+                byUbigeo[r.punto_final_ubigeo],
+                ITEM_COLORS[9],
+                3
+            )
         )
         arbolRelaciones.forEach(r =>
             drawLine(byNombre[r.punto_inicial], byNombre[r.punto_final], ITEM_COLORS[5], 5)

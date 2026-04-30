@@ -8,6 +8,7 @@ import type {
     CoberturaViewModel,
     ArbolResult,
     MultipoligonoData,
+    RedData,
     RelacionRedData
 } from '../app/lib/types'
 import { BACKEND_URL, DEFAULT_CENTER } from '../app/lib/config'
@@ -15,13 +16,12 @@ import { MapOverlays } from './map/overlays/map-overlays'
 import { CoberturaOverlays } from './map/overlays/cobertura-overlays'
 import { CoberturaPanel } from './map/paneles/cobertura-panel'
 import { ArbolPanel } from './map/paneles/arbol-panel'
-import { RedPanel } from './map/paneles/red-panel'
 import { Map3DView } from './map/map-3d-view'
 import { Legend } from './map/legend'
 import { MapControls } from './map/map-controls'
 import { MarkerPin } from './map/marker-pin'
 import { AddPuntoPanel } from './map/paneles/add-punto-panel'
-import { MultipoligonoPanel } from './map/paneles/multipoligono-panel'
+import { SavedItemsPanel } from './map/paneles/multipoligono-panel'
 import { MultipoligonoOverlays } from './map/overlays/multipoligono-overlays'
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
@@ -38,7 +38,6 @@ export default function MapView() {
     const [pickingMode, setPickingMode] = useState(false)
     const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null)
     const [tipoFiltro, setTipoFiltro] = useState('')
-    const [redRefreshKey, setRedRefreshKey] = useState(0)
     const [redesRelaciones, setRedesRelaciones] = useState<RelacionRedData[]>([])
 
     const highlightedUbigeos = useMemo(() => {
@@ -50,8 +49,8 @@ export default function MapView() {
         return s
     }, [redesRelaciones])
 
-    const handleRedSelectionChange = useCallback((relaciones: RelacionRedData[]) => {
-        setRedesRelaciones(relaciones)
+    const handleRedesChange = useCallback((redes: RedData[]) => {
+        setRedesRelaciones(redes.flatMap(r => r.relaciones))
     }, [])
 
     useEffect(() => {
@@ -163,10 +162,19 @@ export default function MapView() {
                 <ArbolPanel
                     puntos={puntos}
                     onResult={setArbolResult}
-                    onSaved={() => setRedRefreshKey(k => k + 1)}
                 />
-                <RedPanel refreshKey={redRefreshKey} onSelectionChange={handleRedSelectionChange} />
-                <MultipoligonoPanel onVisibleItemsChange={setMultipoligonos} />
+                <SavedItemsPanel
+                    kind='redes'
+                    endpoint={`${BACKEND_URL}/api/redes`}
+                    deleteEndpoint={id => `${BACKEND_URL}/api/redes/${id}`}
+                    onVisibleItemsChange={setRedesRelaciones}
+                />
+                <SavedItemsPanel
+                    kind='coberturas'
+                    endpoint={`${BACKEND_URL}/api/cobertura`}
+                    deleteEndpoint={id => `${BACKEND_URL}/api/cobertura/${id}`}
+                    onVisibleItemsChange={setMultipoligonos}
+                />
             </div>
             <AddPuntoPanel
                 onAdded={nuevo => setPuntos(prev => [...prev, nuevo])}

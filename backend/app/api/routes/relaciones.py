@@ -13,7 +13,7 @@ class RelacionOut(BaseModel):
     punto_final: str
     distancia: float
 
-
+# TODO borra
 @router.get("", response_model=List[RelacionOut])
 def get_relaciones(session: SessionDep):
     repo = PgPuntoRepository(session)
