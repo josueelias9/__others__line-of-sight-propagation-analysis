@@ -141,11 +141,9 @@ def run() -> None:
             asignar_alturas_uc.ejecutar()
 
         elif opcion == "2":
-            archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()
             dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
             encontrar_relaciones_uc.ejecutar_un_archivo(
                 EncontrarRelacionesUnArchivoRequest(
-                    nombre_archivo=archivo,
                     distancia_maxima=dist,
                 )
             )

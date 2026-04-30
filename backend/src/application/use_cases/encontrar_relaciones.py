@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EncontrarRelacionesUnArchivoRequest:
-    nombre_archivo: str
     distancia_maxima: float
 
 
@@ -94,7 +93,7 @@ class EncontrarRelacionesUseCase:
         posibles con LOS dentro de la distancia máxima.
         """
         logger.info("🟢")
-        puntos = self._punto_repo.leer_puntos(request.nombre_archivo)
+        puntos = self._punto_repo.leer_puntos()
         relaciones = []
         for i in range(len(puntos)):
             for j in range(i + 1, len(puntos)):
@@ -104,7 +103,7 @@ class EncontrarRelacionesUseCase:
                         relaciones.append(re)
                 logger.debug("par %d-%d evaluado", i, j)
 
-        self._kml_output.escribir_rutas(relaciones, request.nombre_archivo, altitud_absoluta=True)
+        self._kml_output.escribir_rutas(relaciones, "relaciones_un_archivo", altitud_absoluta=True)
         self._punto_repo.guardar_relaciones(relaciones)
         logger.info("🔴")
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
