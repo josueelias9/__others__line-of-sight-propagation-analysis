@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { PuntoData } from './types'
-import { BACKEND_URL } from './config'
+import type { PuntoData } from '../types'
+import { BACKEND_URL } from '../config'
 
 interface AddPuntoPanelProps {
     onAdded: (punto: PuntoData) => void

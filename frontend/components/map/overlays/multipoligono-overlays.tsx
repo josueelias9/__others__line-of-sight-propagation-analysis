@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
-import type { MultipoligonoData } from './types'
+import type { MultipoligonoData } from '../types'
 
 const COLORS = [
     '#60A5FA', // blue-400

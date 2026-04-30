@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { MultipoligonoData } from './types'
-import { BACKEND_URL } from './config'
-import { PanelFrame } from './panel-frame'
+import type { MultipoligonoData } from '../types'
+import { BACKEND_URL } from '../config'
+import { PanelFrame } from '../panel-frame'
 
 const ITEM_COLORS = [
     '#60A5FA',

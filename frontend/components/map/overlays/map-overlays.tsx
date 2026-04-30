@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
-import type { PuntoData, RelacionRedData, RelacionArbolOut } from './types'
+import type { PuntoData, RelacionRedData, RelacionArbolOut } from '../types'
 
 export function MapOverlays({
     puntos,

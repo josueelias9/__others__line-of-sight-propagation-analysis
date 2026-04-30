@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
-import type { CoberturaViewModel, GeoJsonFeature } from './types'
+import type { CoberturaViewModel, GeoJsonFeature } from '../types'
 
 function geojsonToGooglePolygons(
     geojson: GeoJsonFeature,
