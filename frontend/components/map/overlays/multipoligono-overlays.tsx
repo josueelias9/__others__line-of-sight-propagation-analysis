@@ -2,18 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
-import type { MultipoligonoData } from '../types'
-
-const COLORS = [
-    '#60A5FA', // blue-400
-    '#F472B6', // pink-400
-    '#A78BFA', // violet-400
-    '#FB923C', // orange-400
-    '#34D399', // emerald-400
-    '#FACC15', // yellow-400
-    '#F87171', // red-400
-    '#2DD4BF' // teal-400
-]
+import type { MultipoligonoData } from '@/app/lib/types'
+import { ITEM_COLORS } from '@/app/lib/utils'
 
 function buildInfoContent(item: MultipoligonoData): string {
     return `
@@ -44,7 +34,7 @@ export function MultipoligonoOverlays({ items }: { items: MultipoligonoData[] })
         infoWindowRef.current = infoWindow
 
         items.forEach(item => {
-            const color = COLORS[item.id % COLORS.length]
+            const color = ITEM_COLORS[item.id % ITEM_COLORS.length]
             const { geometry } = item.geojson
             if (!geometry) return
 

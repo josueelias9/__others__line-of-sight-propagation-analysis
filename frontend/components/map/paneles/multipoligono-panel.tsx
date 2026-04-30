@@ -1,20 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { MultipoligonoData } from '../types'
-import { BACKEND_URL } from '../config'
-import { PanelFrame } from '../panel-frame'
-
-const ITEM_COLORS = [
-    '#60A5FA',
-    '#F472B6',
-    '#A78BFA',
-    '#FB923C',
-    '#34D399',
-    '#FACC15',
-    '#F87171',
-    '#2DD4BF'
-]
+import type { MultipoligonoData } from '@/app/lib/types'
+import { BACKEND_URL } from '@/app/lib/config'
+import { PanelFrame } from '@/components/map/panel-frame'
+import { ITEM_COLORS } from '@/app/lib/utils'
 
 interface MultipoligonoPanelProps {
     onVisibleItemsChange: (items: MultipoligonoData[]) => void

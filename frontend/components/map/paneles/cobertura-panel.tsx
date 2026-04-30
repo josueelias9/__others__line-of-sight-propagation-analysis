@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import type { PuntoData, CoberturaForm, CoberturaViewModel } from '../types'
-import { BACKEND_URL } from '../config'
-import { PanelFrame } from '../panel-frame'
+import type { PuntoData, CoberturaForm, CoberturaViewModel } from '@/app/lib/types'
+import { BACKEND_URL } from '@/app/lib/config'
+import { PanelFrame } from '@/components/map/panel-frame'
 
 interface CoberturaPanelProps {
     puntos: PuntoData[]

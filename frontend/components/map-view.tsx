@@ -9,8 +9,8 @@ import type {
     ArbolResult,
     MultipoligonoData,
     RelacionRedData
-} from './map/types'
-import { BACKEND_URL, DEFAULT_CENTER } from './map/config'
+} from '../app/lib/types'
+import { BACKEND_URL, DEFAULT_CENTER } from '../app/lib/config'
 import { MapOverlays } from './map/overlays/map-overlays'
 import { CoberturaOverlays } from './map/overlays/cobertura-overlays'
 import { CoberturaPanel } from './map/paneles/cobertura-panel'

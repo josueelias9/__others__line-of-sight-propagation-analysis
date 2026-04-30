@@ -10,8 +10,9 @@ import type {
     CoberturaViewModel,
     RelacionArbolOut,
     MultipoligonoData
-} from './types'
-import { DEFAULT_CENTER } from './config'
+} from '@/app/lib/types'
+import { DEFAULT_CENTER } from '@/app/lib/config'
+import { ITEM_COLORS } from '@/app/lib/utils'
 
 export function Map3DView({
     puntos,
@@ -219,16 +220,6 @@ export function Map3DView({
     }, [mapReady, cobertura, showMalla])
 
     // ── Efecto 4: polígonos guardados de la DB ─────────────────────────────────
-    const SAVED_COLORS = [
-        '#60A5FA',
-        '#F472B6',
-        '#A78BFA',
-        '#FB923C',
-        '#34D399',
-        '#FACC15',
-        '#F87171',
-        '#2DD4BF'
-    ]
 
     useEffect(() => {
         multipoligonosElemsRef.current.forEach(el => el.remove())
@@ -241,7 +232,7 @@ export function Map3DView({
             const { Polygon3DElement } = await (google.maps as any).importLibrary('maps3d')
 
             multipoligonos.forEach(item => {
-                const hex = SAVED_COLORS[item.id % SAVED_COLORS.length]
+                const hex = ITEM_COLORS[item.id % ITEM_COLORS.length]
                 const { geometry } = item.geojson
                 if (!geometry) return
 

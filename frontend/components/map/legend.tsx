@@ -1,6 +1,6 @@
 'use client'
 
-import type { PuntoData } from './types'
+import type { PuntoData } from '@/app/lib/types'
 
 export function Legend({
     puntos,

@@ -1,20 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { RedData, RelacionRedData } from '../types'
-import { BACKEND_URL } from '../config'
-import { PanelFrame } from '../panel-frame'
-
-const NET_COLORS = [
-    '#60A5FA',
-    '#F472B6',
-    '#A78BFA',
-    '#FB923C',
-    '#34D399',
-    '#FACC15',
-    '#F87171',
-    '#2DD4BF'
-]
+import type { RedData, RelacionRedData } from '@/app/lib/types'
+import { BACKEND_URL } from '@/app/lib/config'
+import { PanelFrame } from '@/components/map/panel-frame'
+import { ITEM_COLORS } from '@/app/lib/utils'
 
 interface RedPanelProps {
     refreshKey?: number
@@ -120,7 +110,7 @@ export function RedPanel({ refreshKey = 0, onSelectionChange }: RedPanelProps) {
             )}
 
             {redes.map(red => {
-                const color = NET_COLORS[red.id % NET_COLORS.length]
+                const color = ITEM_COLORS[red.id % ITEM_COLORS.length]
                 const active = selectedIds.has(red.id)
                 return (
                     <div key={red.id} className='bg-gray-800/40 rounded-xl overflow-hidden'>
