@@ -10,5 +10,8 @@
         "workbench.colorTheme": "Monokai"
       }
     }
+  },
+  "features": {
+    "ghcr.io/cirolosapio/devcontainers-features/alpine-git:0": {}
   }
 }
