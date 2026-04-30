@@ -30,12 +30,6 @@ Content-Type: application/json
 ### Asignar altura sobre el nivel del mar a todos los puntos (SRTM)
 POST {{host}}/api/puntos/alturas
 
-# ─────────────────────────────────────────────
-# Relaciones (CSV persistido)
-# ─────────────────────────────────────────────
-
-### Listar relaciones guardadas
-GET {{host}}/api/relaciones
 
 # ─────────────────────────────────────────────
 # Cobertura
@@ -47,7 +41,7 @@ Content-Type: application/json
 
 {
   "ubigeo": 1,
-  "numero_de_ldv": 72,
+  "numero_de_ldv": 100,
   "muestras": 100,
   "distancia_km": 15.0,
   "altura_torre_fantasma": 15.0
@@ -59,11 +53,11 @@ GET {{host}}/api/cobertura
 
 
 # ─────────────────────────────────────────────
-# Árbol de conexión (LOS entre dos tipos)
+# Árbol de conexión (LOS entre dos tipos) - REDES
 # ─────────────────────────────────────────────
 
 ### Ejecutar árbol de conexión entre dos tipos de puntos
-POST {{host}}/api/arbol
+POST {{host}}/api/redes
 Content-Type: application/json
 
 {

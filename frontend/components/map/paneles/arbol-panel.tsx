@@ -30,7 +30,7 @@ export function ArbolPanel({ puntos, onResult, onSaved }: ArbolPanelProps) {
         setError(null)
 
         try {
-            const res = await fetch(`${BACKEND_URL}/api/arbol`, {
+            const res = await fetch(`${BACKEND_URL}/api/redes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
