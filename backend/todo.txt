@@ -1,0 +1,5 @@
+TODO agregar validador de poligonos (esta cerrado o no?)
+
+[ ] agregar rangos validos a los casos de uso
+
+[ ] agregar opcion para tipos de iconos

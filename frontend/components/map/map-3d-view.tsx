@@ -1,0 +1,282 @@
+'use client'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useEffect, useRef, useState } from 'react'
+import { useApiIsLoaded } from '@vis.gl/react-google-maps'
+import type {
+    PuntoData,
+    RedData,
+    CoberturaViewModel,
+    GeoJsonGeometryMultiLineString,
+    MultipoligonoData
+} from '@/app/lib/types'
+import { DEFAULT_CENTER } from '@/app/lib/config'
+import { ITEM_COLORS } from '@/app/lib/utils'
+
+export function Map3DView({
+    puntos,
+    redes = [],
+    cobertura,
+    arbolRedGeojson = null,
+    showMalla = false,
+    multipoligonos = []
+}: {
+    puntos: PuntoData[]
+    redes?: RedData[]
+    cobertura: CoberturaViewModel | null
+    arbolRedGeojson?: GeoJsonGeometryMultiLineString | null
+    showMalla?: boolean
+    multipoligonos?: MultipoligonoData[]
+}) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const map3dRef = useRef<any>(null)
+    const libRef = useRef<any>(null)
+    const coberturaElemsRef = useRef<any[]>([])
+    const redesElemsRef = useRef<any[]>([])
+    const arbolLinesRef = useRef<any[]>([])
+    const multipoligonosElemsRef = useRef<any[]>([])
+    const apiLoaded = useApiIsLoaded()
+    const [mapReady, setMapReady] = useState(false)
+
+    // ── Efecto 1: construye mapa, marcadores y líneas (estable) ───────────────
+    useEffect(() => {
+        if (!apiLoaded || !containerRef.current) return
+        const container = containerRef.current
+        let cancelled = false
+
+        ;(async () => {
+            const lib = await (google.maps as any).importLibrary('maps3d')
+            if (cancelled) return
+            libRef.current = lib
+            const { Map3DElement, Marker3DElement, Polyline3DElement, AltitudeMode } = lib
+
+            const map3d = new Map3DElement({
+                center: { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng, altitude: 3500 },
+                tilt: 67.5,
+                range: 18000,
+                heading: 20,
+                mode: 'HYBRID'
+            })
+            map3d.style.cssText = 'width:100%;height:100%;display:block;'
+            container.appendChild(map3d)
+            map3dRef.current = map3d
+
+            puntos.forEach(p => {
+                const marker = new Marker3DElement({
+                    position: { lat: p.latitud, lng: p.longitud, altitude: p.altura_antena },
+                    altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+                    extruded: true,
+                    label: p.nombre
+                })
+
+                const svgImg = document.createElement('img')
+                svgImg.src = p.tipo === 'transporte' ? '/transporte.svg' : '/acceso.svg'
+                svgImg.width = 32
+                svgImg.height = 32
+                const tmpl = document.createElement('template')
+                tmpl.content.append(svgImg)
+                marker.append(tmpl)
+
+                map3d.appendChild(marker)
+            })
+
+            setMapReady(true)
+        })().catch(console.error)
+
+        return () => {
+            cancelled = true
+            if (map3dRef.current && container.contains(map3dRef.current)) {
+                container.removeChild(map3dRef.current)
+            }
+            map3dRef.current = null
+            libRef.current = null
+            setMapReady(false)
+        }
+    }, [apiLoaded, puntos])
+
+    // ── Efecto 2: líneas de redes guardadas ────────────────────────────────────
+    useEffect(() => {
+        redesElemsRef.current.forEach(el => el.remove())
+        redesElemsRef.current = []
+
+        if (!mapReady || !map3dRef.current || !libRef.current || redes.length === 0) return
+        const map3d = map3dRef.current
+        const { Polyline3DElement } = libRef.current
+
+        redes.forEach(red => {
+            const color = ITEM_COLORS[red.id % ITEM_COLORS.length]
+            red.geojson.coordinates.forEach(coords => {
+                if (coords.length < 2) return
+                const [lng0, lat0, alt0 = 0] = coords[0]
+                const [lng1, lat1, alt1 = 0] = coords[coords.length - 1]
+                const line = new Polyline3DElement({
+                    altitudeMode: 'ABSOLUTE',
+                    strokeColor: color,
+                    strokeWidth: 6,
+                    geodesic: true,
+                    drawsOccludedSegments: true
+                })
+                line.coordinates = [
+                    { lat: lat0, lng: lng0, altitude: alt0 },
+                    { lat: lat1, lng: lng1, altitude: alt1 }
+                ]
+                map3d.append(line)
+                redesElemsRef.current.push(line)
+            })
+        })
+    }, [mapReady, redes])
+
+    // ── Efecto 3: agrega/elimina líneas del árbol de conexión ──────────────────
+    useEffect(() => {
+        arbolLinesRef.current.forEach(el => el.remove())
+        arbolLinesRef.current = []
+
+        if (!mapReady || !map3dRef.current || !libRef.current || !arbolRedGeojson || arbolRedGeojson.coordinates.length === 0)
+            return
+        const map3d = map3dRef.current
+        const { Polyline3DElement } = libRef.current
+
+        const byCoord: Record<string, PuntoData> = {}
+        puntos.forEach(p => {
+            byCoord[`${p.latitud},${p.longitud}`] = p
+        })
+
+        arbolRedGeojson.coordinates.forEach(coords => {
+            if (coords.length < 2) return
+            const [lng0, lat0] = coords[0]
+            const [lng1, lat1] = coords[coords.length - 1]
+            const ini = byCoord[`${lat0},${lng0}`]
+            const fin = byCoord[`${lat1},${lng1}`]
+            if (!ini || !fin) return
+            const line = new Polyline3DElement({
+                altitudeMode: 'ABSOLUTE',
+                strokeColor: '#FACC15',
+                strokeWidth: 8,
+                geodesic: true,
+                drawsOccludedSegments: true
+            })
+            line.coordinates = [
+                {
+                    lat: ini.latitud,
+                    lng: ini.longitud,
+                    altitude: ini.metros_sobre_nivel_mar + ini.altura_antena
+                },
+                {
+                    lat: fin.latitud,
+                    lng: fin.longitud,
+                    altitude: fin.metros_sobre_nivel_mar + fin.altura_antena
+                }
+            ]
+            map3d.append(line)
+            arbolLinesRef.current.push(line)
+        })
+    }, [mapReady, arbolRedGeojson, puntos])
+
+    // ── Efecto 4: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
+    useEffect(() => {
+        coberturaElemsRef.current.forEach(el => el.remove())
+        coberturaElemsRef.current = []
+
+        if (!mapReady || !map3dRef.current || !cobertura) return
+        const map3d = map3dRef.current
+
+        ;(async () => {
+            const { Polygon3DElement } = await (google.maps as any).importLibrary('maps3d')
+
+            const mallaGeom = cobertura.malla_geojson.geometry
+            if (showMalla && mallaGeom && mallaGeom.type === 'MultiPolygon') {
+                mallaGeom.coordinates.forEach(([outerRing]) => {
+                    const poly = new Polygon3DElement({
+                        altitudeMode: 'CLAMP_TO_GROUND',
+                        fillColor: 'rgba(52,211,153,0.45)',
+                        strokeColor: '#34D399',
+                        strokeWidth: 2
+                    })
+                    poly.outerCoordinates = outerRing.map(([lng, lat]) => ({ lat, lng }))
+                    map3d.append(poly)
+                    coberturaElemsRef.current.push(poly)
+                })
+            }
+
+            const { geometry } = cobertura.geojson
+            if (geometry) {
+                const polygons: [number, number][][][] =
+                    geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+
+                polygons.forEach(([outerRing, ...innerRings]) => {
+                    const poly = new Polygon3DElement({
+                        altitudeMode: 'CLAMP_TO_GROUND',
+                        fillColor: 'rgba(251,191,36,0.2)',
+                        strokeColor: '#FBBF24',
+                        strokeWidth: 4
+                    })
+                    poly.outerCoordinates = outerRing.map(([lng, lat]) => ({ lat, lng }))
+                    if (innerRings.length > 0) {
+                        poly.innerCoordinates = innerRings.map(ring =>
+                            ring.map(([lng, lat]) => ({ lat, lng }))
+                        )
+                    }
+                    map3d.append(poly)
+                    coberturaElemsRef.current.push(poly)
+                })
+            }
+        })().catch(console.error)
+    }, [mapReady, cobertura, showMalla])
+
+    // ── Efecto 5: polígonos guardados de la DB ─────────────────────────────────
+
+    useEffect(() => {
+        multipoligonosElemsRef.current.forEach(el => el.remove())
+        multipoligonosElemsRef.current = []
+
+        if (!mapReady || !map3dRef.current || multipoligonos.length === 0) return
+        const map3d = map3dRef.current
+
+        ;(async () => {
+            const { Polygon3DElement } = await (google.maps as any).importLibrary('maps3d')
+
+            multipoligonos.forEach(item => {
+                const hex = ITEM_COLORS[item.id % ITEM_COLORS.length]
+                const { geometry } = item.geojson
+                if (!geometry) return
+
+                const polygons: [number, number][][][] =
+                    geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+
+                polygons.forEach(([outerRing, ...innerRings]) => {
+                    const poly = new Polygon3DElement({
+                        altitudeMode: 'CLAMP_TO_GROUND',
+                        fillColor: hex + '30',
+                        strokeColor: hex,
+                        strokeWidth: 3
+                    })
+                    poly.outerCoordinates = outerRing.map(([lng, lat]: [number, number]) => ({
+                        lat,
+                        lng
+                    }))
+                    if (innerRings.length > 0) {
+                        poly.innerCoordinates = innerRings.map((ring: [number, number][]) =>
+                            ring.map(([lng, lat]) => ({ lat, lng }))
+                        )
+                    }
+                    map3d.append(poly)
+                    multipoligonosElemsRef.current.push(poly)
+                })
+            })
+        })().catch(console.error)
+    }, [mapReady, multipoligonos])
+
+    return (
+        <div className='relative w-full h-full bg-gray-950'>
+            {!apiLoaded && (
+                <div className='absolute inset-0 flex items-center justify-center'>
+                    <p className='text-white/60 text-sm animate-pulse'>Cargando vista 3D…</p>
+                </div>
+            )}
+            <div ref={containerRef} className='w-full h-full' />
+        </div>
+    )
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

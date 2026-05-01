@@ -1,0 +1,7 @@
+.devcontainer
+.vscode
+imagenes
+use_cases.dio
+proyecto/
+README.md
+*.log

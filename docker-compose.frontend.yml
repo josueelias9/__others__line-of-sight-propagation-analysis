@@ -1,0 +1,26 @@
+services:
+  frontend:
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace
+    build: 
+      context: ./frontend
+      dockerfile: Dev.Dockerfile
+    command: sleep infinity
+    user: root
+    
+  backend:
+    profiles:
+      - avoid
+
+  pgadmin:
+    profiles:
+      - avoid
+
+  backend-init:
+    profiles:
+      - avoid
+
+  db:
+    profiles:
+      - avoid

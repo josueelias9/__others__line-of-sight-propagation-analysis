@@ -1,0 +1,72 @@
+### REST Client – Line of Sight API
+### Requiere la extensión "REST Client" (humao.rest-client) en VS Code
+
+@host = http://localhost:8000
+
+# ─────────────────────────────────────────────
+# Puntos
+# ─────────────────────────────────────────────
+
+### Listar todos los puntos
+GET {{host}}/api/puntos
+
+###
+
+### Agregar un nuevo punto
+POST {{host}}/api/puntos
+Content-Type: application/json
+
+{
+  "nombre": "NuevoPunto01",
+  "longitud": -76.9,
+  "latitud": -12.1,
+  "altura_antena": 15.0,
+  "tipo": "acceso",
+  "green_asociado": ""
+}
+
+###
+
+### Asignar altura sobre el nivel del mar a todos los puntos (SRTM)
+POST {{host}}/api/puntos/alturas
+
+
+# ─────────────────────────────────────────────
+# Cobertura
+# ─────────────────────────────────────────────
+
+### Generar polígono de cobertura para un ubigeo
+POST {{host}}/api/cobertura
+Content-Type: application/json
+
+{
+  "ubigeo": 1,
+  "numero_de_ldv": 100,
+  "muestras": 100,
+  "distancia_km": 15.0,
+  "altura_torre_fantasma": 15.0
+}
+
+###
+GET {{host}}/api/cobertura
+
+
+
+# ─────────────────────────────────────────────
+# Árbol de conexión (LOS entre dos tipos) - REDES
+# ─────────────────────────────────────────────
+
+### Ejecutar árbol de conexión entre dos tipos de puntos
+POST {{host}}/api/redes
+Content-Type: application/json
+
+{
+  "tipo_conectados": "transporte",
+  "tipo_no_conectados": "acceso",
+  "distancia_maxima": 20.0,
+  "muestras": 100,
+  "nombre_red": "RedTransporte-Acceso prueba"
+}
+
+###
+GET {{host}}/api/redes

@@ -1,0 +1,23 @@
+{
+  "name": "Backend Container",
+  "dockerComposeFile": ["../../docker-compose.yml","../../docker-compose.backend.yml"],
+  "service": "backend",
+  "shutdownAction": "none",
+  "workspaceFolder": "/workspace/backend",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mechatroner.rainbow-csv",
+        "Gruntfuggly.todo-tree",
+        "hediet.vscode-drawio",
+        "ms-python.python",
+        "RandomFractalsInc.geo-data-viewer",
+        "bierner.markdown-mermaid",
+        "humao.rest-client"
+      ],
+      "settings": {
+        "workbench.colorTheme": "Monokai"
+      }
+    }
+  }
+}
