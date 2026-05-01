@@ -1,0 +1,9 @@
+# directory
+.terraform
+
+# files
+.terraform.lock.hcl
+terraform.tfvars
+
+# pattern
+terraform.tfstate*
