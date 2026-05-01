@@ -11,6 +11,7 @@ por lo que puede inyectarse directamente en el caso de uso.
 
 Pertenece a la capa de Interfaz.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -21,8 +22,8 @@ from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaResponse,
 )
 
-
 # ── ViewModel ─────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class CoberturaViewModel:
@@ -33,6 +34,7 @@ class CoberturaViewModel:
 
 # ── Presenter ─────────────────────────────────────────────────────────────────
 
+
 class GenerarPoligonoCoberturaPresenter(CoberturaOutputBoundary):
     """
     Implementa CoberturaOutputBoundary.
@@ -41,7 +43,9 @@ class GenerarPoligonoCoberturaPresenter(CoberturaOutputBoundary):
     y el FeatureCollection de la malla polar, listos para FastAPI o KmlWriter.
     """
 
-    def presentar(self, response: GenerarPoligonoCoberturaResponse) -> CoberturaViewModel:
+    def presentar(
+        self, response: GenerarPoligonoCoberturaResponse
+    ) -> CoberturaViewModel:
         return CoberturaViewModel(
             nombre=response.nombre,
             geojson=response.geojson,

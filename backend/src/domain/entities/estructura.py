@@ -35,9 +35,9 @@ class Estructura:
         punto_cero: Punto,
         altura_torre_fantasma: float,
     ) -> None:
-        self.n = n                          # número de direcciones (lados)
-        self.m = m                          # número de muestras por dirección
-        self.r = r                          # radio en grados
+        self.n = n  # número de direcciones (lados)
+        self.m = m  # número de muestras por dirección
+        self.r = r  # radio en grados
         self.punto_cero = punto_cero
         self.altura_torre_fantasma = altura_torre_fantasma
 
@@ -88,7 +88,6 @@ class Estructura:
 
     # ------------------------------------------------------------------ extracción de polígonos
 
-
     def coordenadas_poligonito(self, poligonito: Poligonito) -> List:
         """
         Devuelve la lista de coordenadas (longitud, latitud) de un Poligonito
@@ -99,4 +98,3 @@ class Estructura:
             pt = self.estructura_figuras_geome[idx[0]][idx[1]]
             coords.append((pt.longitud, pt.latitud))
         return coords
-

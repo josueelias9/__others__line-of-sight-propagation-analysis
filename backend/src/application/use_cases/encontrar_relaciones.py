@@ -57,6 +57,7 @@ class EncontrarRelacionesUseCase:
 
     Pertenece a la capa de Aplicación.
     """
+
     # TODO punto_repo tiene que cambiarse a data_repo o store_repo porque ahora se guardaran relaciones y no solo puntos.
     def __init__(
         self,
@@ -83,7 +84,9 @@ class EncontrarRelacionesUseCase:
         except Exception as exc:
             logger.warning(
                 "error al verificar LOS entre '%s' y '%s': %s",
-                p1.nombre, p2.nombre, exc,
+                p1.nombre,
+                p2.nombre,
+                exc,
             )
             return False
 
@@ -108,7 +111,9 @@ class EncontrarRelacionesUseCase:
                         relaciones.append(re)
                 logger.debug("par %d-%d evaluado", i, j)
 
-        self._kml_output.escribir_rutas(relaciones, "relaciones_un_archivo", altitud_absoluta=True)
+        self._kml_output.escribir_rutas(
+            relaciones, "relaciones_un_archivo", altitud_absoluta=True
+        )
         logger.info("🔴")
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
@@ -140,7 +145,9 @@ class EncontrarRelacionesUseCase:
         for rel in exitosas:
             rel.punto_final.conectado = True
 
-        self._kml_output.escribir_rutas(exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True)
+        self._kml_output.escribir_rutas(
+            exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True
+        )
         self._punto_repo.actualizar_conectado(conectados + no_conectados)
 
         if self._red_repo is not None:
@@ -168,6 +175,10 @@ class EncontrarRelacionesUseCase:
             verifica_los=self._verificar_los,
             distancia_maxima=request.distancia_maxima,
         )
-        self._kml_output.escribir_rutas(relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True)
+        self._kml_output.escribir_rutas(
+            relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True
+        )
         logger.info("🔴")
-        return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)
+        return EncontrarRelacionesClusterizarResponse(
+            redes=redes, relaciones=relaciones
+        )

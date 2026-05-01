@@ -4,7 +4,8 @@ Created on Tue May 29 12:55:57 2018
 
 @author: Josue
 """
-'''
+
+"""
 lista1=['1','w','q','aa','www']
 
 tam=len(lista1)
@@ -16,16 +17,16 @@ for i in range(0,tam):
         veces=veces+1
 print(veces)
 
-''' 
-'''
+"""
+"""
 from itertools import combinations
 lista=[90,2,3,4,5]
 for j in range(0,len(lista)):
     comb=combinations(lista,len(lista)-j)
     for tupla in list(comb):
         print(tupla)
-'''
-'''
+"""
+"""
 for j in range(0,len(lista)):
     comb=combinations(lista,len(lista)-j)
     for tupla in list(comb):
@@ -36,17 +37,17 @@ for j in range(0,len(lista)):
         for tupla2 in list(comb2):
             print(tupla2)
         print('·······················')
-'''
-'''
+"""
+"""
 lista=[90,2,3,4,5]
 aux=1      
 for i in range(1,len(lista)):
     print(lista[i])
 
 #for i in range(0,len(lista))
-'''
+"""
 
-'''
+"""
 ALGORITMO PARA HACER EL SPANNING TREE
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
@@ -56,25 +57,25 @@ X = csr_matrix([[0, 8, 0, 3],
                 [0, 0, 0, 0]])
 Tcsr = minimum_spanning_tree(X)
 print(Tcsr.toarray().astype(int))
-'''
-'''
+"""
+"""
 import Factor
 from shapely.geometry import Polygon, Point
 p = Point(2,2)
 P=Polygon([(0,0), (0,5), (5,0), (5,5)])
 print (P.contains(p))
-'''
+"""
 
-'''
+"""
 from fastkml import kml
 f=open('C:/Users/Josue/Desktop/gabo/macro.kml','r')
 doc = f.read()
 k = kml.KML()
 k.from_string(doc)
 len(k._features)
-'''
+"""
 
-'''
+"""
 # Import the library
 from fastkml import kml
 from shapely.geometry import Point, LineString, Polygon
@@ -107,14 +108,12 @@ f2.append(p)
 
 # Print out the KML Object as a string
 print(k.to_string(prettyprint=True))
-'''
-
-
+"""
 
 
 from fastkml import kml
 
-doc='''
+doc = """
     <?xml version="1.0" encoding="UTF-8"?>
     <kml xmlns="http://www.opengis.net/kml/2.2">
     	<Document>
@@ -141,14 +140,14 @@ doc='''
     		</Placemark>
     	</Document>
     </kml>
-    '''
+    """
 k = kml.KML()
 k.from_string(doc)
 # Create the KML object to store the parsed result
-#k = kml.KML()
+# k = kml.KML()
 
 # Read in the KML string
-#k.from_string(doc)
+# k.from_string(doc)
 
 # Next we perform some simple sanity checks
 

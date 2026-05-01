@@ -13,6 +13,7 @@ from application.interface.ports.output import CoberturaOutputBoundary
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class GenerarPoligonoCoberturaRequest:
     ubigeo: int

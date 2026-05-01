@@ -11,6 +11,7 @@ el principio de inversión de dependencias de Clean Architecture:
 Modifica `_construir_contenedor()` para cambiar implementaciones concretas
 sin tocar ninguna capa de dominio o aplicación.
 """
+
 import os
 import sys
 
@@ -42,7 +43,9 @@ from application.interface.ports.output import CoberturaOutputBoundary
 from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
 from interface.presenters.passthrough_presenter import PassthroughCoberturaPresenter
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
-from infrastructure.geometry.shapely_geometry_repository import ShapelyGeometryRepository
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
 from infrastructure.output.kml_writer import KmlWriter
 from infrastructure.output.txt_writer import TxtWriter
 from infrastructure.persistence.csv_punto_repository import CsvPuntoRepository
@@ -141,7 +144,10 @@ def run() -> None:
             asignar_alturas_uc.ejecutar()
 
         elif opcion == "2":
-            dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
+            dist = float(
+                input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip()
+                or config.DISTANCIA_KM
+            )
             encontrar_relaciones_uc.ejecutar_un_archivo(
                 EncontrarRelacionesUnArchivoRequest(
                     distancia_maxima=dist,
@@ -158,9 +164,10 @@ def run() -> None:
                 GenerarPoligonoCoberturaRequest(ubigeo=ubigeo)
             )  # returns CoberturaViewModel via presenter
             kml_output.escribir_cobertura(response)
-            punto_nombre = next((p.nombre for p in puntos if p.ubigeo == ubigeo), str(ubigeo))
+            punto_nombre = next(
+                (p.nombre for p in puntos if p.ubigeo == ubigeo), str(ubigeo)
+            )
             print(f"KML generado en {config.DIR_OUTPUT}{punto_nombre}.kml")
-
 
         # TODO queda pendiente ya que hay problemas (ver bug.log)
         # elif opcion == "4":
@@ -175,9 +182,16 @@ def run() -> None:
         #     )
 
         elif opcion == "5":
-            tipo_conectados = input("Tipo de puntos BASE/CONECTADOS (ej: transporte): ").strip()
-            tipo_no_conectados = input("Tipo de puntos a CONECTAR (ej: acceso): ").strip()
-            dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
+            tipo_conectados = input(
+                "Tipo de puntos BASE/CONECTADOS (ej: transporte): "
+            ).strip()
+            tipo_no_conectados = input(
+                "Tipo de puntos a CONECTAR (ej: acceso): "
+            ).strip()
+            dist = float(
+                input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip()
+                or config.DISTANCIA_KM
+            )
             encontrar_relaciones_uc.ejecutar_dos_archivos_arbol(
                 EncontrarRelacionesArbolRequest(
                     tipo_conectados=tipo_conectados,
@@ -188,7 +202,10 @@ def run() -> None:
 
         elif opcion == "6":
             archivo = input("Nombre del archivo de puntos (sin .csv): ").strip()
-            dist = float(input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip() or config.DISTANCIA_KM)
+            dist = float(
+                input(f"Distancia máxima en km [{config.DISTANCIA_KM}]: ").strip()
+                or config.DISTANCIA_KM
+            )
             encontrar_relaciones_uc.ejecutar_clusterizar(
                 EncontrarRelacionesClusterizarRequest(
                     nombre_archivo=archivo,

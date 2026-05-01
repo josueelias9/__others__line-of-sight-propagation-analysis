@@ -3,6 +3,7 @@ Configuración centralizada del proyecto.
 
 Modifica este archivo para adaptar las rutas y parámetros a tu entorno.
 """
+
 import logging
 import os
 
@@ -55,6 +56,5 @@ def setup_logging() -> None:
         level=getattr(logging, os.getenv("LOG_LEVEL")),
         format="%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        filename='myapp.log'
+        filename="myapp.log",
     )
-

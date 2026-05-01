@@ -15,7 +15,6 @@ class ShapelyGeometryRepository(GeometryGateway):
     Pertenece a la capa de Infraestructura.
     """
 
-
     def estructura_a_area(self, estructura: Estructura) -> AreaGeometrica:
         return self._shapely_a_area(self._estructura_a_shapely(estructura))
 
@@ -40,12 +39,16 @@ class ShapelyGeometryRepository(GeometryGateway):
                 next_i = 0 if i == ultimo_i else i + 1
                 p00, p0m = fg[i][j], fg[i][j - 1]
                 ppm, pp0 = fg[next_i][j - 1], fg[next_i][j]
-                polygons.append(Polygon([
-                    (p00.longitud, p00.latitud),
-                    (p0m.longitud, p0m.latitud),
-                    (ppm.longitud, ppm.latitud),
-                    (pp0.longitud, pp0.latitud),
-                ]))
+                polygons.append(
+                    Polygon(
+                        [
+                            (p00.longitud, p00.latitud),
+                            (p0m.longitud, p0m.latitud),
+                            (ppm.longitud, ppm.latitud),
+                            (pp0.longitud, pp0.latitud),
+                        ]
+                    )
+                )
         if not polygons:
             return {"type": "Feature", "geometry": None, "properties": {}}
         multipoly = MultiPolygon(polygons)
@@ -74,12 +77,16 @@ class ShapelyGeometryRepository(GeometryGateway):
                 next_i = 0 if i == ultimo_i else i + 1
                 p00, p0m = fg[i][j], fg[i][j - 1]
                 ppm, pp0 = fg[next_i][j - 1], fg[next_i][j]
-                polygons.append(Polygon([
-                    (p00.longitud, p00.latitud),
-                    (p0m.longitud, p0m.latitud),
-                    (ppm.longitud, ppm.latitud),
-                    (pp0.longitud, pp0.latitud),
-                ]))
+                polygons.append(
+                    Polygon(
+                        [
+                            (p00.longitud, p00.latitud),
+                            (p0m.longitud, p0m.latitud),
+                            (ppm.longitud, ppm.latitud),
+                            (pp0.longitud, pp0.latitud),
+                        ]
+                    )
+                )
         if not polygons:
             return Polygon()
         return unary_union(polygons).buffer(0)

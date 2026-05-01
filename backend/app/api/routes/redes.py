@@ -16,8 +16,6 @@ from application.use_cases.encontrar_relaciones import (
 )
 from application.use_cases.listar_redes import ListarRedesUseCase
 
-
-
 router = APIRouter()
 
 
@@ -61,6 +59,7 @@ def delete_red(red_id: int, session: SessionDep):
     repo = PgRedRepository(session)
     repo.eliminar_red(red_id)
 
+
 # ==================
 
 
@@ -85,11 +84,10 @@ class ArbolResponse(BaseModel):
     puntos_sin_conexion: List[PuntoSinConexionOut]
 
 
-
-
 @router.post("", response_model=ArbolResponse)
 def post_arbol(body: ArbolRequest, session: SessionDep):
     import os
+
     os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
     repo = PgPuntoRepository(session)
@@ -115,7 +113,8 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
     )
 
     return ArbolResponse(
-        red_geojson=result.red_geojson or {"type": "MultiLineString", "coordinates": []},
+        red_geojson=result.red_geojson
+        or {"type": "MultiLineString", "coordinates": []},
         puntos_sin_conexion=[
             PuntoSinConexionOut(
                 ubigeo=p.ubigeo,

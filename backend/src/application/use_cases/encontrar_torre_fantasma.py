@@ -96,7 +96,9 @@ class EncontrarTorreFantasmaUseCase:
                 area, poligono = self._intersectar_coberturas(list(tupla))
                 if area:
                     self._kml_output.escribir_area(poligono, request.nombre_salida)
-                    self._txt_output.escribir_puntos(list(tupla), request.nombre_salida + "_puntos")
+                    self._txt_output.escribir_puntos(
+                        list(tupla), request.nombre_salida + "_puntos"
+                    )
                     logger.info("¡área encontrada!")
                     return EncontrarTorreFantasmaResponse(encontrado=True)
 
@@ -117,12 +119,18 @@ class EncontrarTorreFantasmaUseCase:
 
         for i, nc in enumerate(no_conectados):
             logger.debug("Nodo no conectado %d: %s", i, nc.nombre)
-            resp_nc = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=nc))
+            resp_nc = self._cobertura_uc.ejecutar(
+                GenerarPoligonoCoberturaRequest(punto=nc)
+            )
             area_nc = self._geometry_gw.estructura_a_area(resp_nc.estructura)
             area_actual = area_nc
 
             candidatos = sorted(
-                [Relacion(nc, c) for c in conectados if Relacion(nc, c).distancia < self._distancia_maxima * 2],
+                [
+                    Relacion(nc, c)
+                    for c in conectados
+                    if Relacion(nc, c).distancia < self._distancia_maxima * 2
+                ],
                 key=lambda r: r.distancia,
             )
 
@@ -134,8 +142,12 @@ class EncontrarTorreFantasmaUseCase:
                 interseccion = self._geometry_gw.intersectar(area_actual, area_c)
                 if not interseccion.vacia:
                     nombre = f"{nc.nombre}-{rel.punto_final.nombre}"
-                    self._kml_output.escribir_area(interseccion, request.nombre_salida_prefijo + nombre)
-                    logger.info("→ intersección encontrada con %s", rel.punto_final.nombre)
+                    self._kml_output.escribir_area(
+                        interseccion, request.nombre_salida_prefijo + nombre
+                    )
+                    logger.info(
+                        "→ intersección encontrada con %s", rel.punto_final.nombre
+                    )
                     break
                 else:
                     area_actual = area_nc
@@ -147,7 +159,10 @@ class EncontrarTorreFantasmaUseCase:
     def _todos_a_distancia_razonable(self, puntos: List[Punto]) -> bool:
         for i in range(len(puntos)):
             for j in range(i + 1, len(puntos)):
-                if Relacion(puntos[i], puntos[j]).distancia > self._distancia_maxima * 2:
+                if (
+                    Relacion(puntos[i], puntos[j]).distancia
+                    > self._distancia_maxima * 2
+                ):
                     return False
         return True
 
@@ -157,11 +172,17 @@ class EncontrarTorreFantasmaUseCase:
         if not puntos:
             return False, None
 
-        resp = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=puntos[0]))
+        resp = self._cobertura_uc.ejecutar(
+            GenerarPoligonoCoberturaRequest(punto=puntos[0])
+        )
         resultado = self._geometry_gw.estructura_a_area(resp.estructura)
         for pt in puntos[1:]:
-            logger.debug("intersectando con cobertura de %s con id %s", pt.nombre, pt.ubigeo)
-            resp = self._cobertura_uc.ejecutar(GenerarPoligonoCoberturaRequest(punto=pt))
+            logger.debug(
+                "intersectando con cobertura de %s con id %s", pt.nombre, pt.ubigeo
+            )
+            resp = self._cobertura_uc.ejecutar(
+                GenerarPoligonoCoberturaRequest(punto=pt)
+            )
             cobertura = self._geometry_gw.estructura_a_area(resp.estructura)
             resultado = self._geometry_gw.intersectar(resultado, cobertura)
             if resultado.vacia:

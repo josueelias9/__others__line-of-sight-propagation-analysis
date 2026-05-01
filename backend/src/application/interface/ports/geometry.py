@@ -17,6 +17,7 @@ class AreaGeometrica:
 
     Pertenece a la capa de Aplicación.
     """
+
     anillos: List[List[List[Tuple[float, float]]]] = field(default_factory=list)
 
     @property
