@@ -108,18 +108,18 @@ export function Map3DView({
             const color = ITEM_COLORS[red.id % ITEM_COLORS.length]
             red.geojson.coordinates.forEach(coords => {
                 if (coords.length < 2) return
-                const [lng0, lat0] = coords[0]
-                const [lng1, lat1] = coords[coords.length - 1]
+                const [lng0, lat0, alt0 = 0] = coords[0]
+                const [lng1, lat1, alt1 = 0] = coords[coords.length - 1]
                 const line = new Polyline3DElement({
-                    altitudeMode: 'CLAMP_TO_GROUND',
+                    altitudeMode: 'ABSOLUTE',
                     strokeColor: color,
                     strokeWidth: 6,
                     geodesic: true,
                     drawsOccludedSegments: true
                 })
                 line.coordinates = [
-                    { lat: lat0, lng: lng0 },
-                    { lat: lat1, lng: lng1 }
+                    { lat: lat0, lng: lng0, altitude: alt0 },
+                    { lat: lat1, lng: lng1, altitude: alt1 }
                 ]
                 map3d.append(line)
                 redesElemsRef.current.push(line)

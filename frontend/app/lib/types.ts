@@ -21,7 +21,7 @@ export interface GeoJsonGeometryLineString {
 
 export interface GeoJsonGeometryMultiLineString {
     type: 'MultiLineString'
-    coordinates: [number, number][][]
+    coordinates: [number, number, number?][][]
 }
 
 export interface GeoJsonGeometryPolygon {
