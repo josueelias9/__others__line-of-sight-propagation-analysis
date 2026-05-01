@@ -1,15 +1,11 @@
 certifi==2021.10.8
 charset-normalizer==2.0.12
-geohelper==0.2.0
 idna==3.3
 numpy==2.4.4
-requests==2.27.1
 Shapely==2.1.2
 urllib3==1.26.8
 fastapi==0.115.12
 uvicorn[standard]==0.34.2
-srtm.py==0.3.7
-nasadem
 sqlmodel==0.0.22
 psycopg2-binary==2.9.10
 tenacity==9.1.2
