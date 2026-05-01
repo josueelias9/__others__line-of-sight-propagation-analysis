@@ -2,18 +2,18 @@
 
 import { useEffect, useRef } from 'react'
 import { useMap } from '@vis.gl/react-google-maps'
-import type { PuntoData, RelacionRedData, RelacionArbolOut } from '@/app/lib/types'
+import type { PuntoData, RelacionRedData, GeoJsonGeometryMultiLineString } from '@/app/lib/types'
 
 import { ITEM_COLORS } from '@/app/lib/utils'
 
 export function MapOverlays({
     puntos,
     redesRelaciones = [],
-    arbolRelaciones = []
+    arbolRedGeojson = null
 }: {
     puntos: PuntoData[]
     redesRelaciones?: RelacionRedData[]
-    arbolRelaciones?: RelacionArbolOut[]
+    arbolRedGeojson?: GeoJsonGeometryMultiLineString | null
 }) {
     const map = useMap()
     const linesRef = useRef<google.maps.Polyline[]>([])
@@ -27,11 +27,6 @@ export function MapOverlays({
         const byUbigeo: Record<number, PuntoData> = {}
         puntos.forEach(p => {
             byUbigeo[p.ubigeo] = p
-        })
-
-        const byNombre: Record<string, PuntoData> = {}
-        puntos.forEach(p => {
-            byNombre[p.nombre] = p
         })
 
         const drawLine = (
@@ -63,15 +58,27 @@ export function MapOverlays({
                 3
             )
         )
-        arbolRelaciones.forEach(r =>
-            drawLine(byNombre[r.punto_inicial], byNombre[r.punto_final], ITEM_COLORS[5], 5)
-        )
+
+        arbolRedGeojson?.coordinates.forEach(coords => {
+            if (coords.length < 2) return
+            const [lng0, lat0] = coords[0]
+            const [lng1, lat1] = coords[coords.length - 1]
+            const line = new google.maps.Polyline({
+                path: [{ lat: lat0, lng: lng0 }, { lat: lat1, lng: lng1 }],
+                geodesic: true,
+                strokeColor: ITEM_COLORS[5],
+                strokeOpacity: 0.9,
+                strokeWeight: 5,
+                map
+            })
+            linesRef.current.push(line)
+        })
 
         return () => {
             linesRef.current.forEach(l => l.setMap(null))
             linesRef.current = []
         }
-    }, [map, puntos, redesRelaciones, arbolRelaciones])
+    }, [map, puntos, redesRelaciones, arbolRedGeojson])
 
     return null
 }

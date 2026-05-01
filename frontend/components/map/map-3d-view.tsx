@@ -8,7 +8,7 @@ import type {
     PuntoData,
     RelacionRedData,
     CoberturaViewModel,
-    RelacionArbolOut,
+    GeoJsonGeometryMultiLineString,
     MultipoligonoData
 } from '@/app/lib/types'
 import { DEFAULT_CENTER } from '@/app/lib/config'
@@ -18,14 +18,14 @@ export function Map3DView({
     puntos,
     redesRelaciones = [],
     cobertura,
-    arbolRelaciones = [],
+    arbolRedGeojson = null,
     showMalla = false,
     multipoligonos = []
 }: {
     puntos: PuntoData[]
     redesRelaciones?: RelacionRedData[]
     cobertura: CoberturaViewModel | null
-    arbolRelaciones?: RelacionArbolOut[]
+    arbolRedGeojson?: GeoJsonGeometryMultiLineString | null
     showMalla?: boolean
     multipoligonos?: MultipoligonoData[]
 }) {
@@ -130,19 +130,22 @@ export function Map3DView({
         arbolLinesRef.current.forEach(el => el.remove())
         arbolLinesRef.current = []
 
-        if (!mapReady || !map3dRef.current || !libRef.current || arbolRelaciones.length === 0)
+        if (!mapReady || !map3dRef.current || !libRef.current || !arbolRedGeojson || arbolRedGeojson.coordinates.length === 0)
             return
         const map3d = map3dRef.current
         const { Polyline3DElement } = libRef.current
 
-        const idx: Record<string, PuntoData> = {}
+        const byCoord: Record<string, PuntoData> = {}
         puntos.forEach(p => {
-            idx[p.nombre] = p
+            byCoord[`${p.latitud},${p.longitud}`] = p
         })
 
-        arbolRelaciones.forEach(r => {
-            const ini = idx[r.punto_inicial]
-            const fin = idx[r.punto_final]
+        arbolRedGeojson.coordinates.forEach(coords => {
+            if (coords.length < 2) return
+            const [lng0, lat0] = coords[0]
+            const [lng1, lat1] = coords[coords.length - 1]
+            const ini = byCoord[`${lat0},${lng0}`]
+            const fin = byCoord[`${lat1},${lng1}`]
             if (!ini || !fin) return
             const line = new Polyline3DElement({
                 altitudeMode: 'ABSOLUTE',
@@ -166,7 +169,7 @@ export function Map3DView({
             map3d.append(line)
             arbolLinesRef.current.push(line)
         })
-    }, [mapReady, arbolRelaciones, puntos])
+    }, [mapReady, arbolRedGeojson, puntos])
 
     // ── Efecto 3: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
     useEffect(() => {

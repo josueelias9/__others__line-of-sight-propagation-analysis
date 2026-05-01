@@ -72,7 +72,7 @@ export default function MapView() {
                         puntos={puntos}
                         redesRelaciones={redesRelaciones}
                         cobertura={cobertura}
-                        arbolRelaciones={arbolResult?.relaciones_exitosas ?? []}
+                        arbolRedGeojson={arbolResult?.red_geojson ?? null}
                         showMalla={showMalla}
                         multipoligonos={multipoligonos}
                     />
@@ -108,7 +108,7 @@ export default function MapView() {
                         <MapOverlays
                             puntos={puntos}
                             redesRelaciones={redesRelaciones}
-                            arbolRelaciones={arbolResult?.relaciones_exitosas ?? []}
+                            arbolRedGeojson={arbolResult?.red_geojson ?? null}
                         />
                         <CoberturaOverlays data={cobertura} showMalla={showMalla} />
                         <MultipoligonoOverlays items={multipoligonos} />

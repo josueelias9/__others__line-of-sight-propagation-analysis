@@ -14,6 +14,16 @@ export interface PuntoData {
 
 // ─── Cobertura types ───────────────────────────────────────────────────────────
 
+export interface GeoJsonGeometryLineString {
+    type: 'LineString'
+    coordinates: [number, number][]
+}
+
+export interface GeoJsonGeometryMultiLineString {
+    type: 'MultiLineString'
+    coordinates: [number, number][][]
+}
+
 export interface GeoJsonGeometryPolygon {
     type: 'Polygon'
     coordinates: [number, number][][]
@@ -48,12 +58,6 @@ export interface CoberturaForm {
 
 // ─── Árbol de conexión ─────────────────────────────────────────────────────────
 
-export interface RelacionArbolOut {
-    punto_inicial: string
-    punto_final: string
-    distancia: number
-}
-
 export interface PuntoSinConexionOut {
     ubigeo: number
     nombre: string
@@ -63,7 +67,7 @@ export interface PuntoSinConexionOut {
 }
 
 export interface ArbolResult {
-    relaciones_exitosas: RelacionArbolOut[]
+    red_geojson: GeoJsonGeometryMultiLineString
     puntos_sin_conexion: PuntoSinConexionOut[]
 }
 

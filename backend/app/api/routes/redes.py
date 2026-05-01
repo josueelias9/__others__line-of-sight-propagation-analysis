@@ -1,7 +1,8 @@
-from typing import List
+from typing import Any, Dict, List
 
 from pydantic import BaseModel
 from fastapi import APIRouter
+from shapely.geometry import LineString, MultiLineString, mapping
 
 from app.core import config
 
@@ -69,12 +70,6 @@ class ArbolRequest(BaseModel):
     nombre_red: str = ""
 
 
-class RelacionArbolOut(BaseModel):
-    punto_inicial: str
-    punto_final: str
-    distancia: float
-
-
 class PuntoSinConexionOut(BaseModel):
     ubigeo: int
     nombre: str
@@ -84,7 +79,7 @@ class PuntoSinConexionOut(BaseModel):
 
 
 class ArbolResponse(BaseModel):
-    relaciones_exitosas: List[RelacionArbolOut]
+    red_geojson: Dict[str, Any]
     puntos_sin_conexion: List[PuntoSinConexionOut]
 
 
@@ -117,15 +112,17 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
         )
     )
 
+    lines = [
+        LineString([
+            (r.punto_inicial.longitud, r.punto_inicial.latitud),
+            (r.punto_final.longitud, r.punto_final.latitud),
+        ])
+        for r in result.relaciones_exitosas
+    ]
+    red_geojson = dict(mapping(MultiLineString(lines))) if lines else {"type": "MultiLineString", "coordinates": []}
+
     return ArbolResponse(
-        relaciones_exitosas=[
-            RelacionArbolOut(
-                punto_inicial=r.punto_inicial.nombre,
-                punto_final=r.punto_final.nombre,
-                distancia=r.distancia,
-            )
-            for r in result.relaciones_exitosas
-        ],
+        red_geojson=red_geojson,
         puntos_sin_conexion=[
             PuntoSinConexionOut(
                 ubigeo=p.ubigeo,
