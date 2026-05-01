@@ -1,15 +1,6 @@
-# - Visualizador de zonas de cobertura en zonas accidentadas
 
-**Problemática:** al instalar antenas de radioenlace en zonas accidentadas, se necesita saber qué cobertura tendrá la antena considerando:
-- altura de la antena y del equipo receptor
-- zona de Fresnel
-- distancia entre antena y receptor
 
-**Alcance:** simplificar el trabajo del analista de cobertura de radioenlaces.
 
-![](imagenes/resultado_1.png)
-
----
 
 ## -- Ejecución rápida
 - entra al dev container
@@ -33,7 +24,6 @@
 Los archivos de salida (`.kml` y `.txt`) quedan en la carpeta `out/`.  
 Ábrelos en [Google Earth](https://earth.google.com).
 
----
 
 ## -- Formato del archivo de entrada
 
@@ -48,7 +38,7 @@ acceso1;2;-78.397267;-6.898882;15.0;acceso;0
 > El campo `metros_sobre_nivel_mar` puede ser `0`; el caso de uso
 > **Asignar alturas** lo completará automáticamente usando SRTM.
 
----
+
 
 ## -- Estructura del proyecto
 
@@ -88,14 +78,14 @@ linea-de-vista/
 | `infrastructure` | Acceso a disco, SRTM, KML | `domain`, `application` |
 | `interface` | CLI, ensamblado de dependencias | Todas |
 
----
+
 
 ## -- SRTM
 
 Los datos de elevación provienen de [tkrajina/srtm.py](https://github.com/tkrajina/srtm.py).  
 La carpeta `proyecto/srtm/` contiene la librería; `main.py` la añade automáticamente al path.
 
----
+
 
 ## -- Parámetros
 
