@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
-import type { MultipoligonoData, RedData, RelacionRedData } from '@/app/lib/types'
+import type { MultipoligonoData, RedData } from '@/app/lib/types'
 import { PanelFrame } from '@/components/map/panel-layout'
 import { ITEM_COLORS } from '@/app/lib/utils'
 
@@ -167,7 +167,7 @@ export type SavedItemsPanelProps =
           kind: 'redes'
           endpoint: string
           deleteEndpoint: (id: number) => string
-          onVisibleItemsChange: (items: RelacionRedData[]) => void
+          onVisibleItemsChange: (items: RedData[]) => void
       }
 
 export function SavedItemsPanel(props: SavedItemsPanelProps) {
@@ -206,7 +206,7 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
             deleteEndpoint={props.deleteEndpoint}
             countLabel={n => `${n} red${n !== 1 ? 'es' : ''}`}
             emptyText='Sin redes guardadas'
-            onVisibleItemsChange={items => props.onVisibleItemsChange(items.flatMap(r => r.relaciones))}
+            onVisibleItemsChange={props.onVisibleItemsChange}
             renderRow={(item, expanded, onExpand) => (
                 <button onClick={onExpand} className='flex-1 min-w-0 text-left'>
                     <p className='text-white text-xs font-medium truncate'>

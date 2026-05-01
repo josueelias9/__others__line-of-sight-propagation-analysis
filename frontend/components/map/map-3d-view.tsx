@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useApiIsLoaded } from '@vis.gl/react-google-maps'
 import type {
     PuntoData,
-    RelacionRedData,
+    RedData,
     CoberturaViewModel,
     GeoJsonGeometryMultiLineString,
     MultipoligonoData
@@ -16,14 +16,14 @@ import { ITEM_COLORS } from '@/app/lib/utils'
 
 export function Map3DView({
     puntos,
-    redesRelaciones = [],
+    redes = [],
     cobertura,
     arbolRedGeojson = null,
     showMalla = false,
     multipoligonos = []
 }: {
     puntos: PuntoData[]
-    redesRelaciones?: RelacionRedData[]
+    redes?: RedData[]
     cobertura: CoberturaViewModel | null
     arbolRedGeojson?: GeoJsonGeometryMultiLineString | null
     showMalla?: boolean
@@ -33,6 +33,7 @@ export function Map3DView({
     const map3dRef = useRef<any>(null)
     const libRef = useRef<any>(null)
     const coberturaElemsRef = useRef<any[]>([])
+    const redesElemsRef = useRef<any[]>([])
     const arbolLinesRef = useRef<any[]>([])
     const multipoligonosElemsRef = useRef<any[]>([])
     const apiLoaded = useApiIsLoaded()
@@ -61,11 +62,6 @@ export function Map3DView({
             container.appendChild(map3d)
             map3dRef.current = map3d
 
-            const byUbigeo: Record<number, PuntoData> = {}
-            puntos.forEach(p => {
-                byUbigeo[p.ubigeo] = p
-            })
-
             puntos.forEach(p => {
                 const marker = new Marker3DElement({
                     position: { lat: p.latitud, lng: p.longitud, altitude: p.altura_antena },
@@ -85,32 +81,6 @@ export function Map3DView({
                 map3d.appendChild(marker)
             })
 
-            redesRelaciones.forEach(r => {
-                const ini = byUbigeo[r.punto_inicial_ubigeo]
-                const fin = byUbigeo[r.punto_final_ubigeo]
-                if (!ini || !fin) return
-                const line = new Polyline3DElement({
-                    altitudeMode: 'ABSOLUTE',
-                    strokeColor: '#22D3EE',
-                    strokeWidth: 6,
-                    geodesic: true,
-                    drawsOccludedSegments: true
-                })
-                line.coordinates = [
-                    {
-                        lat: ini.latitud,
-                        lng: ini.longitud,
-                        altitude: ini.metros_sobre_nivel_mar + ini.altura_antena
-                    },
-                    {
-                        lat: fin.latitud,
-                        lng: fin.longitud,
-                        altitude: fin.metros_sobre_nivel_mar + fin.altura_antena
-                    }
-                ]
-                map3d.append(line)
-            })
-
             setMapReady(true)
         })().catch(console.error)
 
@@ -123,9 +93,41 @@ export function Map3DView({
             libRef.current = null
             setMapReady(false)
         }
-    }, [apiLoaded, puntos, redesRelaciones])
+    }, [apiLoaded, puntos])
 
-    // ── Efecto 2: agrega/elimina líneas del árbol de conexión ──────────────────
+    // ── Efecto 2: líneas de redes guardadas ────────────────────────────────────
+    useEffect(() => {
+        redesElemsRef.current.forEach(el => el.remove())
+        redesElemsRef.current = []
+
+        if (!mapReady || !map3dRef.current || !libRef.current || redes.length === 0) return
+        const map3d = map3dRef.current
+        const { Polyline3DElement } = libRef.current
+
+        redes.forEach(red => {
+            const color = ITEM_COLORS[red.id % ITEM_COLORS.length]
+            red.geojson.coordinates.forEach(coords => {
+                if (coords.length < 2) return
+                const [lng0, lat0] = coords[0]
+                const [lng1, lat1] = coords[coords.length - 1]
+                const line = new Polyline3DElement({
+                    altitudeMode: 'CLAMP_TO_GROUND',
+                    strokeColor: color,
+                    strokeWidth: 6,
+                    geodesic: true,
+                    drawsOccludedSegments: true
+                })
+                line.coordinates = [
+                    { lat: lat0, lng: lng0 },
+                    { lat: lat1, lng: lng1 }
+                ]
+                map3d.append(line)
+                redesElemsRef.current.push(line)
+            })
+        })
+    }, [mapReady, redes])
+
+    // ── Efecto 3: agrega/elimina líneas del árbol de conexión ──────────────────
     useEffect(() => {
         arbolLinesRef.current.forEach(el => el.remove())
         arbolLinesRef.current = []
@@ -171,7 +173,7 @@ export function Map3DView({
         })
     }, [mapReady, arbolRedGeojson, puntos])
 
-    // ── Efecto 3: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
+    // ── Efecto 4: agrega/elimina polígonos de cobertura sin tocar el mapa ─────
     useEffect(() => {
         coberturaElemsRef.current.forEach(el => el.remove())
         coberturaElemsRef.current = []
@@ -222,7 +224,7 @@ export function Map3DView({
         })().catch(console.error)
     }, [mapReady, cobertura, showMalla])
 
-    // ── Efecto 4: polígonos guardados de la DB ─────────────────────────────────
+    // ── Efecto 5: polígonos guardados de la DB ─────────────────────────────────
 
     useEffect(() => {
         multipoligonosElemsRef.current.forEach(el => el.remove())

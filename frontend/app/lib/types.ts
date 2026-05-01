@@ -95,5 +95,6 @@ export interface RelacionRedData {
 export interface RedData {
     id: number
     nombre: string
+    geojson: GeoJsonGeometryMultiLineString
     relaciones: RelacionRedData[]
 }

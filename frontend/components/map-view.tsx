@@ -9,10 +9,10 @@ import type {
     ArbolResult,
     MultipoligonoData,
     RedData,
-    RelacionRedData
 } from '../app/lib/types'
 import { BACKEND_URL, DEFAULT_CENTER } from '../app/lib/config'
 import { MapOverlays } from './map/overlays/map-overlays'
+import { RedOverlays } from './map/overlays/red-overlays'
 import { CoberturaOverlays } from './map/overlays/cobertura-overlays'
 import { CoberturaPanel } from './map/paneles/cobertura-panel'
 import { ArbolPanel } from './map/paneles/arbol-panel'
@@ -38,20 +38,18 @@ export default function MapView() {
     const [pickingMode, setPickingMode] = useState(false)
     const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null)
     const [tipoFiltro, setTipoFiltro] = useState('')
-    const [redesRelaciones, setRedesRelaciones] = useState<RelacionRedData[]>([])
+    const [redes, setRedes] = useState<RedData[]>([])
 
     const highlightedUbigeos = useMemo(() => {
         const s = new Set<number>()
-        for (const rel of redesRelaciones) {
-            s.add(rel.punto_inicial_ubigeo)
-            s.add(rel.punto_final_ubigeo)
+        for (const red of redes) {
+            for (const rel of red.relaciones) {
+                s.add(rel.punto_inicial_ubigeo)
+                s.add(rel.punto_final_ubigeo)
+            }
         }
         return s
-    }, [redesRelaciones])
-
-    const handleRedesChange = useCallback((redes: RedData[]) => {
-        setRedesRelaciones(redes.flatMap(r => r.relaciones))
-    }, [])
+    }, [redes])
 
     useEffect(() => {
         const load = async () => {
@@ -70,7 +68,7 @@ export default function MapView() {
                 {view3D ? (
                     <Map3DView
                         puntos={puntos}
-                        redesRelaciones={redesRelaciones}
+                        redes={redes}
                         cobertura={cobertura}
                         arbolRedGeojson={arbolResult?.red_geojson ?? null}
                         showMalla={showMalla}
@@ -107,9 +105,9 @@ export default function MapView() {
                     >
                         <MapOverlays
                             puntos={puntos}
-                            redesRelaciones={redesRelaciones}
                             arbolRedGeojson={arbolResult?.red_geojson ?? null}
                         />
+                        <RedOverlays redes={redes} />
                         <CoberturaOverlays data={cobertura} showMalla={showMalla} />
                         <MultipoligonoOverlays items={multipoligonos} />
                         {puntos.map(p => (
@@ -139,7 +137,7 @@ export default function MapView() {
 
             <Legend
                 puntos={puntos}
-                redesRelacionCount={redesRelaciones.length}
+                redesRelacionCount={redes.reduce((acc, r) => acc + r.relaciones.length, 0)}
                 view3D={view3D}
                 onToggle3D={() => setView3D(v => !v)}
                 tipoFiltro={tipoFiltro}
@@ -167,7 +165,7 @@ export default function MapView() {
                     kind='redes'
                     endpoint={`${BACKEND_URL}/api/redes`}
                     deleteEndpoint={id => `${BACKEND_URL}/api/redes/${id}`}
-                    onVisibleItemsChange={setRedesRelaciones}
+                    onVisibleItemsChange={setRedes}
                 />
                 <SavedItemsPanel
                     kind='coberturas'
