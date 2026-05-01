@@ -2,7 +2,6 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel
 from fastapi import APIRouter
-from shapely.geometry import LineString, MultiLineString, mapping
 
 from app.core import config
 
@@ -15,6 +14,7 @@ from application.use_cases.encontrar_relaciones import (
     EncontrarRelacionesUseCase,
     EncontrarRelacionesArbolRequest,
 )
+from application.use_cases.listar_redes import ListarRedesUseCase
 
 
 
@@ -30,17 +30,19 @@ class RelacionRedOut(BaseModel):
 class RedOut(BaseModel):
     id: int
     nombre: str
+    geojson: Dict[str, Any]
     relaciones: List[RelacionRedOut]
 
 
 @router.get("", response_model=List[RedOut])
 def get_redes(session: SessionDep):
-    repo = PgRedRepository(session)
-    redes = repo.listar_redes()
+    use_case = ListarRedesUseCase(red_repo=PgRedRepository(session))
+    redes = use_case.ejecutar()
     return [
         RedOut(
             id=r.id,
             nombre=r.nombre,
+            geojson=r.geojson or {"type": "MultiLineString", "coordinates": []},
             relaciones=[
                 RelacionRedOut(
                     punto_inicial_ubigeo=rel.punto_inicial.ubigeo,
@@ -112,17 +114,8 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
         )
     )
 
-    lines = [
-        LineString([
-            (r.punto_inicial.longitud, r.punto_inicial.latitud),
-            (r.punto_final.longitud, r.punto_final.latitud),
-        ])
-        for r in result.relaciones_exitosas
-    ]
-    red_geojson = dict(mapping(MultiLineString(lines))) if lines else {"type": "MultiLineString", "coordinates": []}
-
     return ArbolResponse(
-        red_geojson=red_geojson,
+        red_geojson=result.red_geojson or {"type": "MultiLineString", "coordinates": []},
         puntos_sin_conexion=[
             PuntoSinConexionOut(
                 ubigeo=p.ubigeo,

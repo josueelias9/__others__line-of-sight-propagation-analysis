@@ -1,6 +1,6 @@
 import logging
-from dataclasses import dataclass
-from typing import List, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple
 
 from application.interface.ports.output import KmlOutputPort, TxtOutputPort
 from domain.entities.punto import Punto
@@ -35,6 +35,7 @@ class EncontrarRelacionesArbolRequest:
 class EncontrarRelacionesArbolResponse:
     relaciones_exitosas: List[Relacion]
     puntos_sin_conexion: List[Punto]
+    red_geojson: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -150,6 +151,7 @@ class EncontrarRelacionesUseCase:
         return EncontrarRelacionesArbolResponse(
             relaciones_exitosas=exitosas,
             puntos_sin_conexion=sin_conexion,
+            red_geojson=red.geojson if self._red_repo is not None else None,
         )
 
     def ejecutar_clusterizar(

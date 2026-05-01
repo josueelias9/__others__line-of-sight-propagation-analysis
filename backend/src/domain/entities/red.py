@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 
 class Red:
@@ -16,6 +16,7 @@ class Red:
         key: int = 0,
         nombre: str = "",
         id: Optional[int] = None,
+        geojson: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.conectado = conectado
         self.lista_de_relaciones: List = (
@@ -27,6 +28,7 @@ class Red:
         self.key = key
         self.nombre = nombre
         self.id: Optional[int] = id
+        self.geojson: Optional[Dict[str, Any]] = geojson
 
     # ------------------------------------------------------------------ análisis de red
 
