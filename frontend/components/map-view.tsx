@@ -21,7 +21,7 @@ import { Legend } from './map/legend'
 import { MapControls } from './map/map-controls'
 import { MarkerPin } from './map/marker-pin'
 import { AddPuntoPanel } from './map/paneles/add-punto-panel'
-import { SavedItemsPanel } from './map/paneles/multipoligono-panel'
+import { SavedItemsPanel } from './map/paneles/generic-panel'
 import { MultipoligonoOverlays } from './map/overlays/multipoligono-overlays'
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''

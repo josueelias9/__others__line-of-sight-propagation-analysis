@@ -64,7 +64,8 @@ Content-Type: application/json
   "tipo_conectados": "transporte",
   "tipo_no_conectados": "acceso",
   "distancia_maxima": 20.0,
-  "muestras": 100
+  "muestras": 100,
+  "nombre_red": "RedTransporte-Acceso prueba"
 }
 
 ###
