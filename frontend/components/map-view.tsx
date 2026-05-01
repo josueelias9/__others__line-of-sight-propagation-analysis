@@ -8,7 +8,7 @@ import type {
     CoberturaViewModel,
     ArbolResult,
     MultipoligonoData,
-    RedData,
+    RedData
 } from '../app/lib/types'
 import { BACKEND_URL, DEFAULT_CENTER } from '../app/lib/config'
 import { MapOverlays } from './map/overlays/map-overlays'
@@ -157,10 +157,7 @@ export default function MapView() {
                         {showMalla ? '✓ Malla visible' : '○ Malla oculta'}
                     </button>
                 )}
-                <ArbolPanel
-                    puntos={puntos}
-                    onResult={setArbolResult}
-                />
+                <ArbolPanel puntos={puntos} onResult={setArbolResult} />
                 <SavedItemsPanel
                     kind='redes'
                     endpoint={`${BACKEND_URL}/api/redes`}

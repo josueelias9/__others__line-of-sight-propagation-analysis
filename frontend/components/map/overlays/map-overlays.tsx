@@ -27,7 +27,10 @@ export function MapOverlays({
             const [lng0, lat0] = coords[0]
             const [lng1, lat1] = coords[coords.length - 1]
             const line = new google.maps.Polyline({
-                path: [{ lat: lat0, lng: lng0 }, { lat: lat1, lng: lng1 }],
+                path: [
+                    { lat: lat0, lng: lng0 },
+                    { lat: lat1, lng: lng1 }
+                ],
                 geodesic: true,
                 strokeColor: ITEM_COLORS[5],
                 strokeOpacity: 0.9,
