@@ -9,6 +9,9 @@ from domain.entities.relacion import Relacion
 from application.interface.ports.elevation import ElevationGateway
 from application.interface.db.punto import PuntoGateway
 from application.interface.db.red import RedGateway
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +67,14 @@ class EncontrarRelacionesUseCase:
         punto_repo: PuntoGateway,
         elevation_repo: ElevationGateway,
         kml_output: KmlOutputPort,
+        geometry_gateway: ShapelyGeometryRepository,
         muestras: int,
         red_repo: RedGateway = None,
     ) -> None:
         self._punto_repo = punto_repo
         self._elevation_repo = elevation_repo
         self._kml_output = kml_output
+        self._geometry_gateway = geometry_gateway
         self._muestras = muestras
         self._red_repo = red_repo
 
@@ -152,7 +157,10 @@ class EncontrarRelacionesUseCase:
 
         if self._red_repo is not None:
             red = Red(nombre=request.nombre_red, lista_de_relaciones=exitosas)
-            self._red_repo.guardar_red(red)
+            geojson = self._geometry_gateway.relaciones_a_geojson(
+                red.lista_de_relaciones
+            )
+            self._red_repo.guardar_red(geojson, red)
 
         logger.info("🔴")
         return EncontrarRelacionesArbolResponse(

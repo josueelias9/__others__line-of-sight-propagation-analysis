@@ -16,6 +16,10 @@ from application.use_cases.encontrar_relaciones import (
 )
 from application.use_cases.listar_redes import ListarRedesUseCase
 
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
+
 router = APIRouter()
 
 
@@ -101,6 +105,7 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
         kml_output=kml_output,
         muestras=body.muestras,
         red_repo=red_repo,
+        geometry_gateway=ShapelyGeometryRepository(),
     )
 
     result = use_case.ejecutar_dos_archivos_arbol(

@@ -8,7 +8,9 @@ from domain.entities.red import Red
 from domain.entities.relacion import Relacion
 from application.interface.db.red import RedGateway
 from infrastructure.persistence.models import RedTable, RedRelacionTable
-from infrastructure.geometry.red_geojson import relaciones_a_geojson
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +26,7 @@ class PgRedRepository(RedGateway):
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def guardar_red(self, red: Red) -> Red:
-        geojson = relaciones_a_geojson(red.lista_de_relaciones)
-        red.geojson = geojson
+    def guardar_red(self, geojson: dict, red: Red) -> Red:
         red_row = RedTable(nombre=red.nombre, geojson=geojson)
         self._session.add(red_row)
         self._session.flush()  # populate red_row.id
