@@ -25,7 +25,7 @@ class ShapelyGeometryRepository(GeometryGateway):
             return {"type": "Feature", "geometry": None, "properties": {}}
         # TODO it is all good, but it can be improved ===>
         epsilon = estructura.r / estructura.m
-        geom = geom.buffer(epsilon, resolution=16).buffer(-epsilon, resolution=16)
+        geom = geom.buffer(-epsilon, resolution=32).buffer(epsilon, resolution=32)
         # <===
         return {"type": "Feature", "geometry": mapping(geom), "properties": {}}
 
