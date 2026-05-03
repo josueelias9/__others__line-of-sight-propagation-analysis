@@ -6,7 +6,7 @@ from application.interface.ports.geometry import AreaGeometrica, GeometryGateway
 from domain.entities.estructura import Estructura
 from domain.entities.relacion import Relacion
 
-from typing import Any, Dict, List
+from typing import Any
 
 
 class ShapelyGeometryRepository(GeometryGateway):
@@ -19,17 +19,15 @@ class ShapelyGeometryRepository(GeometryGateway):
     def estructura_a_area(self, estructura: Estructura) -> AreaGeometrica:
         return self._shapely_a_area(self._estructura_a_shapely(estructura))
 
-    def estructura_a_geojson(self, estructura: Estructura) -> dict:
+    def estructura_a_geojson(self, estructura: Estructura) -> dict[str, Any]:
         geom = self._estructura_a_shapely(estructura)
         if geom.is_empty:
             return {"type": "Feature", "geometry": None, "properties": {}}
-        # TODO it is all good, but it can be improved ===>
         epsilon = estructura.r / estructura.m
         geom = geom.buffer(-epsilon, resolution=32).buffer(epsilon, resolution=32)
-        # <===
         return {"type": "Feature", "geometry": mapping(geom), "properties": {}}
 
-    def estructura_a_malla_geojson(self, estructura: Estructura) -> dict:
+    def estructura_a_malla_geojson(self, estructura: Estructura) -> dict[str, Any]:
         polygons = self._lista_de_poligonos(estructura)
         if not polygons:
             return {"type": "Feature", "geometry": None, "properties": {}}
@@ -45,7 +43,7 @@ class ShapelyGeometryRepository(GeometryGateway):
         s2 = self._area_a_shapely(a2)
         return self._shapely_a_area(s1.intersection(s2))
 
-    def relaciones_a_geojson(self, relaciones: List[Relacion]) -> Dict[str, Any]:
+    def relaciones_a_geojson(self, relaciones: list[Relacion]) -> dict[str, Any]:
         """
         Convierte una lista de Relacion en un GeoJSON MultiLineString con altitudes.
 

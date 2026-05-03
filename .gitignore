@@ -1,1 +1,4 @@
-.env
+key.txt
+
+*.env
+!enc.env

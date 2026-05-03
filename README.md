@@ -8,3 +8,16 @@
 **Alcance:** simplificar el trabajo del analista de cobertura de radioenlaces.
 
 ![](imagenes/resultado_1.png)
+
+
+# use env
+
+encrypt
+```sh
+sops encrypt --age PUBLIC_KEY .env > enc.env
+```
+
+decrypt
+```sh
+SOPS_AGE_KEY_FILE=../key.txt sops decrypt enc.env > .env
+```
