@@ -1,6 +1,7 @@
 """
 Configuración centralizada de la aplicación FastAPI.
 """
+
 import logging
 import os
 
@@ -45,6 +46,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 # ── Logging ────────────────────────────────────────────────────────────────────
+
 
 def setup_logging() -> None:
     """Configura el logging: consola (INFO) y archivo app.log (DEBUG)."""

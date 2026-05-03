@@ -48,7 +48,9 @@ class Relacion:
         if len(puntos_elevacion) < 2:
             return True
 
-        y_0 = self.punto_inicial.metros_sobre_nivel_mar + self.punto_inicial.altura_antena
+        y_0 = (
+            self.punto_inicial.metros_sobre_nivel_mar + self.punto_inicial.altura_antena
+        )
         x_0 = 0.0
         y_f = self.punto_final.metros_sobre_nivel_mar + self.punto_final.altura_antena
         x_f = float(len(puntos_elevacion) - 1)
@@ -57,7 +59,10 @@ class Relacion:
             x_i = float(i)
             y_linea = ((y_f - y_0) / (x_f - x_0)) * (x_i - x_0) + y_0
             radio_fresnel = self.calcular_fresnel(puntos_elevacion[i])
-            if y_linea - 0.6 * radio_fresnel <= puntos_elevacion[i].metros_sobre_nivel_mar:
+            if (
+                y_linea - 0.6 * radio_fresnel
+                <= puntos_elevacion[i].metros_sobre_nivel_mar
+            ):
                 return False
         return True
 
@@ -70,7 +75,9 @@ class Relacion:
         if not puntos_elevacion:
             return []
 
-        y_0 = self.punto_inicial.metros_sobre_nivel_mar + self.punto_inicial.altura_antena
+        y_0 = (
+            self.punto_inicial.metros_sobre_nivel_mar + self.punto_inicial.altura_antena
+        )
         y_f = self.punto_final.metros_sobre_nivel_mar + self.punto_final.altura_antena
         x_f = float(len(puntos_elevacion) - 1)
 
@@ -91,7 +98,9 @@ class Relacion:
         if not puntos_elevacion:
             return []
 
-        y_0 = self.punto_inicial.metros_sobre_nivel_mar + self.punto_inicial.altura_antena
+        y_0 = (
+            self.punto_inicial.metros_sobre_nivel_mar + self.punto_inicial.altura_antena
+        )
         y_f = self.punto_final.metros_sobre_nivel_mar + self.punto_final.altura_antena
         x_f = float(len(puntos_elevacion) - 1)
 

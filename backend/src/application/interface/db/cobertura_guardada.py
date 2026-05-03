@@ -10,6 +10,7 @@ class CoberturaGuardada:
 
     Pertenece a la capa de Aplicación.
     """
+
     id: int
     punto_ubigeo: int
     punto_nombre: str

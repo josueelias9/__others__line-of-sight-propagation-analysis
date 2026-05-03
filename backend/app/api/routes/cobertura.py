@@ -6,10 +6,14 @@ from fastapi import APIRouter, HTTPException
 
 from app.core import config
 from infrastructure.persistence.database import SessionDep
-from infrastructure.persistence.pg_cobertura_guardada_repository import PgCoberturaGuardadaRepository
+from infrastructure.persistence.pg_cobertura_guardada_repository import (
+    PgCoberturaGuardadaRepository,
+)
 from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
-from infrastructure.geometry.shapely_geometry_repository import ShapelyGeometryRepository
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
 from interface.presenters.cobertura_presenter import GenerarPoligonoCoberturaPresenter
 from application.use_cases.generar_poligono_cobertura import (
     GenerarPoligonoCoberturaUseCase,
@@ -28,7 +32,9 @@ class CoberturaRequest(BaseModel):
     numero_de_ldv: int = Field(default=config.NUMERO_DE_LDV, ge=100, le=300)
     muestras: int = Field(default=config.MUESTRAS, ge=100, le=300)
     distancia_km: float = Field(default=config.DISTANCIA_KM, ge=1, le=15)
-    altura_torre_fantasma: float = Field(default=config.ALTURA_TORRE_FANTASMA, ge=5, le=20)
+    altura_torre_fantasma: float = Field(
+        default=config.ALTURA_TORRE_FANTASMA, ge=5, le=20
+    )
 
 
 class CoberturaGuardadaOut(BaseModel):
@@ -61,7 +67,9 @@ def post_cobertura(body: CoberturaRequest, session: SessionDep):
     )
 
     try:
-        view_model = use_case.ejecutar(GenerarPoligonoCoberturaRequest(ubigeo=body.ubigeo))
+        view_model = use_case.ejecutar(
+            GenerarPoligonoCoberturaRequest(ubigeo=body.ubigeo)
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

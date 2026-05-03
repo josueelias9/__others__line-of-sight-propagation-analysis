@@ -8,6 +8,7 @@ Ejecutar desde la raíz del repositorio:
 Asegúrate de haber activado el entorno virtual y de que las carpetas
 `in/` y `out/` existan (o serán creadas automáticamente en `out/`).
 """
+
 import os
 import sys
 

@@ -42,7 +42,9 @@ class CsvPuntoRepository(PuntoGateway):
                         metros_sobre_nivel_mar=float(fila["metros_sobre_nivel_mar"]),
                     )
                     punto.green_asociado = fila.get("green_asociado", "").strip()
-                    punto.conectado = fila.get("conectado", "False").strip().lower() == "true"
+                    punto.conectado = (
+                        fila.get("conectado", "False").strip().lower() == "true"
+                    )
                     puntos.append(punto)
                 except (KeyError, ValueError) as exc:
                     logger.warning("línea %d ignorada: %s", numero_linea, exc)
@@ -58,25 +60,35 @@ class CsvPuntoRepository(PuntoGateway):
 
     def guardar_puntos(self, puntos: List[Punto]) -> None:
         ruta = self._directorio + "punto.csv"
+        # TODO Esto podria sacarse de la mima db
         _CAMPOS = [
-            "nombre", "ubigeo", "longitud", "latitud",
-            "altura_antena", "tipo", "metros_sobre_nivel_mar", "green_asociado", "conectado",
+            "nombre",
+            "ubigeo",
+            "longitud",
+            "latitud",
+            "altura_antena",
+            "tipo",
+            "metros_sobre_nivel_mar",
+            "green_asociado",
+            "conectado",
         ]
         with open(ruta, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=_CAMPOS)
             writer.writeheader()
             for p in puntos:
-                writer.writerow({
-                    "nombre": p.nombre,
-                    "ubigeo": p.ubigeo,
-                    "longitud": p.longitud,
-                    "latitud": p.latitud,
-                    "altura_antena": p.altura_antena,
-                    "tipo": p.tipo,
-                    "metros_sobre_nivel_mar": p.metros_sobre_nivel_mar,
-                    "green_asociado": p.green_asociado,
-                    "conectado": p.conectado,
-                })
+                writer.writerow(
+                    {
+                        "nombre": p.nombre,
+                        "ubigeo": p.ubigeo,
+                        "longitud": p.longitud,
+                        "latitud": p.latitud,
+                        "altura_antena": p.altura_antena,
+                        "tipo": p.tipo,
+                        "metros_sobre_nivel_mar": p.metros_sobre_nivel_mar,
+                        "green_asociado": p.green_asociado,
+                        "conectado": p.conectado,
+                    }
+                )
 
     def actualizar_conectado(self, puntos: List[Punto]) -> None:
         """Lee punto.csv completo, parchea solo la columna `conectado` para los

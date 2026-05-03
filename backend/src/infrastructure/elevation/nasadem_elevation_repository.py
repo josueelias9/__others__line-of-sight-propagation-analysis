@@ -28,7 +28,9 @@ def _get_elevation(lat: float, lon: float) -> float:
             return 0.0
         return float(value)
     except Exception as exc:
-        logger.warning("No se pudo obtener elevación para (%.6f, %.6f): %s", lat, lon, exc)
+        logger.warning(
+            "No se pudo obtener elevación para (%.6f, %.6f): %s", lat, lon, exc
+        )
         return 0.0
 
 
@@ -48,7 +50,10 @@ def _get_elevations_batch(lats: List[float], lons: List[float]) -> List[float]:
                 results.append(float(v))
         return results
     except Exception as exc:
-        logger.warning("Error en consulta batch de elevaciones (%s). Usando consulta individual.", exc)
+        logger.warning(
+            "Error en consulta batch de elevaciones (%s). Usando consulta individual.",
+            exc,
+        )
         return [_get_elevation(lat, lon) for lat, lon in zip(lats, lons)]
 
 

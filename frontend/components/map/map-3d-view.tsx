@@ -132,7 +132,13 @@ export function Map3DView({
         arbolLinesRef.current.forEach(el => el.remove())
         arbolLinesRef.current = []
 
-        if (!mapReady || !map3dRef.current || !libRef.current || !arbolRedGeojson || arbolRedGeojson.coordinates.length === 0)
+        if (
+            !mapReady ||
+            !map3dRef.current ||
+            !libRef.current ||
+            !arbolRedGeojson ||
+            arbolRedGeojson.coordinates.length === 0
+        )
             return
         const map3d = map3dRef.current
         const { Polyline3DElement } = libRef.current

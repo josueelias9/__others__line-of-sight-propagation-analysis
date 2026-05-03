@@ -1,7 +1,16 @@
+# directories
 .devcontainer
 .vscode
-imagenes
-use_cases.dio
 proyecto/
+out/
+
+# files
+use_cases.dio
 README.md
+todo.txt
+ERD.md
+api.http
+.gitignore
+
+# patterns
 *.log

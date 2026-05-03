@@ -34,9 +34,7 @@ class GrafoNoDirigido:
         self.grafo[str(v0)].append((str(v1), w))
         self.grafo[str(v1)].append((str(v0), w))
 
-    def minimum_spanning_tree(
-        self, origen: int
-    ) -> Dict[str, List[Tuple[str, float]]]:
+    def minimum_spanning_tree(self, origen: int) -> Dict[str, List[Tuple[str, float]]]:
         """Calcula el árbol de expansión mínima usando el algoritmo de Prim."""
         lista_visitados: List[str] = []
         grafo_resultante: Dict[str, List[Tuple[str, float]]] = {}

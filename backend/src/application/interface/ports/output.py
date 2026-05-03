@@ -74,6 +74,7 @@ class TxtOutputPort(ABC):
 
 # PARA EL PRESENTER
 
+
 class CoberturaOutputBoundary(ABC):
     """
     Puerto de salida del caso de uso GenerarPoligonoCoberturaUseCase.

@@ -26,7 +26,7 @@ function GenericPanel<T extends { id: number }>({
     emptyText,
     renderRow,
     details,
-    onVisibleItemsChange,
+    onVisibleItemsChange
 }: GenericPanelProps<T>) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -71,7 +71,9 @@ function GenericPanel<T extends { id: number }>({
     }
 
     const onVisibleItemsChangeRef = useRef(onVisibleItemsChange)
-    useEffect(() => { onVisibleItemsChangeRef.current = onVisibleItemsChange })
+    useEffect(() => {
+        onVisibleItemsChangeRef.current = onVisibleItemsChange
+    })
 
     useEffect(() => {
         onVisibleItemsChangeRef.current(items.filter(i => visibleIds.has(i.id)))
@@ -122,7 +124,7 @@ function GenericPanel<T extends { id: number }>({
                                 style={{
                                     backgroundColor: active ? color : 'transparent',
                                     borderColor: color,
-                                    opacity: active ? 1 : 0.6,
+                                    opacity: active ? 1 : 0.6
                                 }}
                                 title={active ? 'Ocultar' : 'Mostrar'}
                             />
@@ -182,7 +184,9 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
                 onVisibleItemsChange={props.onVisibleItemsChange}
                 renderRow={(item, expanded, onExpand) => (
                     <button onClick={onExpand} className='flex-1 min-w-0 text-left'>
-                        <p className='text-white text-xs font-medium truncate'>{item.punto_nombre}</p>
+                        <p className='text-white text-xs font-medium truncate'>
+                            {item.punto_nombre}
+                        </p>
                         <p className='text-gray-500 text-xs'>
                             #{item.id} · {item.distancia_km} km · {expanded ? '▲' : '▼'}
                         </p>
@@ -193,7 +197,7 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
                     ['Distancia', `${item.distancia_km} km`],
                     ['Torre fantasma', `${item.altura_torre_fantasma} m`],
                     ['Líneas de vista', String(item.numero_de_ldv)],
-                    ['Muestras', String(item.muestras)],
+                    ['Muestras', String(item.muestras)]
                 ]}
             />
         )
@@ -221,7 +225,7 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
             details={item => [
                 ['Nombre', item.nombre || 'sin nombre'],
                 ['ID', String(item.id)],
-                ['Enlaces', String(item.relaciones.length)],
+                ['Enlaces', String(item.relaciones.length)]
             ]}
         />
     )

@@ -9,6 +9,9 @@ from domain.entities.relacion import Relacion
 from application.interface.ports.elevation import ElevationGateway
 from application.interface.db.punto import PuntoGateway
 from application.interface.db.red import RedGateway
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,18 +60,21 @@ class EncontrarRelacionesUseCase:
 
     Pertenece a la capa de Aplicación.
     """
+
     # TODO punto_repo tiene que cambiarse a data_repo o store_repo porque ahora se guardaran relaciones y no solo puntos.
     def __init__(
         self,
         punto_repo: PuntoGateway,
         elevation_repo: ElevationGateway,
         kml_output: KmlOutputPort,
+        geometry_gateway: ShapelyGeometryRepository,
         muestras: int,
         red_repo: RedGateway = None,
     ) -> None:
         self._punto_repo = punto_repo
         self._elevation_repo = elevation_repo
         self._kml_output = kml_output
+        self._geometry_gateway = geometry_gateway
         self._muestras = muestras
         self._red_repo = red_repo
 
@@ -83,7 +89,9 @@ class EncontrarRelacionesUseCase:
         except Exception as exc:
             logger.warning(
                 "error al verificar LOS entre '%s' y '%s': %s",
-                p1.nombre, p2.nombre, exc,
+                p1.nombre,
+                p2.nombre,
+                exc,
             )
             return False
 
@@ -108,7 +116,9 @@ class EncontrarRelacionesUseCase:
                         relaciones.append(re)
                 logger.debug("par %d-%d evaluado", i, j)
 
-        self._kml_output.escribir_rutas(relaciones, "relaciones_un_archivo", altitud_absoluta=True)
+        self._kml_output.escribir_rutas(
+            relaciones, "relaciones_un_archivo", altitud_absoluta=True
+        )
         logger.info("🔴")
         return EncontrarRelacionesUnArchivoResponse(relaciones=relaciones)
 
@@ -140,12 +150,17 @@ class EncontrarRelacionesUseCase:
         for rel in exitosas:
             rel.punto_final.conectado = True
 
-        self._kml_output.escribir_rutas(exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True)
+        self._kml_output.escribir_rutas(
+            exitosas, f"{request.tipo_conectados}_arbol", altitud_absoluta=True
+        )
         self._punto_repo.actualizar_conectado(conectados + no_conectados)
 
         if self._red_repo is not None:
             red = Red(nombre=request.nombre_red, lista_de_relaciones=exitosas)
-            self._red_repo.guardar_red(red)
+            geojson = self._geometry_gateway.relaciones_a_geojson(
+                red.lista_de_relaciones
+            )
+            self._red_repo.guardar_red(geojson, red)
 
         logger.info("🔴")
         return EncontrarRelacionesArbolResponse(
@@ -168,6 +183,10 @@ class EncontrarRelacionesUseCase:
             verifica_los=self._verificar_los,
             distancia_maxima=request.distancia_maxima,
         )
-        self._kml_output.escribir_rutas(relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True)
+        self._kml_output.escribir_rutas(
+            relaciones, request.nombre_archivo + "_rutas", altitud_absoluta=True
+        )
         logger.info("🔴")
-        return EncontrarRelacionesClusterizarResponse(redes=redes, relaciones=relaciones)
+        return EncontrarRelacionesClusterizarResponse(
+            redes=redes, relaciones=relaciones
+        )

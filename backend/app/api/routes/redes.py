@@ -16,7 +16,9 @@ from application.use_cases.encontrar_relaciones import (
 )
 from application.use_cases.listar_redes import ListarRedesUseCase
 
-
+from infrastructure.geometry.shapely_geometry_repository import (
+    ShapelyGeometryRepository,
+)
 
 router = APIRouter()
 
@@ -61,6 +63,7 @@ def delete_red(red_id: int, session: SessionDep):
     repo = PgRedRepository(session)
     repo.eliminar_red(red_id)
 
+
 # ==================
 
 
@@ -85,11 +88,10 @@ class ArbolResponse(BaseModel):
     puntos_sin_conexion: List[PuntoSinConexionOut]
 
 
-
-
 @router.post("", response_model=ArbolResponse)
 def post_arbol(body: ArbolRequest, session: SessionDep):
     import os
+
     os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
     repo = PgPuntoRepository(session)
@@ -103,6 +105,7 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
         kml_output=kml_output,
         muestras=body.muestras,
         red_repo=red_repo,
+        geometry_gateway=ShapelyGeometryRepository(),
     )
 
     result = use_case.ejecutar_dos_archivos_arbol(
@@ -115,7 +118,8 @@ def post_arbol(body: ArbolRequest, session: SessionDep):
     )
 
     return ArbolResponse(
-        red_geojson=result.red_geojson or {"type": "MultiLineString", "coordinates": []},
+        red_geojson=result.red_geojson
+        or {"type": "MultiLineString", "coordinates": []},
         puntos_sin_conexion=[
             PuntoSinConexionOut(
                 ubigeo=p.ubigeo,

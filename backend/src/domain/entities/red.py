@@ -22,9 +22,7 @@ class Red:
         self.lista_de_relaciones: List = (
             lista_de_relaciones if lista_de_relaciones is not None else []
         )
-        self.lista_de_nodos: List = (
-            lista_de_nodos if lista_de_nodos is not None else []
-        )
+        self.lista_de_nodos: List = lista_de_nodos if lista_de_nodos is not None else []
         self.key = key
         self.nombre = nombre
         self.id: Optional[int] = id
@@ -33,12 +31,15 @@ class Red:
     # ------------------------------------------------------------------ análisis de red
 
     @staticmethod
-    def encontrar_relaciones_por_distancia(lista: List, distancia_maxima: float) -> List:
+    def encontrar_relaciones_por_distancia(
+        lista: List, distancia_maxima: float
+    ) -> List:
         """
         Devuelve todas las relaciones posibles entre los puntos de `lista`
         cuya distancia sea menor que `distancia_maxima`.
         """
         from domain.entities.relacion import Relacion
+
         relaciones: List = []
         for i in range(len(lista)):
             for j in range(i + 1, len(lista)):
@@ -58,6 +59,7 @@ class Red:
         distancia_maxima. Devuelve (relaciones, conectados_lista1, conectados_lista2).
         """
         from domain.entities.relacion import Relacion
+
         relaciones: List = []
         conectados1: Set = set()
         conectados2: Set = set()
@@ -86,6 +88,7 @@ class Red:
         Devuelve (relaciones_encontradas, errores).
         """
         from domain.entities.relacion import Relacion
+
         resultados: List = []
         sin_conexion: List = []
         sin_conectar = list(lista2)
@@ -131,6 +134,7 @@ class Red:
         Devuelve (lista_de_redes, lista_de_relaciones).
         """
         from domain.entities.relacion import Relacion
+
         relaciones: List = []
         redes: List = []
         no_conectados = list(lista)

@@ -86,7 +86,7 @@ class KmlWriter(KmlOutputPort):
                 "<Document>\n"
                 f"\t<name>{nombre}.kml</name>\n"
                 '\t<Style id="s_ylw-pushpin">\n'
-                '\t\t<IconStyle><scale>1.1</scale>'
+                "\t\t<IconStyle><scale>1.1</scale>"
                 "<Icon><href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href></Icon>"
                 "</IconStyle>\n"
                 "\t</Style>\n"
@@ -99,7 +99,7 @@ class KmlWriter(KmlOutputPort):
                     "\t\t\t<description>"
                     f"altura:\t{p.altura_antena}\nidentificador:\t{p.ubigeo}\ntipo:\t{p.tipo}"
                     "</description>\n"
-                    '\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n'
+                    "\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n"
                     "\t\t\t<Point>\n"
                     f"\t\t\t\t<coordinates>{p.longitud},{p.latitud},{p.altura_antena}</coordinates>\n"
                     "\t\t\t</Point>\n"
@@ -121,8 +121,8 @@ class KmlWriter(KmlOutputPort):
                 "<Document>\n"
                 "\t<name>estructuraLineaDeVista.kml</name>\n"
                 '\t<Style id="s_ylw-pushpin">\n'
-                f'\t\t<IconStyle><scale>1.1</scale><Icon>'
-                f'<href>http://maps.google.com/mapfiles/kml/shapes/{forma}.png</href>'
+                f"\t\t<IconStyle><scale>1.1</scale><Icon>"
+                f"<href>http://maps.google.com/mapfiles/kml/shapes/{forma}.png</href>"
                 "</Icon></IconStyle>\n"
                 "\t</Style>\n"
                 "\t<Folder><name>Mis sitios</name><open>1</open>\n"
@@ -132,7 +132,7 @@ class KmlWriter(KmlOutputPort):
                     f.write(
                         "\t\t<Placemark>\n"
                         f"\t\t\t<name>{i}-{j}</name>\n"
-                        '\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n'
+                        "\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n"
                         "\t\t\t<Point>\n"
                         f"\t\t\t\t<coordinates>{p.longitud},{p.latitud},{p.altura_antena}</coordinates>\n"
                         "\t\t\t</Point>\n"
@@ -177,9 +177,9 @@ class KmlWriter(KmlOutputPort):
                         f"{p00.longitud},{p00.latitud},0"
                     )
                     f.write(
-                        f'\t\t<Placemark>\n'
-                        f'\t\t\t<name>poligono{i}-{j}</name>\n'
-                        '\t\t\t<styleUrl>#sh_ylw-pushpin</styleUrl>\n'
+                        f"\t\t<Placemark>\n"
+                        f"\t\t\t<name>poligono{i}-{j}</name>\n"
+                        "\t\t\t<styleUrl>#sh_ylw-pushpin</styleUrl>\n"
                         "\t\t\t<Polygon><tessellate>1</tessellate>\n"
                         "\t\t\t\t<outerBoundaryIs><LinearRing>\n"
                         f"\t\t\t\t\t<coordinates>{coords}</coordinates>\n"
@@ -203,14 +203,14 @@ class KmlWriter(KmlOutputPort):
                 "<Document>\n"
                 f"\t<name>{nombre}.kml</name>\n"
                 '\t<Style id="s_ylw-pushpin">\n'
-                '\t\t<IconStyle><scale>1.1</scale></IconStyle>\n'
+                "\t\t<IconStyle><scale>1.1</scale></IconStyle>\n"
                 "\t</Style>\n"
                 "\t<Folder><name>ww</name><open>1</open>\n"
             )
             for idx, poli in enumerate(poligonos.lista_de_poligonitos):
                 f.write(
                     f"<Placemark><name>{idx}</name>\n"
-                    '\t<styleUrl>#s_ylw-pushpin</styleUrl>\n'
+                    "\t<styleUrl>#s_ylw-pushpin</styleUrl>\n"
                     "\t<Polygon><tessellate>1</tessellate>\n"
                     "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
                 )
@@ -254,8 +254,7 @@ class KmlWriter(KmlOutputPort):
             elif area.anillos:
                 poligono = area.anillos[0]
                 f.write(
-                    "\t<Polygon>\n"
-                    "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
+                    "\t<Polygon>\n" "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
                 )
                 for c in poligono[0]:
                     f.write(f"{c[0]},{c[1]} ")
@@ -283,7 +282,9 @@ class KmlWriter(KmlOutputPort):
         self._escribir_poligonos_vm(viewmodel, viewmodel.nombre)
         self._escribir_malla_vm(viewmodel, viewmodel.nombre + "_malla")
 
-    def _escribir_poligonos_vm(self, viewmodel: CoberturaViewModel, nombre: str) -> None:
+    def _escribir_poligonos_vm(
+        self, viewmodel: CoberturaViewModel, nombre: str
+    ) -> None:
         ruta = self._directorio + nombre + ".kml"
         geom = viewmodel.geojson.get("geometry") or {}
         tipo = geom.get("type", "")
@@ -303,7 +304,7 @@ class KmlWriter(KmlOutputPort):
                 "<Document>\n"
                 f"\t<name>{nombre}.kml</name>\n"
                 '\t<Style id="s_ylw-pushpin">\n'
-                '\t\t<IconStyle><scale>1.1</scale></IconStyle>\n'
+                "\t\t<IconStyle><scale>1.1</scale></IconStyle>\n"
                 "\t</Style>\n"
                 "\t<Folder><name>ww</name><open>1</open>\n"
             )
@@ -311,15 +312,13 @@ class KmlWriter(KmlOutputPort):
                 exterior = anillos[0]
                 f.write(
                     f"<Placemark><name>{idx}</name>\n"
-                    '\t<styleUrl>#s_ylw-pushpin</styleUrl>\n'
+                    "\t<styleUrl>#s_ylw-pushpin</styleUrl>\n"
                     "\t<Polygon><tessellate>1</tessellate>\n"
                     "\t\t<outerBoundaryIs><LinearRing><coordinates>\n"
                 )
                 for lng, lat in exterior:
                     f.write(f"{lng},{lat},0 ")
-                f.write(
-                    "\n\t\t</coordinates></LinearRing></outerBoundaryIs>\n"
-                )
+                f.write("\n\t\t</coordinates></LinearRing></outerBoundaryIs>\n")
                 for hueco in anillos[1:]:
                     f.write("\t\t<innerBoundaryIs><LinearRing><coordinates>\n")
                     for lng, lat in hueco:
@@ -346,9 +345,9 @@ class KmlWriter(KmlOutputPort):
                     f"{c.longitud},{c.latitud},0" for c in celda.coordenadas
                 )
                 f.write(
-                    f'\t\t<Placemark>\n'
-                    f'\t\t\t<name>{celda.nombre}</name>\n'
-                    '\t\t\t<styleUrl>#sh_ylw-pushpin</styleUrl>\n'
+                    f"\t\t<Placemark>\n"
+                    f"\t\t\t<name>{celda.nombre}</name>\n"
+                    "\t\t\t<styleUrl>#sh_ylw-pushpin</styleUrl>\n"
                     "\t\t\t<Polygon><tessellate>1</tessellate>\n"
                     "\t\t\t\t<outerBoundaryIs><LinearRing>\n"
                     f"\t\t\t\t\t<coordinates>{coords}</coordinates>\n"

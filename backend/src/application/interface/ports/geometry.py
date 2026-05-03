@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from domain.entities.estructura import Estructura
 from domain.entities.poligonos import Poligonos
+from domain.entities.relacion import Relacion
 
 
 @dataclass
@@ -17,6 +18,7 @@ class AreaGeometrica:
 
     Pertenece a la capa de Aplicación.
     """
+
     anillos: List[List[List[Tuple[float, float]]]] = field(default_factory=list)
 
     @property
@@ -51,3 +53,7 @@ class GeometryGateway(ABC):
         a2: AreaGeometrica,
     ) -> AreaGeometrica:
         """Intersecta dos áreas geométricas. Devuelve AreaGeometrica vacía si no se superponen."""
+
+    @abstractmethod
+    def relaciones_a_geojson(self, relaciones: List[Relacion]) -> Dict[str, Any]:
+        """"""

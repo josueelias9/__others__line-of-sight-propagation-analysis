@@ -9,8 +9,6 @@ from application.interface.db.punto import PuntoGateway
 logger = logging.getLogger(__name__)
 
 
-
-
 @dataclass
 class AsignarAlturasResponse:
     puntos: List[Punto]

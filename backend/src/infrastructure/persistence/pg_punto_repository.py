@@ -18,7 +18,9 @@ def _load_tipo_map(session: Session) -> Dict[int, str]:
 
 def _get_tipo_id(session: Session, tipo_name: str) -> int:
     """Returns the punto_type.id for the given name, raising ValueError if not found."""
-    row = session.exec(select(PuntoTypeTable).where(PuntoTypeTable.name == tipo_name)).first()
+    row = session.exec(
+        select(PuntoTypeTable).where(PuntoTypeTable.name == tipo_name)
+    ).first()
     if row is None:
         raise ValueError(f"Unknown punto type: '{tipo_name}'")
     return row.id
@@ -74,18 +76,23 @@ class PgPuntoRepository(PuntoGateway):
             raise ValueError(f"No se encontró un punto con ubigeo={ubigeo}")
         return _table_to_punto(row, tipo_map)
 
-
     def guardar_puntos(self, puntos: List[Punto]) -> None:
         self._session.exec(delete(PuntoTable))
         for p in puntos:
             tipo_id = _get_tipo_id(self._session, p.tipo)
-            self._session.add(PuntoTable(
-                ubigeo=p.ubigeo, nombre=p.nombre, longitud=p.longitud,
-                latitud=p.latitud, altura_antena=p.altura_antena,
-                punto_type_id=tipo_id,
-                metros_sobre_nivel_mar=p.metros_sobre_nivel_mar,
-                green_asociado=p.green_asociado, conectado=p.conectado,
-            ))
+            self._session.add(
+                PuntoTable(
+                    ubigeo=p.ubigeo,
+                    nombre=p.nombre,
+                    longitud=p.longitud,
+                    latitud=p.latitud,
+                    altura_antena=p.altura_antena,
+                    punto_type_id=tipo_id,
+                    metros_sobre_nivel_mar=p.metros_sobre_nivel_mar,
+                    green_asociado=p.green_asociado,
+                    conectado=p.conectado,
+                )
+            )
         self._session.commit()
 
     def actualizar_conectado(self, puntos: List[Punto]) -> None:
@@ -100,13 +107,18 @@ class PgPuntoRepository(PuntoGateway):
         tipo_id = _get_tipo_id(self._session, punto.tipo)
         rows = self._session.exec(select(PuntoTable)).all()
         punto.ubigeo = max((r.ubigeo for r in rows), default=0) + 1
-        self._session.add(PuntoTable(
-            ubigeo=punto.ubigeo, nombre=punto.nombre, longitud=punto.longitud,
-            latitud=punto.latitud, altura_antena=punto.altura_antena,
-            punto_type_id=tipo_id,
-            metros_sobre_nivel_mar=punto.metros_sobre_nivel_mar,
-            green_asociado=punto.green_asociado, conectado=punto.conectado,
-        ))
+        self._session.add(
+            PuntoTable(
+                ubigeo=punto.ubigeo,
+                nombre=punto.nombre,
+                longitud=punto.longitud,
+                latitud=punto.latitud,
+                altura_antena=punto.altura_antena,
+                punto_type_id=tipo_id,
+                metros_sobre_nivel_mar=punto.metros_sobre_nivel_mar,
+                green_asociado=punto.green_asociado,
+                conectado=punto.conectado,
+            )
+        )
         self._session.commit()
         return punto
-
