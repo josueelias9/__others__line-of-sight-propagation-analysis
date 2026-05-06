@@ -1,14 +1,16 @@
 from typing import Annotated
 
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
 from sqlmodel import Session
 
-from app.core.security import ALGORITHM, SECRET_KEY
+from app.core.config import settings
+from app.core.security import ALGORITHM
 from app.crud import get_user
+from app.models import TokenPayload
 from infrastructure.persistence.database import get_session
-from infrastructure.persistence.models import TokenPayload, UserTable
+from infrastructure.persistence.models import UserTable
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -25,11 +27,11 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         token_data = TokenPayload(**payload)
         if token_data.sub is None:
             raise credentials_exception
-    except JWTError:
+    except jwt.PyJWTError:
         raise credentials_exception
     user = get_user(session=session, user_id=int(token_data.sub))
     if user is None:

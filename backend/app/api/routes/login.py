@@ -6,7 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
-from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
+from app.core.config import settings
+from app.core.security import create_access_token
 from app.models import Message, Token, UserCreate, UserPublic, UserUpdate
 
 router = APIRouter(tags=["auth"])
@@ -26,7 +27,7 @@ def login_access_token(
         raise HTTPException(status_code=400, detail="Inactive user")
     return Token(
         access_token=create_access_token(
-            user.id, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            user.id, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
     )
 

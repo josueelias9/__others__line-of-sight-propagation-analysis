@@ -4,19 +4,74 @@ Configuración centralizada de la aplicación FastAPI.
 
 import logging
 import os
+import secrets
+import warnings
+from typing import Any, Literal
 
-# ── Rutas ──────────────────────────────────────────────────────────────────────
+from pydantic import EmailStr, computed_field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
 
-# Directorio raíz del repositorio (dos niveles arriba: app/core/ -> app/ -> root)
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_ignore_empty=True,
+        extra="ignore",
+    )
+
+    # ── Auth ───────────────────────────────────────────────────────────────────
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    FIRST_SUPERUSER: EmailStr = "admin@example.com"
+    FIRST_SUPERUSER_PASSWORD: str = "changethis"
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+
+    # ── Database ───────────────────────────────────────────────────────────────
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 5432
+    DB_NAME: str = "app"
+    DB_USER: str = "postgres"
+    DB_PASSWORD: str = "changethis"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return (
+            f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}"
+            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
+
+    # ── Logging ──────────────────────────────────────────────────────────────────
+    LOG_LEVEL: str = "INFO"
+
+    def _check_default_secret(self, var_name: str, value: str | None) -> None:
+        if value == "changethis":
+            message = (
+                f'The value of {var_name} is "changethis", '
+                "for security, please change it, at least for deployments."
+            )
+            if self.ENVIRONMENT == "local":
+                warnings.warn(message, stacklevel=1)
+            else:
+                raise ValueError(message)
+
+    @model_validator(mode="after")
+    def _enforce_non_default_secrets(self) -> Self:
+        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
+        self._check_default_secret("DB_PASSWORD", self.DB_PASSWORD)
+        self._check_default_secret("FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD)
+        return self
+
+
+settings = Settings()  # type: ignore
+
+
+# ── Análisis (constantes, no variables de entorno) ────────────────────────────
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Directorio de archivos de entrada (.csv con puntos)
 DIR_INPUT = os.path.join(BASE_DIR, "in") + os.sep
-
-# Directorio de archivos de salida (.kml, .txt generados)
 DIR_OUTPUT = os.path.join(BASE_DIR, "out") + os.sep
-
-# ── Parámetros de análisis ─────────────────────────────────────────────────────
 
 MUESTRAS: int = 200
 NUMERO_DE_LDV: int = 200
@@ -28,37 +83,19 @@ ARCHIVO_ACCESO = "dos"
 
 
 def de_km_a_grados(km: float) -> float:
-    """Convierte kilómetros a grados (aproximación esférica)."""
     return km / 111.11
 
 
 def de_grados_a_km(grados: float) -> float:
-    """Convierte grados a kilómetros (aproximación esférica)."""
     return grados * 111.11
 
-
-# ── Base de datos ─────────────────────────────────────────────────────────────
-
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = int(os.getenv("DB_PORT"))
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-
-# ── Auth ──────────────────────────────────────────────────────────────────────
-
-SECRET_KEY: str = os.getenv("SECRET_KEY", "please-change-this-insecure-default-key")
-ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-FIRST_SUPERUSER: str = os.getenv("FIRST_SUPERUSER", "admin@example.com")
-FIRST_SUPERUSER_PASSWORD: str = os.getenv("FIRST_SUPERUSER_PASSWORD", "changeme123")
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 
 
 def setup_logging() -> None:
-    """Configura el logging: consola (INFO) y archivo app.log (DEBUG)."""
     logging.basicConfig(
-        level=getattr(logging, os.getenv("LOG_LEVEL", "INFO")),
+        level=getattr(logging, settings.LOG_LEVEL, logging.INFO),
         format="%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="myapp.log",

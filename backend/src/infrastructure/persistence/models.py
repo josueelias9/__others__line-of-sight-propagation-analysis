@@ -1,6 +1,5 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
 from sqlmodel import Field, SQLModel
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
@@ -72,38 +71,3 @@ class RedPuntoTable(SQLModel, table=True):
     punto_inicial_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
     punto_final_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
     distancia: float
-
-
-# ── Pydantic API schemas ──────────────────────────────────────────────────────
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class TokenPayload(BaseModel):
-    sub: str | None = None
-
-
-class UserBase(BaseModel):
-    email: EmailStr
-    is_active: bool = True
-    is_superuser: bool = False
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserUpdate(BaseModel):
-    email: EmailStr | None = None
-    password: str | None = None
-    is_active: bool | None = None
-
-
-class UserPublic(UserBase):
-    id: int
-
-
-class Message(BaseModel):
-    message: str
