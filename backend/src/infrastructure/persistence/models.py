@@ -1,8 +1,21 @@
 from typing import Optional
 
+from pydantic import BaseModel, EmailStr
 from sqlmodel import Field, SQLModel
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
+
+
+# ── ORM tables ────────────────────────────────────────────────────────────────
+
+class UserTable(SQLModel, table=True):
+    __tablename__ = "users"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True)
+    hashed_password: str
+    is_active: bool = Field(default=True)
+    is_superuser: bool = Field(default=False)
 
 
 class PuntoTypeTable(SQLModel, table=True):
@@ -24,6 +37,7 @@ class PuntoTable(SQLModel, table=True):
     metros_sobre_nivel_mar: float
     green_asociado: str = Field(default="")
     conectado: bool = Field(default=False)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
 
 class MultipoligonoTable(SQLModel, table=True):
@@ -36,6 +50,7 @@ class MultipoligonoTable(SQLModel, table=True):
     muestras: int = Field(default=0)
     distancia_km: float = Field(default=0.0)
     altura_torre_fantasma: float = Field(default=0.0)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
 
 class RedTable(SQLModel, table=True):
@@ -47,6 +62,7 @@ class RedTable(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column(JSONB, nullable=False, server_default="'{}'"),
     )
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
 
 class RedPuntoTable(SQLModel, table=True):
@@ -56,3 +72,38 @@ class RedPuntoTable(SQLModel, table=True):
     punto_inicial_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
     punto_final_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
     distancia: float
+
+
+# ── Pydantic API schemas ──────────────────────────────────────────────────────
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class TokenPayload(BaseModel):
+    sub: str | None = None
+
+
+class UserBase(BaseModel):
+    email: EmailStr
+    is_active: bool = True
+    is_superuser: bool = False
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    password: str | None = None
+    is_active: bool | None = None
+
+
+class UserPublic(UserBase):
+    id: int
+
+
+class Message(BaseModel):
+    message: str
