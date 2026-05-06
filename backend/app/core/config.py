@@ -4,12 +4,9 @@ Configuración centralizada de la aplicación FastAPI.
 
 import logging
 import os
-import warnings
-from typing import Literal
 
-from pydantic import EmailStr, computed_field, model_validator
+from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing_extensions import Self
 
 
 class Settings(BaseSettings):
@@ -17,11 +14,6 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
         extra="ignore",
     )
-
-    # ── Auth ───────────────────────────────────────────────────────────────────
-    GOOGLE_CLIENT_ID: str = ""
-    FIRST_SUPERUSER: EmailStr = "admin@example.com"
-    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     # ── Database ───────────────────────────────────────────────────────────────
     DB_HOST: str = os.getenv("DB_HOST")
@@ -40,22 +32,6 @@ class Settings(BaseSettings):
 
     # ── Logging ──────────────────────────────────────────────────────────────────
     LOG_LEVEL: str = "INFO"
-
-    def _check_default_secret(self, var_name: str, value: str | None) -> None:
-        if value == "changethis":
-            message = (
-                f'The value of {var_name} is "changethis", '
-                "for security, please change it, at least for deployments."
-            )
-            if self.ENVIRONMENT == "local":
-                warnings.warn(message, stacklevel=1)
-            else:
-                raise ValueError(message)
-
-    @model_validator(mode="after")
-    def _enforce_non_default_secrets(self) -> Self:
-        self._check_default_secret("DB_PASSWORD", self.DB_PASSWORD)
-        return self
 
 
 settings = Settings()  # type: ignore

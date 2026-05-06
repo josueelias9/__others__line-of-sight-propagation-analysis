@@ -3,9 +3,8 @@ import logging
 from sqlmodel import Session, select, SQLModel
 
 from src.infrastructure.persistence.database import engine
-from src.infrastructure.persistence.models import PuntoTable, PuntoTypeTable, UserTable
-from app.core.config import settings
-from app.data import TIPOS_INICIALES, PUNTOS_DATA, USER_DATA
+from src.infrastructure.persistence.models import PuntoTable, PuntoTypeTable
+from app.data import TIPOS_INICIALES, PUNTOS_DATA
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,21 +12,6 @@ logger = logging.getLogger(__name__)
 
 def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
-
-    # ── Superuser ─────────────────────────────────────────────────────────────
-    existing_superuser = session.exec(
-        select(UserTable).where(UserTable.email == USER_DATA)
-    ).first()
-
-    if not existing_superuser:
-        superuser = UserTable(
-            email=USER_DATA,
-            is_active=True,
-            is_superuser=True,
-        )
-        session.add(superuser)
-        session.commit()
-        logger.info("Created superuser: %s", USER_DATA)
 
     # ── Seed punto_type if empty ───────────────────────────────────────────────
     existing_tipos = session.exec(select(PuntoTypeTable)).all()

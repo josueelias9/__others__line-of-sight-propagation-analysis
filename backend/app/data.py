@@ -1,6 +1,3 @@
-from app.core.config import settings
-
-
 TIPOS_INICIALES = [
     "acceso",
     "transporte",
@@ -22,6 +19,3 @@ PUNTOS_DATA = [
     (9, "acceso9", -78.431883, -6.915703, 15.0, "acceso", 4076.0, "transporte", False),
     (10, "acceso10", -78.436611, -6.895702, 15.0, "acceso", 3870.0, "", False),
 ]
-
-
-USER_DATA = settings.FIRST_SUPERUSER
