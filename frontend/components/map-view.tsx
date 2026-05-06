@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
+import { signOut } from 'next-auth/react'
 
 import type {
     PuntoData,
@@ -11,6 +12,7 @@ import type {
     RedData
 } from '../app/lib/types'
 import { BACKEND_URL, DEFAULT_CENTER } from '../app/lib/config'
+import { useAuthFetch } from '../app/lib/use-auth-fetch'
 import { MapOverlays } from './map/overlays/map-overlays'
 import { RedOverlays } from './map/overlays/red-overlays'
 import { CoberturaOverlays } from './map/overlays/cobertura-overlays'
@@ -39,6 +41,7 @@ export default function MapView() {
     const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null)
     const [tipoFiltro, setTipoFiltro] = useState('')
     const [redes, setRedes] = useState<RedData[]>([])
+    const authFetch = useAuthFetch()
 
     const highlightedUbigeos = useMemo(() => {
         const s = new Set<number>()
@@ -56,14 +59,21 @@ export default function MapView() {
             const pUrl = tipoFiltro
                 ? `${BACKEND_URL}/api/puntos?tipo=${encodeURIComponent(tipoFiltro)}`
                 : `${BACKEND_URL}/api/puntos`
-            const pRes = await fetch(pUrl)
+            const pRes = await authFetch(pUrl)
             if (pRes.ok) setPuntos(await pRes.json())
         }
         load().catch(console.error)
-    }, [tipoFiltro])
+    }, [tipoFiltro, authFetch])
 
     return (
         <div className='relative w-full h-full bg-gray-950'>
+            {/* Logout button */}
+            <button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className='absolute top-3 left-1/2 -translate-x-1/2 z-20 text-xs text-gray-500 hover:text-white bg-gray-900/70 hover:bg-gray-800 border border-white/10 rounded-lg px-3 py-1 transition-colors'
+            >
+                Cerrar sesión
+            </button>
             <APIProvider apiKey={API_KEY}>
                 {view3D ? (
                     <Map3DView

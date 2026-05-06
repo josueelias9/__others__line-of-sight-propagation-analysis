@@ -4,6 +4,7 @@ import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
 import type { MultipoligonoData, RedData } from '@/app/lib/types'
 import { PanelFrame } from '@/components/map/panel-layout'
 import { ITEM_COLORS } from '@/app/lib/utils'
+import { useAuthFetch } from '@/app/lib/use-auth-fetch'
 
 // ─── Internal generic base ─────────────────────────────────────────────────────
 
@@ -34,12 +35,13 @@ function GenericPanel<T extends { id: number }>({
     const [items, setItems] = useState<T[]>([])
     const [visibleIds, setVisibleIds] = useState<Set<number>>(new Set())
     const [expandedId, setExpandedId] = useState<number | null>(null)
+    const authFetch = useAuthFetch()
 
     async function load() {
         setLoading(true)
         setError(null)
         try {
-            const res = await fetch(endpoint)
+            const res = await authFetch(endpoint)
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
             const data: T[] = await res.json()
             setItems(data)
@@ -52,7 +54,7 @@ function GenericPanel<T extends { id: number }>({
     }
 
     async function handleDelete(id: number) {
-        await fetch(deleteEndpoint(id), { method: 'DELETE' })
+        await authFetch(deleteEndpoint(id), { method: 'DELETE' })
         const next = items.filter(i => i.id !== id)
         setItems(next)
         setVisibleIds(prev => {
