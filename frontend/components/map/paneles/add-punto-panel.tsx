@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { PuntoData } from '@/app/lib/types'
 import { BACKEND_URL } from '@/app/lib/config'
+import { useAuthFetch } from '@/app/lib/use-auth-fetch'
 
 interface AddPuntoPanelProps {
     onAdded: (punto: PuntoData) => void
@@ -39,6 +40,7 @@ export function AddPuntoPanel({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [form, setForm] = useState<AddPuntoForm>(INITIAL_FORM)
+    const authFetch = useAuthFetch()
 
     // Cuando llegan coordenadas del mapa, rellenar el formulario y abrir el panel
     useEffect(() => {
@@ -72,9 +74,8 @@ export function AddPuntoPanel({
                 green_asociado: form.green_asociado.trim()
             }
 
-            const res = await fetch(`${BACKEND_URL}/api/puntos`, {
+            const res = await authFetch(`${BACKEND_URL}/api/puntos`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             })
 

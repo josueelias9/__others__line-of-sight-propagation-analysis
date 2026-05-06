@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { PuntoData, ArbolResult } from '@/app/lib/types'
 import { BACKEND_URL } from '@/app/lib/config'
+import { useAuthFetch } from '@/app/lib/use-auth-fetch'
 import { PanelFrame } from '@/components/map/panel-layout'
 
 interface ArbolPanelProps {
@@ -15,6 +16,7 @@ export function ArbolPanel({ puntos, onResult, onSaved }: ArbolPanelProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const authFetch = useAuthFetch()
 
     const tipos = Array.from(new Set(puntos.map(p => p.tipo))).sort()
 
@@ -30,9 +32,8 @@ export function ArbolPanel({ puntos, onResult, onSaved }: ArbolPanelProps) {
         setError(null)
 
         try {
-            const res = await fetch(`${BACKEND_URL}/api/redes`, {
+            const res = await authFetch(`${BACKEND_URL}/api/redes`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     tipo_conectados: tipoConectados,
                     tipo_no_conectados: tipoNoConectados,

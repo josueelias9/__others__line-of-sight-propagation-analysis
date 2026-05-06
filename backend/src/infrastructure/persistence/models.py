@@ -5,6 +5,18 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
 
 
+# ── ORM tables ────────────────────────────────────────────────────────────────
+
+class UserTable(SQLModel, table=True):
+    __tablename__ = "users"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True)
+    hashed_password: str
+    is_active: bool = Field(default=True)
+    is_superuser: bool = Field(default=False)
+
+
 class PuntoTypeTable(SQLModel, table=True):
     __tablename__ = "punto_type"
 
@@ -24,6 +36,7 @@ class PuntoTable(SQLModel, table=True):
     metros_sobre_nivel_mar: float
     green_asociado: str = Field(default="")
     conectado: bool = Field(default=False)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
 
 class MultipoligonoTable(SQLModel, table=True):
@@ -36,6 +49,7 @@ class MultipoligonoTable(SQLModel, table=True):
     muestras: int = Field(default=0)
     distancia_km: float = Field(default=0.0)
     altura_torre_fantasma: float = Field(default=0.0)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
 
 class RedTable(SQLModel, table=True):
@@ -47,10 +61,11 @@ class RedTable(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column(JSONB, nullable=False, server_default="'{}'"),
     )
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
 
-class RedRelacionTable(SQLModel, table=True):
-    __tablename__ = "red_relacion"
+class RedPuntoTable(SQLModel, table=True):
+    __tablename__ = "red_punto"
 
     red_id: int = Field(foreign_key="red.id", primary_key=True)
     punto_inicial_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)

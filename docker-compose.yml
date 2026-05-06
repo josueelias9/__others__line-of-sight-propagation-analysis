@@ -41,6 +41,10 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      - BACKEND_URL=${BACKEND_URL:-http://backend-container:8000}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
     container_name: frontend-container
 
   backend-init:

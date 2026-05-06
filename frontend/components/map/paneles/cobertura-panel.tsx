@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { PuntoData, CoberturaForm, CoberturaViewModel } from '@/app/lib/types'
 import { BACKEND_URL } from '@/app/lib/config'
+import { useAuthFetch } from '@/app/lib/use-auth-fetch'
 import { PanelFrame } from '@/components/map/panel-layout'
 
 interface CoberturaPanelProps {
@@ -14,6 +15,7 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const authFetch = useAuthFetch()
 
     const [form, setForm] = useState<CoberturaForm>({
         ubigeo: '',
@@ -41,9 +43,8 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
                 altura_torre_fantasma: parseFloat(form.altura_torre_fantasma)
             }
 
-            const res = await fetch(`${BACKEND_URL}/api/cobertura`, {
+            const res = await authFetch(`${BACKEND_URL}/api/cobertura`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             })
 

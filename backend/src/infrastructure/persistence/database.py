@@ -1,16 +1,11 @@
-import os
 from typing import Annotated
 
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
-DATABASE_URL = (
-    f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
-    f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}"
-    f"/{os.getenv('DB_NAME')}"
-)
+from app.core.config import settings
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 
 
 def create_db_and_tables() -> None:
