@@ -12,11 +12,11 @@ export function useAuthFetch() {
             if (options.body !== undefined && !headers.has('Content-Type')) {
                 headers.set('Content-Type', 'application/json')
             }
-            if (session?.accessToken) {
-                headers.set('Authorization', `Bearer ${session.accessToken}`)
+            if (session?.idToken) {
+                headers.set('Authorization', `Bearer ${session.idToken}`)
             }
             return fetch(url, { ...options, headers })
         },
-        [session?.accessToken]
+        [session?.idToken]
     )
 }

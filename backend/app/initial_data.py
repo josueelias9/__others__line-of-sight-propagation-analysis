@@ -16,21 +16,18 @@ def init_db(session: Session) -> None:
 
     # ── Superuser ─────────────────────────────────────────────────────────────
     existing_superuser = session.exec(
-        select(UserTable).where(UserTable.email == USER_DATA[0])
+        select(UserTable).where(UserTable.email == USER_DATA)
     ).first()
 
     if not existing_superuser:
-        from app.core.security import get_password_hash
-
         superuser = UserTable(
-            email=USER_DATA[0],
-            hashed_password=get_password_hash(USER_DATA[1]),
+            email=USER_DATA,
             is_active=True,
             is_superuser=True,
         )
         session.add(superuser)
         session.commit()
-        logger.info("Created superuser: %s", USER_DATA[0])
+        logger.info("Created superuser: %s", USER_DATA)
 
     # ── Seed punto_type if empty ───────────────────────────────────────────────
     existing_tipos = session.exec(select(PuntoTypeTable)).all()

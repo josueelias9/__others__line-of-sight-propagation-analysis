@@ -1,27 +1,24 @@
 from typing import Annotated
 
-import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.core.security import ALGORITHM
-from app.crud import get_user
-from app.models import TokenPayload
+from app.crud import get_or_create_user_by_email
 from infrastructure.persistence.database import get_session
 from infrastructure.persistence.models import UserTable
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login/access-token")
-
-TokenDep = Annotated[str, Depends(oauth2_scheme)]
+_bearer_scheme = HTTPBearer()
 
 
 def get_current_user(
     session: SessionDep,
-    token: TokenDep,
+    credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
 ) -> UserTable:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -29,18 +26,21 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-        token_data = TokenPayload(**payload)
-        if token_data.sub is None:
+        id_info = id_token.verify_oauth2_token(
+            credentials.credentials,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+        email: str | None = id_info.get("email")
+        if not email:
             raise credentials_exception
-    except jwt.PyJWTError:
+    except Exception:
         raise credentials_exception
-    user = get_user(session=session, user_id=int(token_data.sub))
-    if user is None:
-        raise credentials_exception
-    return user
+    return get_or_create_user_by_email(session=session, email=email)
+
 
 CurrentUser = Annotated[UserTable, Depends(get_current_user)]
+
 
 def get_current_active_user(
     current_user: CurrentUser,
@@ -49,7 +49,9 @@ def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
 CurrentActiveUser = Annotated[UserTable, Depends(get_current_active_user)]
+
 
 def get_current_active_superuser(
     current_user: CurrentActiveUser,

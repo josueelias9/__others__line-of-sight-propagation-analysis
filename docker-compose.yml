@@ -43,8 +43,10 @@ services:
       - .env
     environment:
       - BACKEND_URL=${BACKEND_URL:-http://backend-container:8000}
-      - AUTH_SECRET=${AUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
     container_name: frontend-container
 
   backend-init:

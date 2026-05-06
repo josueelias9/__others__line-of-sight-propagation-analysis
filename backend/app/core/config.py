@@ -4,9 +4,8 @@ Configuración centralizada de la aplicación FastAPI.
 
 import logging
 import os
-import secrets
 import warnings
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import EmailStr, computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -20,10 +19,8 @@ class Settings(BaseSettings):
     )
 
     # ── Auth ───────────────────────────────────────────────────────────────────
-    SECRET_KEY: str = secrets.token_urlsafe(32)
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    GOOGLE_CLIENT_ID: str = ""
     FIRST_SUPERUSER: EmailStr = "admin@example.com"
-    FIRST_SUPERUSER_PASSWORD: str = "changethis"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     # ── Database ───────────────────────────────────────────────────────────────
@@ -57,9 +54,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
-        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
         self._check_default_secret("DB_PASSWORD", self.DB_PASSWORD)
-        self._check_default_secret("FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD)
         return self
 
 

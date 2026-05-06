@@ -24,7 +24,4 @@ PUNTOS_DATA = [
 ]
 
 
-USER_DATA = [
-    settings.FIRST_SUPERUSER,
-    settings.FIRST_SUPERUSER_PASSWORD,
-]
+USER_DATA = settings.FIRST_SUPERUSER
