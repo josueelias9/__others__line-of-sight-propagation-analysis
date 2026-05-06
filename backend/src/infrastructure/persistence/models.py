@@ -49,8 +49,8 @@ class RedTable(SQLModel, table=True):
     )
 
 
-class RedRelacionTable(SQLModel, table=True):
-    __tablename__ = "red_relacion"
+class RedPuntoTable(SQLModel, table=True):
+    __tablename__ = "red_punto"
 
     red_id: int = Field(foreign_key="red.id", primary_key=True)
     punto_inicial_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)

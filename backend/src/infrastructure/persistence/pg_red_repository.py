@@ -7,7 +7,7 @@ from domain.entities.punto import Punto
 from domain.entities.red import Red
 from domain.entities.relacion import Relacion
 from application.interface.db.red import RedGateway
-from infrastructure.persistence.models import RedTable, RedRelacionTable
+from infrastructure.persistence.models import RedTable, RedPuntoTable
 from infrastructure.geometry.shapely_geometry_repository import (
     ShapelyGeometryRepository,
 )
@@ -33,7 +33,7 @@ class PgRedRepository(RedGateway):
 
         for rel in red.lista_de_relaciones:
             self._session.add(
-                RedRelacionTable(
+                RedPuntoTable(
                     red_id=red_row.id,
                     punto_inicial_ubigeo=rel.punto_inicial.ubigeo,
                     punto_final_ubigeo=rel.punto_final.ubigeo,
@@ -56,7 +56,7 @@ class PgRedRepository(RedGateway):
         redes: List[Red] = []
         for row in red_rows:
             rel_rows = self._session.exec(
-                select(RedRelacionTable).where(RedRelacionTable.red_id == row.id)
+                select(RedPuntoTable).where(RedPuntoTable.red_id == row.id)
             ).all()
             relaciones = []
             for rr in rel_rows:

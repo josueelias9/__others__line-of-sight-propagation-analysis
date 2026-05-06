@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS red (
     geojson JSONB        NOT NULL DEFAULT '{}'
 );
 
-CREATE TABLE IF NOT EXISTS red_relacion (
+CREATE TABLE IF NOT EXISTS red_punto (
     red_id              INTEGER NOT NULL REFERENCES red(id) ON DELETE CASCADE,
     punto_inicial_ubigeo INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
     punto_final_ubigeo   INTEGER NOT NULL REFERENCES punto(ubigeo) ON DELETE CASCADE,
