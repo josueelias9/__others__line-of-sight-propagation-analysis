@@ -16,10 +16,12 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login/access-token")
 
+TokenDep = Annotated[str, Depends(oauth2_scheme)]
+
 
 def get_current_user(
     session: SessionDep,
-    token: Annotated[str, Depends(oauth2_scheme)],
+    token: TokenDep,
 ) -> UserTable:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,21 +40,22 @@ def get_current_user(
         raise credentials_exception
     return user
 
+CurrentUser = Annotated[UserTable, Depends(get_current_user)]
 
 def get_current_active_user(
-    current_user: Annotated[UserTable, Depends(get_current_user)],
+    current_user: CurrentUser,
 ) -> UserTable:
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+CurrentActiveUser = Annotated[UserTable, Depends(get_current_active_user)]
 
 def get_current_active_superuser(
-    current_user: Annotated[UserTable, Depends(get_current_active_user)],
+    current_user: CurrentActiveUser,
 ) -> UserTable:
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user
 
 
-CurrentUser = Annotated[UserTable, Depends(get_current_active_user)]

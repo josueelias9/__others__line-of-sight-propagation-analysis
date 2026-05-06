@@ -15,7 +15,6 @@ from typing_extensions import Self
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -28,11 +27,11 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     # ── Database ───────────────────────────────────────────────────────────────
-    DB_HOST: str = "localhost"
-    DB_PORT: int = 5432
-    DB_NAME: str = "app"
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = "changethis"
+    DB_HOST: str = os.getenv("DB_HOST")
+    DB_PORT: int = int(os.getenv("DB_PORT"))
+    DB_NAME: str = os.getenv("DB_NAME")
+    DB_USER: str = os.getenv("DB_USER")
+    DB_PASSWORD: str = os.getenv("DB_PASSWORD")
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -1,4 +1,4 @@
-from infrastructure.persistence.models import PuntoTypeTable
+from src.infrastructure.persistence.models import PuntoTypeTable
 
 TIPOS_INICIALES = [
     PuntoTypeTable(name="acceso"),
