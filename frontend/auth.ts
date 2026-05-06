@@ -1,9 +1,11 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import { authConfig } from '@/auth.config'
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:8000'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    ...authConfig,
     trustHost: true,
     providers: [
         Credentials({
@@ -51,8 +53,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             session.accessToken = token.accessToken as string | undefined
             return session
         },
-    },
-    pages: {
-        signIn: '/login',
     },
 })

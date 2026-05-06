@@ -1,8 +1,9 @@
-from src.infrastructure.persistence.models import PuntoTypeTable
+from app.core.config import settings
+
 
 TIPOS_INICIALES = [
-    PuntoTypeTable(name="acceso"),
-    PuntoTypeTable(name="transporte"),
+    "acceso",
+    "transporte",
 ]
 
 # (ubigeo, nombre, longitud, latitud, altura_antena, tipo_name, msnm, green_asociado, conectado)
@@ -20,4 +21,10 @@ PUNTOS_DATA = [
     (8, "acceso8", -78.504492, -6.901809, 15.0, "acceso", 3752.0, "", False),
     (9, "acceso9", -78.431883, -6.915703, 15.0, "acceso", 4076.0, "transporte", False),
     (10, "acceso10", -78.436611, -6.895702, 15.0, "acceso", 3870.0, "", False),
+]
+
+
+USER_DATA = [
+    settings.FIRST_SUPERUSER,
+    settings.FIRST_SUPERUSER_PASSWORD,
 ]
