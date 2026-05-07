@@ -4,18 +4,12 @@ import { useFormState as useActionState, useFormStatus } from 'react-dom'
 import { authenticate } from '@/app/lib/actions'
 
 export default function LoginForm() {
-    const [errorMessage, formAction, isPending] = useActionState(
-        authenticate,
-        undefined,
-    )
+    const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined)
 
     return (
         <form action={formAction} className='space-y-4'>
             <div>
-                <label
-                    htmlFor='email'
-                    className='block text-xs font-medium text-gray-400 mb-1'
-                >
+                <label htmlFor='email' className='block text-xs font-medium text-gray-400 mb-1'>
                     Correo electrónico
                 </label>
                 <input
@@ -28,10 +22,7 @@ export default function LoginForm() {
                 />
             </div>
             <div>
-                <label
-                    htmlFor='password'
-                    className='block text-xs font-medium text-gray-400 mb-1'
-                >
+                <label htmlFor='password' className='block text-xs font-medium text-gray-400 mb-1'>
                     Contraseña
                 </label>
                 <input
@@ -59,4 +50,3 @@ export default function LoginForm() {
         </form>
     )
 }
-

@@ -4,7 +4,7 @@ WORKDIR /josue_dir
 
 COPY . .
 
-RUN npm ci
+RUN npm install
 
 EXPOSE 3000
 

@@ -80,7 +80,9 @@ export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
                         ))}
                     </select>
                     {tipoConectados && tipoNoConectados && tipoConectados === tipoNoConectados && (
-                        <p className='text-amber-400 text-xs mt-1'>Los tipos deben ser distintos.</p>
+                        <p className='text-amber-400 text-xs mt-1'>
+                            Los tipos deben ser distintos.
+                        </p>
                     )}
                 </div>
 
@@ -142,5 +144,3 @@ export function ArbolPanel({ puntos, onResult }: ArbolPanelProps) {
         </PanelFrame>
     )
 }
-
-

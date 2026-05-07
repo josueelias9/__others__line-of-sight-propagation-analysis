@@ -8,6 +8,7 @@ services:
       dockerfile: Dev.Dockerfile
     command: sleep infinity
     user: root
+    depends_on: !reset []
     
   backend:
     profiles:

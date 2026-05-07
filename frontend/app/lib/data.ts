@@ -4,9 +4,7 @@ import { fetchFromBackend } from '@/app/lib/backend'
 import type { PuntoData, RedData, MultipoligonoData } from '@/app/lib/types'
 
 export async function fetchPuntos(tipo?: string): Promise<PuntoData[]> {
-    const path = tipo
-        ? `/api/puntos?tipo=${encodeURIComponent(tipo)}`
-        : '/api/puntos'
+    const path = tipo ? `/api/puntos?tipo=${encodeURIComponent(tipo)}` : '/api/puntos'
     return fetchFromBackend<PuntoData[]>(path)
 }
 

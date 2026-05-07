@@ -8,12 +8,8 @@ export default function LoginPage() {
             <div className='w-full max-w-sm'>
                 {/* Logo / title */}
                 <div className='text-center mb-8'>
-                    <h1 className='text-2xl font-bold text-white tracking-tight'>
-                        Análisis LOS
-                    </h1>
-                    <p className='text-gray-500 text-sm mt-1'>
-                        Line-of-Sight Propagation Analysis
-                    </p>
+                    <h1 className='text-2xl font-bold text-white tracking-tight'>Análisis LOS</h1>
+                    <p className='text-gray-500 text-sm mt-1'>Line-of-Sight Propagation Analysis</p>
                 </div>
 
                 {/* Card */}

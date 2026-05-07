@@ -3,7 +3,7 @@ import type { NextAuthConfig } from 'next-auth'
 export const authConfig = {
     trustHost: true,
     pages: {
-        signIn: '/login',
+        signIn: '/login'
     },
     providers: [],
     callbacks: {
@@ -19,6 +19,6 @@ export const authConfig = {
 
             // All other routes require auth
             return isLoggedIn
-        },
-    },
+        }
+    }
 } satisfies NextAuthConfig

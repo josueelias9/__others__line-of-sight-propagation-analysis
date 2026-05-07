@@ -32,10 +32,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
                     const user = await getUser(email)
                     if (!user) return null
-                    const temp =await bcrypt.hash(password, 10)
-                    console.log('Comparing password with hash:', { password, hash: user.hashed_password, temp })
-
-
+                    const temp = await bcrypt.hash(password, 10)
+                    console.log('Comparing password with hash:', {
+                        password,
+                        hash: user.hashed_password,
+                        temp
+                    })
 
                     const passwordsMatch = await bcrypt.compare(password, user.hashed_password)
                     if (passwordsMatch) return { id: user.id, email: user.email, name: user.email }
@@ -43,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
                 console.log('Invalid credentials')
                 return null
-            },
-        }),
-    ],
+            }
+        })
+    ]
 })

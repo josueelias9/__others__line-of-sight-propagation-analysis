@@ -4,11 +4,7 @@ import { signIn, signOut } from '@/auth'
 import { AuthError } from 'next-auth'
 import { z } from 'zod'
 import { postToBackend, deleteFromBackend } from '@/app/lib/backend'
-import type {
-    PuntoData,
-    CoberturaViewModel,
-    ArbolResult,
-} from '@/app/lib/types'
+import type { PuntoData, CoberturaViewModel, ArbolResult } from '@/app/lib/types'
 
 // ─── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -20,10 +16,7 @@ export type State = {
     message?: string | null
 }
 
-export async function authenticate(
-    prevState: string | undefined,
-    formData: FormData,
-) {
+export async function authenticate(prevState: string | undefined, formData: FormData) {
     try {
         await signIn('credentials', formData)
     } catch (error) {
@@ -55,19 +48,19 @@ const CoberturaSchema = z.object({
     numero_de_ldv: z.coerce.number().int().gt(0),
     muestras: z.coerce.number().int().gt(0),
     distancia_km: z.coerce.number().gt(0),
-    altura_torre_fantasma: z.coerce.number().gt(0),
+    altura_torre_fantasma: z.coerce.number().gt(0)
 })
 
 export async function calcularCobertura(
     prevState: CoberturaState,
-    formData: FormData,
+    formData: FormData
 ): Promise<CoberturaState> {
     const validated = CoberturaSchema.safeParse({
         ubigeo: formData.get('ubigeo'),
         numero_de_ldv: formData.get('numero_de_ldv'),
         muestras: formData.get('muestras'),
         distancia_km: formData.get('distancia_km'),
-        altura_torre_fantasma: formData.get('altura_torre_fantasma'),
+        altura_torre_fantasma: formData.get('altura_torre_fantasma')
     })
     if (!validated.success) {
         return { result: null, error: 'Campos inválidos.' }
@@ -92,19 +85,19 @@ const ArbolSchema = z.object({
     tipo_no_conectados: z.string().min(1),
     distancia_maxima: z.coerce.number().gt(0),
     muestras: z.coerce.number().int().gt(0),
-    nombre_red: z.string().optional(),
+    nombre_red: z.string().optional()
 })
 
 export async function calcularArbol(
     prevState: ArbolState,
-    formData: FormData,
+    formData: FormData
 ): Promise<ArbolState> {
     const validated = ArbolSchema.safeParse({
         tipo_conectados: formData.get('tipo_conectados'),
         tipo_no_conectados: formData.get('tipo_no_conectados'),
         distancia_maxima: formData.get('distancia_maxima'),
         muestras: formData.get('muestras'),
-        nombre_red: formData.get('nombre_red'),
+        nombre_red: formData.get('nombre_red')
     })
     if (!validated.success) {
         return { result: null, error: 'Campos inválidos.' }
@@ -130,20 +123,17 @@ const PuntoSchema = z.object({
     latitud: z.coerce.number(),
     altura_antena: z.coerce.number().gt(0),
     tipo: z.string().min(1),
-    green_asociado: z.string(),
+    green_asociado: z.string()
 })
 
-export async function agregarPunto(
-    prevState: PuntoState,
-    formData: FormData,
-): Promise<PuntoState> {
+export async function agregarPunto(prevState: PuntoState, formData: FormData): Promise<PuntoState> {
     const validated = PuntoSchema.safeParse({
         nombre: formData.get('nombre'),
         longitud: formData.get('longitud'),
         latitud: formData.get('latitud'),
         altura_antena: formData.get('altura_antena'),
         tipo: formData.get('tipo'),
-        green_asociado: formData.get('green_asociado'),
+        green_asociado: formData.get('green_asociado')
     })
     if (!validated.success) {
         return { result: null, error: 'Campos inválidos.' }
@@ -165,5 +155,3 @@ export async function eliminarRed(id: number): Promise<void> {
 export async function eliminarCobertura(id: number): Promise<void> {
     await deleteFromBackend(`/api/cobertura/${id}`)
 }
-
-

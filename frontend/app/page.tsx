@@ -5,16 +5,12 @@ export default async function Home() {
     const [puntos, redes, coberturas] = await Promise.all([
         fetchPuntos(),
         fetchRedes(),
-        fetchSavedCoberturas(),
+        fetchSavedCoberturas()
     ])
 
     return (
         <main className='w-screen h-screen overflow-hidden'>
-            <MapView
-                initialPuntos={puntos}
-                initialRedes={redes}
-                initialCoberturas={coberturas}
-            />
+            <MapView initialPuntos={puntos} initialRedes={redes} initialCoberturas={coberturas} />
         </main>
     )
 }

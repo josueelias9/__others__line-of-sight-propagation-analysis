@@ -107,4 +107,3 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
         </PanelFrame>
     )
 }
-
