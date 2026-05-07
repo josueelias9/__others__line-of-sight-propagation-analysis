@@ -4,8 +4,8 @@ from sqlmodel import Field, SQLModel
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
 
-
 # ── ORM tables ────────────────────────────────────────────────────────────────
+
 
 class UserTable(SQLModel, table=True):
     __tablename__ = "users"

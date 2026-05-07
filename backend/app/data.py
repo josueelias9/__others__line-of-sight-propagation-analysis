@@ -24,4 +24,4 @@ PUNTOS_DATA = [
 
 USER_DATA = [
     ("admin@admin.com", "$2b$10$mg5NRM5YzNMcP7WAulCIUe.5VOChcjGFon/i2owqPBqBPc6MpSrTi"),
-    ]
+]

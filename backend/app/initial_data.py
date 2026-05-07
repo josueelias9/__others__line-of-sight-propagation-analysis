@@ -17,11 +17,13 @@ def init_db(session: Session) -> None:
     # ── Seed users if empty ──────────────────────────────────────────────────────
     existing_users = session.exec(select(UserTable)).first()
     if not existing_users:
-        for (email, hashed_password) in USER_DATA:
-            session.add(UserTable(
-                email=email,
-                hashed_password=hashed_password,
-            ))
+        for email, hashed_password in USER_DATA:
+            session.add(
+                UserTable(
+                    email=email,
+                    hashed_password=hashed_password,
+                )
+            )
         session.commit()
         logger.info("Seeded %d users.", len(USER_DATA))
 
