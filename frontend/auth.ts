@@ -1,57 +1,51 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import bcrypt from 'bcrypt'
+import postgres from 'postgres'
+import { z } from 'zod'
+import type { User } from '@/app/lib/types'
 import { authConfig } from '@/auth.config'
 
-const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:8000'
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: false })
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+async function getUser(email: string): Promise<User | undefined> {
+    try {
+        const users = await sql<User[]>`SELECT * FROM users WHERE email=${email}`
+        return users[0]
+    } catch (error) {
+        console.error('Failed to fetch user:', error)
+        throw new Error('Failed to fetch user.')
+    }
+}
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
-    trustHost: true,
     providers: [
         Credentials({
-            credentials: {
-                email: { label: 'Email', type: 'email' },
-                password: { label: 'Password', type: 'password' },
-            },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null
+                const parsedCredentials = z
+                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .safeParse(credentials)
 
-                const formData = new URLSearchParams()
-                formData.append('username', credentials.email as string)
-                formData.append('password', credentials.password as string)
+                if (parsedCredentials.success) {
+                    const { email, password } = parsedCredentials.data
 
-                let res: Response
-                try {
-                    res = await fetch(`${BACKEND_URL}/api/login/access-token`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: formData.toString(),
+                    const user = await getUser(email)
+                    if (!user) return null
+                    const temp = await bcrypt.hash(password, 10)
+                    console.log('Comparing password with hash:', {
+                        password,
+                        hash: user.hashed_password,
+                        temp
                     })
-                } catch {
-                    return null
+
+                    const passwordsMatch = await bcrypt.compare(password, user.hashed_password)
+                    if (passwordsMatch) return { id: user.id, email: user.email, name: user.email }
                 }
 
-                if (!res.ok) return null
-
-                const { access_token } = (await res.json()) as { access_token: string }
-                return {
-                    id: credentials.email as string,
-                    email: credentials.email as string,
-                    accessToken: access_token,
-                }
-            },
-        }),
-    ],
-    callbacks: {
-        jwt({ token, user }) {
-            if (user && 'accessToken' in user) {
-                token.accessToken = user.accessToken as string
+                console.log('Invalid credentials')
+                return null
             }
-            return token
-        },
-        session({ session, token }) {
-            session.accessToken = token.accessToken as string | undefined
-            return session
-        },
-    },
+        })
+    ]
 })

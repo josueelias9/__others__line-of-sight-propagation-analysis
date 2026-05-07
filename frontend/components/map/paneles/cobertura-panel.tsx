@@ -1,21 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import type { PuntoData, CoberturaForm, CoberturaViewModel } from '@/app/lib/types'
-import { BACKEND_URL } from '@/app/lib/config'
-import { useAuthFetch } from '@/app/lib/use-auth-fetch'
+import { useEffect, useState } from 'react'
+import { useFormState as useActionState } from 'react-dom'
+import type { PuntoData, CoberturaForm } from '@/app/lib/types'
+import { calcularCobertura, type CoberturaState } from '@/app/lib/actions'
 import { PanelFrame } from '@/components/map/panel-layout'
+import type { CoberturaViewModel } from '@/app/lib/types'
 
 interface CoberturaPanelProps {
     puntos: PuntoData[]
     onResult: (data: CoberturaViewModel) => void
 }
 
+const initialState: CoberturaState = { result: null, error: null }
+
 export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const authFetch = useAuthFetch()
+    const [state, formAction, isPending] = useActionState(calcularCobertura, initialState)
 
     const [form, setForm] = useState<CoberturaForm>({
         ubigeo: '',
@@ -29,39 +30,12 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
-
-        try {
-            const body = {
-                ubigeo: parseInt(form.ubigeo),
-                numero_de_ldv: parseInt(form.numero_de_ldv),
-                muestras: parseInt(form.muestras),
-                distancia_km: parseFloat(form.distancia_km),
-                altura_torre_fantasma: parseFloat(form.altura_torre_fantasma)
-            }
-
-            const res = await authFetch(`${BACKEND_URL}/api/cobertura`, {
-                method: 'POST',
-                body: JSON.stringify(body)
-            })
-
-            if (!res.ok) {
-                const detail = await res.text()
-                throw new Error(`HTTP ${res.status}: ${detail}`)
-            }
-
-            const data: CoberturaViewModel = await res.json()
-            onResult(data)
+    useEffect(() => {
+        if (state.result) {
+            onResult(state.result)
             setOpen(false)
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err))
-        } finally {
-            setLoading(false)
         }
-    }
+    }, [state.result]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const paramFields: { name: keyof CoberturaForm; label: string }[] = [
         { name: 'numero_de_ldv', label: 'Líneas de vista' },
@@ -76,58 +50,60 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
             closedLabel='Configurar y generar'
             open={open}
             onToggle={() => setOpen(v => !v)}
-            as='form'
-            onSubmit={handleSubmit}
             contentClassName='max-h-[70vh] overflow-y-auto'
         >
-            {/* Selector de punto */}
-            <div>
-                <label className='text-gray-400 text-xs block mb-0.5'>Punto</label>
-                <select
-                    name='ubigeo'
-                    value={form.ubigeo}
-                    onChange={handleChange}
-                    required
-                    className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
-                >
-                    <option value='' disabled>
-                        Seleccionar punto…
-                    </option>
-                    {puntos.map(p => (
-                        <option key={p.ubigeo} value={p.ubigeo}>
-                            [{p.ubigeo}] {p.nombre} ({p.tipo})
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Parámetros de análisis */}
-            {paramFields.map(({ name, label }) => (
-                <div key={name}>
-                    <label className='text-gray-400 text-xs block mb-0.5'>{label}</label>
-                    <input
-                        name={name}
-                        value={form[name]}
+            <form action={formAction} className='space-y-3'>
+                {/* Selector de punto */}
+                <div>
+                    <label className='text-gray-400 text-xs block mb-0.5'>Punto</label>
+                    <select
+                        name='ubigeo'
+                        value={form.ubigeo}
                         onChange={handleChange}
-                        type='number'
-                        step='any'
                         required
                         className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
-                    />
+                    >
+                        <option value='' disabled>
+                            Seleccionar punto…
+                        </option>
+                        {puntos.map(p => (
+                            <option key={p.ubigeo} value={p.ubigeo}>
+                                [{p.ubigeo}] {p.nombre} ({p.tipo})
+                            </option>
+                        ))}
+                    </select>
                 </div>
-            ))}
 
-            {error && (
-                <p className='text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2'>{error}</p>
-            )}
+                {/* Parámetros de análisis */}
+                {paramFields.map(({ name, label }) => (
+                    <div key={name}>
+                        <label className='text-gray-400 text-xs block mb-0.5'>{label}</label>
+                        <input
+                            name={name}
+                            value={form[name]}
+                            onChange={handleChange}
+                            type='number'
+                            step='any'
+                            required
+                            className='w-full bg-gray-800/60 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/60'
+                        />
+                    </div>
+                ))}
 
-            <button
-                type='submit'
-                disabled={loading || !form.ubigeo}
-                className='w-full mt-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl py-2 transition-colors'
-            >
-                {loading ? 'Calculando…' : 'Generar cobertura'}
-            </button>
+                {state.error && (
+                    <p className='text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2'>
+                        {state.error}
+                    </p>
+                )}
+
+                <button
+                    type='submit'
+                    disabled={isPending || !form.ubigeo}
+                    className='w-full mt-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl py-2 transition-colors'
+                >
+                    {isPending ? 'Calculando…' : 'Generar cobertura'}
+                </button>
+            </form>
         </PanelFrame>
     )
 }

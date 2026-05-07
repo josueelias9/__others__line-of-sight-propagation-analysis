@@ -1,6 +1,3 @@
-from app.core.config import settings
-
-
 TIPOS_INICIALES = [
     "acceso",
     "transporte",
@@ -23,8 +20,8 @@ PUNTOS_DATA = [
     (10, "acceso10", -78.436611, -6.895702, 15.0, "acceso", 3870.0, "", False),
 ]
 
+# pass: admin123
 
 USER_DATA = [
-    settings.FIRST_SUPERUSER,
-    settings.FIRST_SUPERUSER_PASSWORD,
+    ("admin@admin.com", "$2b$10$mg5NRM5YzNMcP7WAulCIUe.5VOChcjGFon/i2owqPBqBPc6MpSrTi"),
 ]

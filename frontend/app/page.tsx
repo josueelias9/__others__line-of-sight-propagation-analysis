@@ -1,9 +1,16 @@
 import MapView from '@/components/map-view'
+import { fetchPuntos, fetchRedes, fetchSavedCoberturas } from '@/app/lib/data'
 
-export default function Home() {
+export default async function Home() {
+    const [puntos, redes, coberturas] = await Promise.all([
+        fetchPuntos(),
+        fetchRedes(),
+        fetchSavedCoberturas()
+    ])
+
     return (
         <main className='w-screen h-screen overflow-hidden'>
-            <MapView />
+            <MapView initialPuntos={puntos} initialRedes={redes} initialCoberturas={coberturas} />
         </main>
     )
 }

@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useFormState as useActionState } from 'react-dom'
+import type { ChangeEvent } from 'react'
 import type { PuntoData } from '@/app/lib/types'
-import { BACKEND_URL } from '@/app/lib/config'
-import { useAuthFetch } from '@/app/lib/use-auth-fetch'
+import { agregarPunto, type PuntoState } from '@/app/lib/actions'
 
 interface AddPuntoPanelProps {
     onAdded: (punto: PuntoData) => void
@@ -30,6 +31,8 @@ const INITIAL_FORM: AddPuntoForm = {
     green_asociado: ''
 }
 
+const initialState: PuntoState = { result: null, error: null }
+
 export function AddPuntoPanel({
     onAdded,
     onRequestPick,
@@ -37,12 +40,10 @@ export function AddPuntoPanel({
     onPickConsumed
 }: AddPuntoPanelProps) {
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [state, formAction, isPending] = useActionState(agregarPunto, initialState)
     const [form, setForm] = useState<AddPuntoForm>(INITIAL_FORM)
-    const authFetch = useAuthFetch()
 
-    // Cuando llegan coordenadas del mapa, rellenar el formulario y abrir el panel
+    // When coordinates are picked from the map, fill the form and open the panel
     useEffect(() => {
         if (pickedCoords) {
             setForm(prev => ({
@@ -55,54 +56,25 @@ export function AddPuntoPanel({
         }
     }, [pickedCoords]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    }
-
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
-
-        try {
-            const body = {
-                nombre: form.nombre.trim(),
-                longitud: parseFloat(form.longitud),
-                latitud: parseFloat(form.latitud),
-                altura_antena: parseFloat(form.altura_antena),
-                tipo: form.tipo,
-                green_asociado: form.green_asociado.trim()
-            }
-
-            const res = await authFetch(`${BACKEND_URL}/api/puntos`, {
-                method: 'POST',
-                body: JSON.stringify(body)
-            })
-
-            if (!res.ok) {
-                const detail = await res.text()
-                throw new Error(`HTTP ${res.status}: ${detail}`)
-            }
-
-            const nuevo: PuntoData = await res.json()
-            onAdded(nuevo)
+    useEffect(() => {
+        if (state.result) {
+            onAdded(state.result)
             setForm(INITIAL_FORM)
             setOpen(false)
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err))
-        } finally {
-            setLoading(false)
         }
+    }, [state.result]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    function handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
 
     return (
         <>
-            {/* Botón flotante para abrir el panel */}
+            {/* Floating button */}
             <div className='absolute bottom-6 right-6 z-10 flex flex-col gap-2 items-end'>
                 <button
                     onClick={() => {
                         setForm(INITIAL_FORM)
-                        setError(null)
                         setOpen(true)
                     }}
                     className='flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-bold text-sm shadow-xl shadow-cyan-500/40 transition-all'
@@ -112,7 +84,7 @@ export function AddPuntoPanel({
                 </button>
             </div>
 
-            {/* Panel modal */}
+            {/* Modal panel */}
             {open && (
                 <div className='absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
                     <div className='w-full max-w-sm mx-4 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden'>
@@ -120,10 +92,7 @@ export function AddPuntoPanel({
                         <div className='px-6 py-4 border-b border-white/10 flex items-center justify-between'>
                             <span className='text-white font-bold text-base'>Nuevo punto</span>
                             <button
-                                onClick={() => {
-                                    setOpen(false)
-                                    setError(null)
-                                }}
+                                onClick={() => setOpen(false)}
                                 className='text-gray-400 hover:text-white text-xl leading-none transition-colors'
                             >
                                 ×
@@ -131,7 +100,7 @@ export function AddPuntoPanel({
                         </div>
 
                         {/* Form */}
-                        <form onSubmit={handleSubmit} className='px-6 py-4 space-y-4'>
+                        <form action={formAction} className='px-6 py-4 space-y-4'>
                             {/* Nombre */}
                             <div className='space-y-1'>
                                 <label className='text-gray-400 text-xs font-semibold uppercase tracking-wide'>
@@ -248,9 +217,9 @@ export function AddPuntoPanel({
                                 />
                             </div>
 
-                            {error && (
+                            {state.error && (
                                 <p className='text-red-400 text-xs bg-red-400/10 border border-red-400/20 rounded-xl px-3 py-2'>
-                                    {error}
+                                    {state.error}
                                 </p>
                             )}
 
@@ -258,20 +227,17 @@ export function AddPuntoPanel({
                             <div className='flex gap-3 pt-1'>
                                 <button
                                     type='button'
-                                    onClick={() => {
-                                        setOpen(false)
-                                        setError(null)
-                                    }}
+                                    onClick={() => setOpen(false)}
                                     className='flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-colors'
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type='submit'
-                                    disabled={loading}
+                                    disabled={isPending}
                                     className='flex-1 py-2 rounded-xl bg-cyan-500 text-gray-950 text-sm font-bold hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-cyan-500/30'
                                 >
-                                    {loading ? 'Guardando…' : 'Agregar'}
+                                    {isPending ? 'Guardando…' : 'Agregar'}
                                 </button>
                             </div>
                         </form>

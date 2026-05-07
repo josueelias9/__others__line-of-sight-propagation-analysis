@@ -4,8 +4,8 @@ from sqlmodel import Session, select, SQLModel
 
 from src.infrastructure.persistence.database import engine
 from src.infrastructure.persistence.models import PuntoTable, PuntoTypeTable, UserTable
-from app.core.config import settings
 from app.data import TIPOS_INICIALES, PUNTOS_DATA, USER_DATA
+import bcrypt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -14,23 +14,18 @@ logger = logging.getLogger(__name__)
 def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
 
-    # ── Superuser ─────────────────────────────────────────────────────────────
-    existing_superuser = session.exec(
-        select(UserTable).where(UserTable.email == USER_DATA[0])
-    ).first()
-
-    if not existing_superuser:
-        from app.core.security import get_password_hash
-
-        superuser = UserTable(
-            email=USER_DATA[0],
-            hashed_password=get_password_hash(USER_DATA[1]),
-            is_active=True,
-            is_superuser=True,
-        )
-        session.add(superuser)
+    # ── Seed users if empty ──────────────────────────────────────────────────────
+    existing_users = session.exec(select(UserTable)).first()
+    if not existing_users:
+        for email, hashed_password in USER_DATA:
+            session.add(
+                UserTable(
+                    email=email,
+                    hashed_password=hashed_password,
+                )
+            )
         session.commit()
-        logger.info("Created superuser: %s", USER_DATA[0])
+        logger.info("Seeded %d users.", len(USER_DATA))
 
     # ── Seed punto_type if empty ───────────────────────────────────────────────
     existing_tipos = session.exec(select(PuntoTypeTable)).all()
