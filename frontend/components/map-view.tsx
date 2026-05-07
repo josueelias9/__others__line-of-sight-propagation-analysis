@@ -1,8 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
-import { signOut } from 'next-auth/react'
+import { signOutAction } from '@/app/lib/actions'
+import { fetchPuntos } from '@/app/lib/data'
 
 import type {
     PuntoData,
@@ -11,8 +12,7 @@ import type {
     MultipoligonoData,
     RedData
 } from '../app/lib/types'
-import { BACKEND_URL, DEFAULT_CENTER } from '../app/lib/config'
-import { useAuthFetch } from '../app/lib/use-auth-fetch'
+import { DEFAULT_CENTER } from '../app/lib/config'
 import { MapOverlays } from './map/overlays/map-overlays'
 import { RedOverlays } from './map/overlays/red-overlays'
 import { CoberturaOverlays } from './map/overlays/cobertura-overlays'
@@ -30,18 +30,23 @@ const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
 // "90f87356969d889c" es el Map ID demo público de Google (vector map con tilt/rotation)
 const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || '90f87356969d889c'
 
-export default function MapView() {
-    const [puntos, setPuntos] = useState<PuntoData[]>([])
+interface MapViewProps {
+    initialPuntos: PuntoData[]
+    initialRedes: RedData[]
+    initialCoberturas: MultipoligonoData[]
+}
+
+export default function MapView({ initialPuntos, initialRedes, initialCoberturas }: MapViewProps) {
+    const [puntos, setPuntos] = useState<PuntoData[]>(initialPuntos)
     const [view3D, setView3D] = useState(false)
     const [cobertura, setCobertura] = useState<CoberturaViewModel | null>(null)
     const [showMalla, setShowMalla] = useState(false)
     const [arbolResult, setArbolResult] = useState<ArbolResult | null>(null)
-    const [multipoligonos, setMultipoligonos] = useState<MultipoligonoData[]>([])
+    const [multipoligonos, setMultipoligonos] = useState<MultipoligonoData[]>(initialCoberturas)
     const [pickingMode, setPickingMode] = useState(false)
     const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null)
     const [tipoFiltro, setTipoFiltro] = useState('')
-    const [redes, setRedes] = useState<RedData[]>([])
-    const authFetch = useAuthFetch()
+    const [redes, setRedes] = useState<RedData[]>(initialRedes)
 
     const highlightedUbigeos = useMemo(() => {
         const s = new Set<number>()
@@ -55,25 +60,21 @@ export default function MapView() {
     }, [redes])
 
     useEffect(() => {
-        const load = async () => {
-            const pUrl = tipoFiltro
-                ? `${BACKEND_URL}/api/puntos?tipo=${encodeURIComponent(tipoFiltro)}`
-                : `${BACKEND_URL}/api/puntos`
-            const pRes = await authFetch(pUrl)
-            if (pRes.ok) setPuntos(await pRes.json())
-        }
-        load().catch(console.error)
-    }, [tipoFiltro, authFetch])
+        if (!tipoFiltro) return
+        fetchPuntos(tipoFiltro).then(setPuntos).catch(console.error)
+    }, [tipoFiltro])
 
     return (
         <div className='relative w-full h-full bg-gray-950'>
             {/* Logout button */}
-            <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
-                className='absolute top-3 left-1/2 -translate-x-1/2 z-20 text-xs text-gray-500 hover:text-white bg-gray-900/70 hover:bg-gray-800 border border-white/10 rounded-lg px-3 py-1 transition-colors'
-            >
-                Cerrar sesión
-            </button>
+            <form action={signOutAction} className='absolute top-3 left-1/2 -translate-x-1/2 z-20'>
+                <button
+                    type='submit'
+                    className='text-xs text-gray-500 hover:text-white bg-gray-900/70 hover:bg-gray-800 border border-white/10 rounded-lg px-3 py-1 transition-colors'
+                >
+                    Cerrar sesión
+                </button>
+            </form>
             <APIProvider apiKey={API_KEY}>
                 {view3D ? (
                     <Map3DView
@@ -170,14 +171,12 @@ export default function MapView() {
                 <ArbolPanel puntos={puntos} onResult={setArbolResult} />
                 <SavedItemsPanel
                     kind='redes'
-                    endpoint={`${BACKEND_URL}/api/redes`}
-                    deleteEndpoint={id => `${BACKEND_URL}/api/redes/${id}`}
+                    initialItems={redes}
                     onVisibleItemsChange={setRedes}
                 />
                 <SavedItemsPanel
                     kind='coberturas'
-                    endpoint={`${BACKEND_URL}/api/cobertura`}
-                    deleteEndpoint={id => `${BACKEND_URL}/api/cobertura/${id}`}
+                    initialItems={multipoligonos}
                     onVisibleItemsChange={setMultipoligonos}
                 />
             </div>

@@ -1,3 +1,13 @@
+// ─── Auth types ────────────────────────────────────────────────────────────────
+
+export type User = {
+    id: string
+    email: string
+    hashed_password: string
+    is_active: boolean
+    is_superuser: boolean
+}
+
 // ─── Backend types ─────────────────────────────────────────────────────────────
 
 export interface PuntoData {

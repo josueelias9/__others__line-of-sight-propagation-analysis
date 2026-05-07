@@ -4,46 +4,48 @@ import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
 import type { MultipoligonoData, RedData } from '@/app/lib/types'
 import { PanelFrame } from '@/components/map/panel-layout'
 import { ITEM_COLORS } from '@/app/lib/utils'
-import { useAuthFetch } from '@/app/lib/use-auth-fetch'
+import { eliminarRed, eliminarCobertura } from '@/app/lib/actions'
+import { fetchRedes, fetchSavedCoberturas } from '@/app/lib/data'
 
 // ─── Internal generic base ─────────────────────────────────────────────────────
 
 interface GenericPanelProps<T extends { id: number }> {
     title: string
-    endpoint: string
-    deleteEndpoint: (id: number) => string
+    reloadAction: () => Promise<T[]>
+    deleteAction: (id: number) => Promise<void>
     countLabel: (n: number) => string
     emptyText: string
     renderRow: (item: T, expanded: boolean, onExpand: () => void) => ReactNode
     details?: (item: T) => Array<[string, string]>
     onVisibleItemsChange: (items: T[]) => void
+    initialItems?: T[]
 }
 
 function GenericPanel<T extends { id: number }>({
     title,
-    endpoint,
-    deleteEndpoint,
+    reloadAction,
+    deleteAction,
     countLabel,
     emptyText,
     renderRow,
     details,
-    onVisibleItemsChange
+    onVisibleItemsChange,
+    initialItems
 }: GenericPanelProps<T>) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [items, setItems] = useState<T[]>([])
-    const [visibleIds, setVisibleIds] = useState<Set<number>>(new Set())
+    const [items, setItems] = useState<T[]>(initialItems ?? [])
+    const [visibleIds, setVisibleIds] = useState<Set<number>>(
+        new Set((initialItems ?? []).map(i => i.id))
+    )
     const [expandedId, setExpandedId] = useState<number | null>(null)
-    const authFetch = useAuthFetch()
 
     async function load() {
         setLoading(true)
         setError(null)
         try {
-            const res = await authFetch(endpoint)
-            if (!res.ok) throw new Error(`HTTP ${res.status}`)
-            const data: T[] = await res.json()
+            const data = await reloadAction()
             setItems(data)
             setVisibleIds(new Set(data.map(d => d.id)))
         } catch (err: unknown) {
@@ -54,7 +56,7 @@ function GenericPanel<T extends { id: number }>({
     }
 
     async function handleDelete(id: number) {
-        await authFetch(deleteEndpoint(id), { method: 'DELETE' })
+        await deleteAction(id)
         const next = items.filter(i => i.id !== id)
         setItems(next)
         setVisibleIds(prev => {
@@ -80,11 +82,6 @@ function GenericPanel<T extends { id: number }>({
     useEffect(() => {
         onVisibleItemsChangeRef.current(items.filter(i => visibleIds.has(i.id)))
     }, [items, visibleIds])
-
-    useEffect(() => {
-        if (open && items.length === 0) load()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open])
 
     return (
         <PanelFrame
@@ -163,14 +160,12 @@ function GenericPanel<T extends { id: number }>({
 export type SavedItemsPanelProps =
     | {
           kind: 'coberturas'
-          endpoint: string
-          deleteEndpoint: (id: number) => string
+          initialItems?: MultipoligonoData[]
           onVisibleItemsChange: (items: MultipoligonoData[]) => void
       }
     | {
           kind: 'redes'
-          endpoint: string
-          deleteEndpoint: (id: number) => string
+          initialItems?: RedData[]
           onVisibleItemsChange: (items: RedData[]) => void
       }
 
@@ -179,8 +174,9 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
         return (
             <GenericPanel<MultipoligonoData>
                 title='Coberturas guardadas'
-                endpoint={props.endpoint}
-                deleteEndpoint={props.deleteEndpoint}
+                reloadAction={fetchSavedCoberturas}
+                deleteAction={eliminarCobertura}
+                initialItems={props.initialItems}
                 countLabel={n => `${n} cobertura${n !== 1 ? 's' : ''}`}
                 emptyText='Sin coberturas guardadas'
                 onVisibleItemsChange={props.onVisibleItemsChange}
@@ -208,8 +204,9 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
     return (
         <GenericPanel<RedData>
             title='Redes guardadas'
-            endpoint={props.endpoint}
-            deleteEndpoint={props.deleteEndpoint}
+            reloadAction={fetchRedes}
+            deleteAction={eliminarRed}
+            initialItems={props.initialItems}
             countLabel={n => `${n} red${n !== 1 ? 'es' : ''}`}
             emptyText='Sin redes guardadas'
             onVisibleItemsChange={props.onVisibleItemsChange}
@@ -232,3 +229,4 @@ export function SavedItemsPanel(props: SavedItemsPanelProps) {
         />
     )
 }
+
