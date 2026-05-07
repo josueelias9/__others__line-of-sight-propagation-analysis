@@ -19,3 +19,9 @@ PUNTOS_DATA = [
     (9, "acceso9", -78.431883, -6.915703, 15.0, "acceso", 4076.0, "transporte", False),
     (10, "acceso10", -78.436611, -6.895702, 15.0, "acceso", 3870.0, "", False),
 ]
+
+# pass: admin123
+
+USER_DATA = [
+    ("admin@admin.com", "$2b$10$mg5NRM5YzNMcP7WAulCIUe.5VOChcjGFon/i2owqPBqBPc6MpSrTi"),
+    ]
