@@ -1,0 +1,6 @@
+[ ] load multipoligono data too 
+
+[ ] deploy on cloud
+[ ] initial load failing on frontend
+[ ] 2D view is wrong
+[ ] enable spanish/english translation

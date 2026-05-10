@@ -1,17 +1,15 @@
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass
-from typing import Callable
 
 from sqlmodel import Session, select
 
-from app.models import PuntoTable, UserTable
+from app.models import MultipoligonoTable, PuntoTable, UserTable
+from application.interface.ports.data_loader import CsvDataLoaderPort
 
 logger = logging.getLogger(__name__)
-
-# Type alias for the data-loading callable injected from infrastructure
-CsvDataLoader = Callable[[], dict[str, list[dict[str, str]]]]
 
 
 @dataclass
@@ -32,7 +30,7 @@ class PoblarDatosUsuarioUseCase:
     Pertenece a la capa de Aplicación.
     """
 
-    def __init__(self, session: Session, data_loader: CsvDataLoader) -> None:
+    def __init__(self, session: Session, data_loader: CsvDataLoaderPort) -> None:
         self._session = session
         self._data_loader = data_loader
 
@@ -55,8 +53,7 @@ class PoblarDatosUsuarioUseCase:
             )
             return PoblarDatosUsuarioResponse(puntos_creados=0)
 
-        data = self._data_loader()
-        puntos = data.get("punto", [])
+        puntos = self._data_loader.load("punto")
         for row in puntos:
             self._session.add(
                 PuntoTable(
@@ -73,7 +70,28 @@ class PoblarDatosUsuarioUseCase:
                 )
             )
         self._session.commit()
+
+        multipoligonos = self._data_loader.load("multipoligono")
+        for row in multipoligonos:
+            geojson_raw = row.get("geojson", "")
+            geojson = json.loads(geojson_raw) if geojson_raw else {}
+            self._session.add(
+                MultipoligonoTable(
+                    punto_ubigeo=int(row["punto_ubigeo"]),
+                    geojson=geojson,
+                    numero_de_ldv=int(row["numero_de_ldv"]),
+                    muestras=int(row["muestras"]),
+                    distancia_km=float(row["distancia_km"]),
+                    altura_torre_fantasma=float(row["altura_torre_fantasma"]),
+                    user_id=user.id,
+                )
+            )
+
+        self._session.commit()
         logger.info(
-            "Poblados %d puntos para el usuario '%s'.", len(puntos), request.email
+            "Poblados %d puntos y %d multipolígonos para el usuario '%s'.",
+            len(puntos),
+            len(multipoligonos),
+            request.email,
         )
         return PoblarDatosUsuarioResponse(puntos_creados=len(puntos))

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.deps import CurrentUserIdDep
 from infrastructure.persistence.database import SessionDep
-from infrastructure.persistence.csv_data_loader import load_csv_data
+from infrastructure.persistence.csv_data_loader import CsvDataLoader
 from application.use_cases.poblar_datos_usuario import (
     PoblarDatosUsuarioUseCase,
     PoblarDatosUsuarioRequest,
@@ -22,6 +22,6 @@ def post_seed(session: SessionDep, user_id: CurrentUserIdDep):
 
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
 
-    use_case = PoblarDatosUsuarioUseCase(session=session, data_loader=load_csv_data)
+    use_case = PoblarDatosUsuarioUseCase(session=session, data_loader=CsvDataLoader())
     response = use_case.ejecutar(PoblarDatosUsuarioRequest(email=user.email))
     return {"puntos_creados": response.puntos_creados}
