@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from app.core import config
+from app.api.deps import CurrentUserIdDep
 from infrastructure.persistence.database import SessionDep
 from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
 from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepository
@@ -15,8 +16,10 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[PuntoOut])
-def get_puntos(session: SessionDep, tipo: Optional[str] = Query(None)):
-    repo = PgPuntoRepository(session)
+def get_puntos(
+    session: SessionDep, user_id: CurrentUserIdDep, tipo: Optional[str] = Query(None)
+):
+    repo = PgPuntoRepository(session, user_id=user_id)
     puntos = repo.leer_puntos(tipo)
     return [
         PuntoOut(
@@ -35,8 +38,8 @@ def get_puntos(session: SessionDep, tipo: Optional[str] = Query(None)):
 
 
 @router.post("", response_model=PuntoOut, status_code=201)
-def post_punto(body: PuntoIn, session: SessionDep):
-    repo = PgPuntoRepository(session)
+def post_punto(body: PuntoIn, session: SessionDep, user_id: CurrentUserIdDep):
+    repo = PgPuntoRepository(session, user_id=user_id)
     use_case = AgregarPuntoUseCase(punto_repo=repo)
     response = use_case.ejecutar(
         AgregarPuntoRequest(
@@ -63,8 +66,8 @@ def post_punto(body: PuntoIn, session: SessionDep):
 
 
 @router.post("/alturas", response_model=List[PuntoOut])
-def post_alturas(session: SessionDep):
-    repo = PgPuntoRepository(session)
+def post_alturas(session: SessionDep, user_id: CurrentUserIdDep):
+    repo = PgPuntoRepository(session, user_id=user_id)
     elevation_repo = SrtmElevationRepository(muestras=config.MUESTRAS)
     use_case = AsignarAlturasUseCase(punto_repo=repo, elevation_repo=elevation_repo)
     response = use_case.ejecutar()

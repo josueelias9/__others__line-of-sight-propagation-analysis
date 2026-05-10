@@ -2,6 +2,7 @@
 ### Requiere la extensión "REST Client" (humao.rest-client) en VS Code
 
 @host = http://localhost:8000
+@email = user@example.com
 
 # ─────────────────────────────────────────────
 # Puntos
@@ -9,12 +10,14 @@
 
 ### Listar todos los puntos
 GET {{host}}/api/puntos
+X-User-Email: {{email}}
 
 ###
 
 ### Agregar un nuevo punto
 POST {{host}}/api/puntos
 Content-Type: application/json
+X-User-Email: {{email}}
 
 {
   "nombre": "NuevoPunto01",
@@ -29,6 +32,7 @@ Content-Type: application/json
 
 ### Asignar altura sobre el nivel del mar a todos los puntos (SRTM)
 POST {{host}}/api/puntos/alturas
+X-User-Email: {{email}}
 
 
 # ─────────────────────────────────────────────
@@ -38,6 +42,7 @@ POST {{host}}/api/puntos/alturas
 ### Generar polígono de cobertura para un ubigeo
 POST {{host}}/api/cobertura
 Content-Type: application/json
+X-User-Email: {{email}}
 
 {
   "ubigeo": 1,
@@ -49,6 +54,7 @@ Content-Type: application/json
 
 ###
 GET {{host}}/api/cobertura
+X-User-Email: {{email}}
 
 
 
@@ -59,6 +65,7 @@ GET {{host}}/api/cobertura
 ### Ejecutar árbol de conexión entre dos tipos de puntos
 POST {{host}}/api/redes
 Content-Type: application/json
+X-User-Email: {{email}}
 
 {
   "tipo_conectados": "transporte",
@@ -70,3 +77,14 @@ Content-Type: application/json
 
 ###
 GET {{host}}/api/redes
+X-User-Email: {{email}}
+
+
+# ─────────────────────────────────────────────
+# Seed
+# ─────────────────────────────────────────────
+
+### Poblar datos de plantilla para el usuario actual
+POST {{host}}/api/seed
+X-User-Email: {{email}}
+

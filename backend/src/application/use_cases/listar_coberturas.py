@@ -13,7 +13,7 @@ from application.interface.db.cobertura_guardada import (
 class ListarCoberturasRequest:
     pass
 
-
+  
 class ListarCoberturasUseCase:
     """
     Caso de uso: recuperar las coberturas guardadas en la base de datos.

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlmodel import Session, select
 
@@ -16,8 +16,9 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
     Pertenece a la capa de Infraestructura.
     """
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, user_id: Optional[int] = None) -> None:
         self._session = session
+        self._user_id = user_id
 
     def guardar(
         self,
@@ -30,7 +31,8 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
     ) -> int:
         existing = self._session.exec(
             select(MultipoligonoTable).where(
-                MultipoligonoTable.punto_ubigeo == punto_ubigeo
+                MultipoligonoTable.punto_ubigeo == punto_ubigeo,
+                MultipoligonoTable.user_id == self._user_id,
             )
         ).first()
 
@@ -52,6 +54,7 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
             muestras=muestras,
             distancia_km=distancia_km,
             altura_torre_fantasma=altura_torre_fantasma,
+            user_id=self._user_id,
         )
         self._session.add(row)
         self._session.commit()
@@ -59,7 +62,10 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
         return row.id
 
     def listar(self) -> List[CoberturaGuardada]:
-        rows = self._session.exec(select(MultipoligonoTable)).all()
+        stmt = select(MultipoligonoTable)
+        if self._user_id is not None:
+            stmt = stmt.where(MultipoligonoTable.user_id == self._user_id)
+        rows = self._session.exec(stmt).all()
         if not rows:
             return []
 
@@ -86,7 +92,10 @@ class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):
         ]
 
     def eliminar(self, id: int) -> None:
-        row = self._session.get(MultipoligonoTable, id)
+        stmt = select(MultipoligonoTable).where(MultipoligonoTable.id == id)
+        if self._user_id is not None:
+            stmt = stmt.where(MultipoligonoTable.user_id == self._user_id)
+        row = self._session.exec(stmt).first()
         if row is None:
             raise ValueError(f"Cobertura con id={id} no encontrada")
         self._session.delete(row)

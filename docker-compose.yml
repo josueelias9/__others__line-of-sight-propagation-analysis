@@ -8,8 +8,6 @@ services:
       - POSTGRES_DB
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # TODO se supone que esto lo hace el backend. no deberia estar esto aqui
-      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
