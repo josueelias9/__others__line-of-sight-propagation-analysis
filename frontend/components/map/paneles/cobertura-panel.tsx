@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useFormState as useActionState } from 'react-dom'
+import { useActionState, useEffect, useState } from 'react'
 import type { PuntoData, CoberturaForm } from '@/app/lib/types'
 import { calcularCobertura, type CoberturaState } from '@/app/lib/actions'
 import { PanelFrame } from '@/components/map/panel-layout'
@@ -20,7 +19,7 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
 
     const [form, setForm] = useState<CoberturaForm>({
         ubigeo: '',
-        numero_de_ldv: '72',
+        numero_de_ldv: '100',
         muestras: '100',
         distancia_km: '15',
         altura_torre_fantasma: '15'
@@ -31,11 +30,11 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
     }
 
     useEffect(() => {
-        if (state.result) {
+        if (state?.result) {
             onResult(state.result)
             setOpen(false)
         }
-    }, [state.result]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [state?.result]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const paramFields: { name: keyof CoberturaForm; label: string }[] = [
         { name: 'numero_de_ldv', label: 'Líneas de vista' },
@@ -90,9 +89,9 @@ export function CoberturaPanel({ puntos, onResult }: CoberturaPanelProps) {
                     </div>
                 ))}
 
-                {state.error && (
+                {state?.error && (
                     <p className='text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2'>
-                        {state.error}
+                        {state?.error}
                     </p>
                 )}
 

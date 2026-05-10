@@ -5,7 +5,7 @@ from sqlmodel import Session, delete, select
 
 from domain.entities.punto import Punto
 from application.interface.db.punto import PuntoGateway
-from infrastructure.persistence.models import PuntoTable, PuntoTypeTable
+from app.models import PuntoTable, PuntoTypeTable
 
 logger = logging.getLogger(__name__)
 

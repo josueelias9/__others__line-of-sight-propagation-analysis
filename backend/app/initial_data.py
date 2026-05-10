@@ -3,7 +3,7 @@ import logging
 from sqlmodel import Session, select, SQLModel
 
 from src.infrastructure.persistence.database import engine
-from src.infrastructure.persistence.models import PuntoTable, PuntoTypeTable, UserTable
+from app.models import PuntoTable, PuntoTypeTable, UserTable
 from app.data import TIPOS_INICIALES, PUNTOS_DATA, USER_DATA
 import bcrypt
 
@@ -15,17 +15,17 @@ def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
 
     # ── Seed users if empty ──────────────────────────────────────────────────────
-    existing_users = session.exec(select(UserTable)).first()
-    if not existing_users:
-        for email, hashed_password in USER_DATA:
-            session.add(
-                UserTable(
-                    email=email,
-                    hashed_password=hashed_password,
-                )
-            )
-        session.commit()
-        logger.info("Seeded %d users.", len(USER_DATA))
+    # existing_users = session.exec(select(UserTable)).first()
+    # if not existing_users:
+    #     for email, hashed_password in USER_DATA:
+    #         session.add(
+    #             UserTable(
+    #                 email=email,
+    #                 hashed_password=hashed_password,
+    #             )
+    #         )
+    #     session.commit()
+    #     logger.info("Seeded %d users.", len(USER_DATA))
 
     # ── Seed punto_type if empty ───────────────────────────────────────────────
     existing_tipos = session.exec(select(PuntoTypeTable)).all()

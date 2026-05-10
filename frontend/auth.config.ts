@@ -10,6 +10,9 @@ export const authConfig = {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user
             const isOnLogin = nextUrl.pathname === '/login'
+            const isOnSeed = nextUrl.pathname === '/seed'
+
+            if (isOnSeed) return true
 
             if (isOnLogin) {
                 // Already authenticated → send to home

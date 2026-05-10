@@ -1,6 +1,5 @@
-from typing import Any, Dict, List
+from typing import List
 
-from pydantic import BaseModel
 from fastapi import APIRouter
 
 from app.core import config
@@ -20,20 +19,15 @@ from infrastructure.geometry.shapely_geometry_repository import (
     ShapelyGeometryRepository,
 )
 
+from app.models import (
+    RedOut,
+    RelacionRedOut,
+    PuntoSinConexionOut,
+    ArbolRequest,
+    ArbolResponse,
+)
+
 router = APIRouter()
-
-
-class RelacionRedOut(BaseModel):
-    punto_inicial_ubigeo: int
-    punto_final_ubigeo: int
-    distancia: float
-
-
-class RedOut(BaseModel):
-    id: int
-    nombre: str
-    geojson: Dict[str, Any]
-    relaciones: List[RelacionRedOut]
 
 
 @router.get("", response_model=List[RedOut])
@@ -65,27 +59,6 @@ def delete_red(red_id: int, session: SessionDep):
 
 
 # ==================
-
-
-class ArbolRequest(BaseModel):
-    tipo_conectados: str
-    tipo_no_conectados: str
-    distancia_maxima: float = config.DISTANCIA_KM
-    muestras: int = config.MUESTRAS
-    nombre_red: str = ""
-
-
-class PuntoSinConexionOut(BaseModel):
-    ubigeo: int
-    nombre: str
-    longitud: float
-    latitud: float
-    tipo: str
-
-
-class ArbolResponse(BaseModel):
-    red_geojson: Dict[str, Any]
-    puntos_sin_conexion: List[PuntoSinConexionOut]
 
 
 @router.post("", response_model=ArbolResponse)

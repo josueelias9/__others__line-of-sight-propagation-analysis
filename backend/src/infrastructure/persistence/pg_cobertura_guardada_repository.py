@@ -6,7 +6,7 @@ from application.interface.db.cobertura_guardada import (
     CoberturaGuardada,
     CoberturaGuardadaGateway,
 )
-from infrastructure.persistence.models import MultipoligonoTable, PuntoTable
+from app.models import MultipoligonoTable, PuntoTable
 
 
 class PgCoberturaGuardadaRepository(CoberturaGuardadaGateway):

@@ -28,12 +28,12 @@ export function MultipoligonoOverlays({ items }: { items: MultipoligonoData[] })
         polysRef.current = []
         infoWindowRef.current?.close()
 
-        if (!map || items.length === 0) return
+        if (!map || items?.length === 0) return
 
         const infoWindow = new google.maps.InfoWindow()
         infoWindowRef.current = infoWindow
 
-        items.forEach(item => {
+        items?.forEach(item => {
             const color = ITEM_COLORS[item.id % ITEM_COLORS.length]
             const { geometry } = item.geojson
             if (!geometry) return

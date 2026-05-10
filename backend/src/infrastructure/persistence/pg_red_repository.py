@@ -7,10 +7,7 @@ from domain.entities.punto import Punto
 from domain.entities.red import Red
 from domain.entities.relacion import Relacion
 from application.interface.db.red import RedGateway
-from infrastructure.persistence.models import RedTable, RedPuntoTable
-from infrastructure.geometry.shapely_geometry_repository import (
-    ShapelyGeometryRepository,
-)
+from app.models import RedTable, RedPuntoTable
 
 logger = logging.getLogger(__name__)
 
