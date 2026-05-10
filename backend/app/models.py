@@ -4,6 +4,10 @@ from sqlmodel import Field, SQLModel
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
 
+from typing import Any, Dict, List
+
+from app.core import config
+
 # ── ORM tables ────────────────────────────────────────────────────────────────
 
 
@@ -71,3 +75,84 @@ class RedPuntoTable(SQLModel, table=True):
     punto_inicial_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
     punto_final_ubigeo: int = Field(foreign_key="punto.ubigeo", primary_key=True)
     distancia: float
+
+
+# ── Pydantic models ───────────────────────────────────────────────────────────
+
+from pydantic import BaseModel
+
+
+class PuntoOut(BaseModel):
+    ubigeo: int
+    nombre: str
+    longitud: float
+    latitud: float
+    altura_antena: float
+    tipo: str
+    metros_sobre_nivel_mar: float
+    green_asociado: str
+    conectado: bool
+
+
+class PuntoIn(BaseModel):
+    nombre: str
+    longitud: float
+    latitud: float
+    altura_antena: float = 15.0
+    tipo: str
+    green_asociado: Optional[str] = ""
+
+
+class CoberturaRequest(BaseModel):
+    ubigeo: int
+    numero_de_ldv: int = Field(default=config.NUMERO_DE_LDV, ge=100, le=300)
+    muestras: int = Field(default=config.MUESTRAS, ge=100, le=300)
+    distancia_km: float = Field(default=config.DISTANCIA_KM, ge=1, le=15)
+    altura_torre_fantasma: float = Field(
+        default=config.ALTURA_TORRE_FANTASMA, ge=5, le=20
+    )
+
+
+class CoberturaGuardadaOut(BaseModel):
+    id: int
+    punto_ubigeo: int
+    punto_nombre: str
+    geojson: Dict[str, Any]
+    numero_de_ldv: int
+    muestras: int
+    distancia_km: float
+    altura_torre_fantasma: float
+
+
+class RelacionRedOut(BaseModel):
+    punto_inicial_ubigeo: int
+    punto_final_ubigeo: int
+    distancia: float
+
+
+class RedOut(BaseModel):
+    id: int
+    nombre: str
+    geojson: Dict[str, Any]
+    relaciones: List[RelacionRedOut]
+
+
+class ArbolRequest(BaseModel):
+    tipo_conectados: str
+    tipo_no_conectados: str
+    distancia_maxima: float = config.DISTANCIA_KM
+    muestras: int = config.MUESTRAS
+    nombre_red: str = ""
+
+
+class PuntoSinConexionOut(BaseModel):
+    ubigeo: int
+    nombre: str
+    longitud: float
+    latitud: float
+    tipo: str
+
+
+class ArbolResponse(BaseModel):
+    red_geojson: Dict[str, Any]
+    puntos_sin_conexion: List[PuntoSinConexionOut]

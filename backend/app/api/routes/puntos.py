@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
@@ -9,28 +8,10 @@ from infrastructure.elevation.srtm_elevation_repository import SrtmElevationRepo
 from application.use_cases.agregar_punto import AgregarPuntoUseCase, AgregarPuntoRequest
 from application.use_cases.asignar_alturas import AsignarAlturasUseCase
 
+
+from app.models import PuntoOut, PuntoIn
+
 router = APIRouter()
-
-
-class PuntoOut(BaseModel):
-    ubigeo: int
-    nombre: str
-    longitud: float
-    latitud: float
-    altura_antena: float
-    tipo: str
-    metros_sobre_nivel_mar: float
-    green_asociado: str
-    conectado: bool
-
-
-class PuntoIn(BaseModel):
-    nombre: str
-    longitud: float
-    latitud: float
-    altura_antena: float = 15.0
-    tipo: str
-    green_asociado: Optional[str] = ""
 
 
 @router.get("", response_model=List[PuntoOut])

@@ -1,7 +1,6 @@
 from dataclasses import asdict
-from typing import Any, Dict, List
+from typing import List
 
-from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException
 
 from app.core import config
@@ -24,28 +23,10 @@ from application.use_cases.listar_coberturas import (
     ListarCoberturasRequest,
 )
 
+
+from app.models import CoberturaGuardadaOut, CoberturaRequest
+
 router = APIRouter()
-
-
-class CoberturaRequest(BaseModel):
-    ubigeo: int
-    numero_de_ldv: int = Field(default=config.NUMERO_DE_LDV, ge=100, le=300)
-    muestras: int = Field(default=config.MUESTRAS, ge=100, le=300)
-    distancia_km: float = Field(default=config.DISTANCIA_KM, ge=1, le=15)
-    altura_torre_fantasma: float = Field(
-        default=config.ALTURA_TORRE_FANTASMA, ge=5, le=20
-    )
-
-
-class CoberturaGuardadaOut(BaseModel):
-    id: int
-    punto_ubigeo: int
-    punto_nombre: str
-    geojson: Dict[str, Any]
-    numero_de_ldv: int
-    muestras: int
-    distancia_km: float
-    altura_torre_fantasma: float
 
 
 @router.post("")
