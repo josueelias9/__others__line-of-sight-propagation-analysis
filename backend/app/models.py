@@ -63,7 +63,7 @@ class RedTable(SQLModel, table=True):
     nombre: str
     geojson: dict = Field(
         default_factory=dict,
-        sa_column=Column(JSONB, nullable=False, server_default="'{}'"),
+        sa_column=Column(JSONB, nullable=False, server_default="{}"),
     )
     user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 

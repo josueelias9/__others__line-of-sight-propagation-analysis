@@ -1,0 +1,2 @@
+"id","email","hashed_password","is_active","is_superuser"
+0,"user@example.com","$2b$10$WDsJurvRl90phk2ep1dZ2eCxWHCszNzZPZjQmMQg95A8Vvcc5FDta",True,False
