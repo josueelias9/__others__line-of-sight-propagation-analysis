@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useActionState } from 'react'
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
-import { signOutAction } from '@/app/lib/actions'
+import { signOutAction, poblarDatosUsuario, type SeedState } from '@/app/lib/actions'
 import { fetchPuntos } from '@/app/lib/data'
 
 import type {
@@ -48,6 +48,9 @@ export default function MapView({ initialPuntos, initialRedes, initialCoberturas
     const [tipoFiltro, setTipoFiltro] = useState('')
     const [redes, setRedes] = useState<RedData[]>(initialRedes)
 
+    const seedInitialState: SeedState = { puntosCreados: null, error: null }
+    const [seedState, seedAction, seedPending] = useActionState(poblarDatosUsuario, seedInitialState)
+
     const highlightedUbigeos = useMemo(() => {
         const s = new Set<number>()
         for (const red of redes) {
@@ -64,17 +67,46 @@ export default function MapView({ initialPuntos, initialRedes, initialCoberturas
         fetchPuntos(tipoFiltro).then(setPuntos).catch(console.error)
     }, [tipoFiltro])
 
+    // Reload puntos after a successful seed
+    useEffect(() => {
+        if (seedState.puntosCreados !== null && seedState.puntosCreados > 0) {
+            fetchPuntos().then(setPuntos).catch(console.error)
+        }
+    }, [seedState])
+
     return (
         <div className='relative w-full h-full bg-gray-950'>
-            {/* Logout button */}
-            <form action={signOutAction} className='absolute top-3 left-1/2 -translate-x-1/2 z-20'>
-                <button
-                    type='submit'
-                    className='text-xs text-gray-500 hover:text-white bg-gray-900/70 hover:bg-gray-800 border border-white/10 rounded-lg px-3 py-1 transition-colors'
-                >
-                    Cerrar sesión
-                </button>
-            </form>
+            {/* Top-center bar: logout + seed */}
+            {/* TODO this two form can be asigned to component */}
+            <div className='absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2'>
+                <form action={seedAction}>
+                    <button
+                        type='submit'
+                        disabled={seedPending}
+                        className='text-xs text-gray-400 hover:text-white bg-gray-900/70 hover:bg-gray-800 border border-white/10 rounded-lg px-3 py-1 transition-colors disabled:opacity-50'
+                        title='Carga puntos de ejemplo para comenzar a explorar la app'
+                    >
+                        {seedPending
+                            ? 'Cargando...'
+                            : seedState.puntosCreados === 0
+                              ? '✓ Datos ya cargados'
+                              : seedState.puntosCreados !== null
+                                ? `✓ ${seedState.puntosCreados} puntos cargados`
+                                : '¿Cómo usar la app? Cargar datos de ejemplo'}
+                    </button>
+                </form>
+                {seedState.error && (
+                    <span className='text-xs text-red-400'>{seedState.error}</span>
+                )}
+                <form action={signOutAction}>
+                    <button
+                        type='submit'
+                        className='text-xs text-gray-500 hover:text-white bg-gray-900/70 hover:bg-gray-800 border border-white/10 rounded-lg px-3 py-1 transition-colors'
+                    >
+                        Cerrar sesión
+                    </button>
+                </form>
+            </div>
             <APIProvider apiKey={API_KEY}>
                 {view3D ? (
                     <Map3DView

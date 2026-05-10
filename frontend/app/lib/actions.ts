@@ -155,3 +155,19 @@ export async function eliminarRed(id: number): Promise<void> {
 export async function eliminarCobertura(id: number): Promise<void> {
     await deleteFromBackend(`/api/cobertura/${id}`)
 }
+
+// ─── Seed ──────────────────────────────────────────────────────────────────────
+
+export type SeedState = {
+    puntosCreados: number | null
+    error: string | null
+}
+
+export async function poblarDatosUsuario(prevState: SeedState): Promise<SeedState> {
+    try {
+        const result = await postToBackend<{ puntos_creados: number }>('/api/seed', {})
+        return { puntosCreados: result.puntos_creados, error: null }
+    } catch {
+        return { puntosCreados: null, error: 'Error al poblar datos de ejemplo.' }
+    }
+}
