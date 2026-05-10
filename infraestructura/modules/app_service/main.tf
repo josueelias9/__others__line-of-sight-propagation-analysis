@@ -1,72 +1,52 @@
-resource "azurerm_service_plan" "main" {
-  name                = "${var.prefix}-asp"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  os_type             = "Linux"
-  sku_name            = var.app_service_plan_sku
-  tags                = var.tags
-}
+resource "azurerm_container_app" "main" {
+  name                         = var.app_name
+  container_app_environment_id = var.container_app_environment_id
+  resource_group_name          = var.resource_group_name
+  revision_mode                = "Single"
+  tags                         = var.tags
 
-# ── Backend ────────────────────────────────────────────────────────────────────
-
-resource "azurerm_linux_web_app" "backend" {
-  name                = "${var.prefix}-backend"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  service_plan_id     = azurerm_service_plan.main.id
-  https_only          = true
-
-  site_config {
-    always_on = true
-
-    application_stack {
-      docker_image_name        = "backend:${var.image_tag}"
-      docker_registry_url      = "https://${var.acr_login_server}"
-      docker_registry_username = var.acr_admin_username
-      docker_registry_password = var.acr_admin_password
-    }
-
-    app_command_line = "bash scripts/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+  secret {
+    name  = "registry-password"
+    value = var.docker_registry_password
   }
 
-  app_settings = {
-    "DB_HOST"        = var.postgres_host
-    "DB_PORT"        = "5432"
-    "DB_NAME"        = var.postgres_db
-    "DB_USER"        = var.postgres_user
-    "DB_PASSWORD"    = var.postgres_password
-    "LOG_LEVEL"      = "INFO"
-    "WEBSITES_PORT"  = "8000"
-    "DOCKER_ENABLE_CI" = "true"
+  registry {
+    server               = var.docker_registry_url
+    username             = var.docker_registry_username
+    password_secret_name = "registry-password"
   }
 
-  tags = var.tags
-}
+  # Only ignore the image so that 'az containerapp update' changes are not
+  # reverted by Terraform, while env vars and other settings stay in sync.
+  lifecycle {
+    ignore_changes = [template[0].container[0].image]
+  }
 
-# ── Frontend ───────────────────────────────────────────────────────────────────
+  template {
+    container {
+      name   = "app"
+      image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
 
-resource "azurerm_linux_web_app" "frontend" {
-  name                = "${var.prefix}-frontend"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  service_plan_id     = azurerm_service_plan.main.id
-  https_only          = true
+      command = length(var.app_command_line) > 0 ? ["/bin/bash", "-c", var.app_command_line] : null
 
-  site_config {
-    always_on = true
-
-    application_stack {
-      docker_image_name        = "frontend:${var.image_tag}"
-      docker_registry_url      = "https://${var.acr_login_server}"
-      docker_registry_username = var.acr_admin_username
-      docker_registry_password = var.acr_admin_password
+      dynamic "env" {
+        for_each = var.app_settings
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
     }
   }
 
-  app_settings = {
-    "WEBSITES_PORT"    = "3000"
-    "DOCKER_ENABLE_CI" = "true"
+  ingress {
+    external_enabled = true
+    target_port      = var.target_port
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
   }
-
-  tags = var.tags
 }

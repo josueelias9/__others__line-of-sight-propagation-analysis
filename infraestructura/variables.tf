@@ -56,12 +56,10 @@ variable "next_public_google_maps_map_id" {
   type        = string
 }
 
-# ── App Service ────────────────────────────────────────────────────────────────
-
-variable "app_service_plan_sku" {
-  description = "App Service Plan SKU (B1/B2/B3 for POC; S1+ for VNet integration in production)"
+variable "auth_secret" {
+  description = "Secret used by NextAuth v5 to sign tokens (generate with: openssl rand -base64 32)"
   type        = string
-  default     = "B1" # ~$13/mo — shared between backend and frontend apps
+  sensitive   = true
 }
 
 variable "image_tag" {

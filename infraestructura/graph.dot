@@ -1,0 +1,39 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "azurerm_container_app_environment.main" [label="azurerm_container_app_environment.main"];
+  "azurerm_resource_group.main" [label="azurerm_resource_group.main"];
+  subgraph "cluster_module.acr" {
+    label = "module.acr"
+    fontname = "sans-serif"
+    "module.acr.azurerm_container_registry.main" [label="azurerm_container_registry.main"];
+  }
+  subgraph "cluster_module.backend" {
+    label = "module.backend"
+    fontname = "sans-serif"
+    "module.backend.azurerm_container_app.main" [label="azurerm_container_app.main"];
+  }
+  subgraph "cluster_module.database" {
+    label = "module.database"
+    fontname = "sans-serif"
+    "module.database.azurerm_postgresql_flexible_server.main" [label="azurerm_postgresql_flexible_server.main"];
+    "module.database.azurerm_postgresql_flexible_server_database.main" [label="azurerm_postgresql_flexible_server_database.main"];
+    "module.database.azurerm_postgresql_flexible_server_firewall_rule.azure_services" [label="azurerm_postgresql_flexible_server_firewall_rule.azure_services"];
+  }
+  subgraph "cluster_module.frontend" {
+    label = "module.frontend"
+    fontname = "sans-serif"
+    "module.frontend.azurerm_container_app.main" [label="azurerm_container_app.main"];
+  }
+  "azurerm_container_app_environment.main" -> "azurerm_resource_group.main";
+  "module.acr.azurerm_container_registry.main" -> "azurerm_resource_group.main";
+  "module.backend.azurerm_container_app.main" -> "azurerm_container_app_environment.main";
+  "module.backend.azurerm_container_app.main" -> "module.acr.azurerm_container_registry.main";
+  "module.backend.azurerm_container_app.main" -> "module.database.azurerm_postgresql_flexible_server.main";
+  "module.database.azurerm_postgresql_flexible_server.main" -> "azurerm_resource_group.main";
+  "module.database.azurerm_postgresql_flexible_server_database.main" -> "module.database.azurerm_postgresql_flexible_server.main";
+  "module.database.azurerm_postgresql_flexible_server_firewall_rule.azure_services" -> "module.database.azurerm_postgresql_flexible_server.main";
+  "module.frontend.azurerm_container_app.main" -> "azurerm_container_app_environment.main";
+  "module.frontend.azurerm_container_app.main" -> "module.acr.azurerm_container_registry.main";
+  "module.frontend.azurerm_container_app.main" -> "module.database.azurerm_postgresql_flexible_server.main";
+}

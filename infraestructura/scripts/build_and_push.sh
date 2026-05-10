@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
-# Builds backend and frontend Docker images and pushes them to Azure Container Registry.
+# Builds backend and frontend Docker images, pushes them to ACR, and updates
+# the running Container Apps to the new image.
 #
-# Usage (run from the infraestructura/ directory after `terraform apply`):
+# Prerequisites:
+#   1. terraform apply already ran (Container Apps exist with hello-world image)
+#   2. Azure CLI authenticated: az login
+#   3. Docker running
+#
+# Usage (from the repo root or infraestructura/ directory):
 #
 #   export NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="your_key"
 #   export NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID="your_map_id"
 #   ./scripts/build_and_push.sh [IMAGE_TAG]
 #
-# The IMAGE_TAG argument defaults to "latest".
-#
-# Requirements:
-#   - Azure CLI (az) installed and authenticated: az login
-#   - Docker installed and running
-#   - terraform apply already executed at least once (outputs must exist)
+# IMAGE_TAG defaults to "latest".
 #
 # IMPORTANT — NEXT_PUBLIC_* variables:
 #   Next.js inlines NEXT_PUBLIC_* values into the JS bundle at *build time*.
-#   They cannot be overridden at runtime via App Service env vars.
-#   Always rebuild and push the frontend image when these values change.
+#   Rebuild and push the frontend image whenever these values change.
 
 set -euo pipefail
 
@@ -27,28 +27,32 @@ REPO_ROOT="$(cd "${INFRA_DIR}/.." && pwd)"
 
 IMAGE_TAG="${1:-latest}"
 
-# ── Resolve Terraform outputs ─────────────────────────────────────────────────
-echo "==> Reading Terraform outputs..."
 cd "${INFRA_DIR}"
 
+# ── Validate required env vars ────────────────────────────────────────────────
+: "${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:?NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set.}"
+: "${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID:?NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID is not set.}"
+
+# ── Read Terraform outputs ────────────────────────────────────────────────────
+echo "==> Reading Terraform outputs..."
 ACR_LOGIN_SERVER=$(terraform output -raw acr_login_server)
 ACR_NAME=$(terraform output -raw acr_name)
+RG=$(terraform output -raw resource_group_name)
+BACKEND_NAME=$(terraform output -raw backend_name)
+FRONTEND_NAME=$(terraform output -raw frontend_name)
 BACKEND_URL=$(terraform output -raw backend_url)
 
-echo "    ACR:         ${ACR_LOGIN_SERVER}"
-echo "    Image tag:   ${IMAGE_TAG}"
-echo "    Backend URL: ${BACKEND_URL}"
-
-# ── Validate required env vars for frontend build ────────────────────────────
-: "${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:?NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set. Export it before running this script.}"
-: "${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID:?NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID is not set. Export it before running this script.}"
+echo "    ACR:      ${ACR_LOGIN_SERVER}"
+echo "    Tag:      ${IMAGE_TAG}"
+echo "    Backend:  ${BACKEND_NAME}"
+echo "    Frontend: ${FRONTEND_NAME}"
 
 # ── Login to ACR ──────────────────────────────────────────────────────────────
 echo ""
-echo "==> Logging in to ACR (${ACR_NAME})..."
+echo "==> Logging in to ACR..."
 az acr login --name "${ACR_NAME}"
 
-# ── Backend ───────────────────────────────────────────────────────────────────
+# ── Build & push backend ──────────────────────────────────────────────────────
 BACKEND_IMAGE="${ACR_LOGIN_SERVER}/backend:${IMAGE_TAG}"
 echo ""
 echo "==> Building backend → ${BACKEND_IMAGE}"
@@ -60,11 +64,10 @@ docker build \
 echo "==> Pushing backend..."
 docker push "${BACKEND_IMAGE}"
 
-# ── Frontend ──────────────────────────────────────────────────────────────────
+# ── Build & push frontend ─────────────────────────────────────────────────────
 FRONTEND_IMAGE="${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}"
 echo ""
 echo "==> Building frontend → ${FRONTEND_IMAGE}"
-echo "    (NEXT_PUBLIC_* values are baked in at build time)"
 docker build \
   --platform linux/amd64 \
   --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}" \
@@ -76,15 +79,23 @@ docker build \
 echo "==> Pushing frontend..."
 docker push "${FRONTEND_IMAGE}"
 
-# ── Done ──────────────────────────────────────────────────────────────────────
+# ── Update Container Apps to the new image ────────────────────────────────────
 echo ""
-echo "=== Images pushed to ACR ==="
-echo "  Backend:  ${BACKEND_IMAGE}"
-echo "  Frontend: ${FRONTEND_IMAGE}"
+echo "==> Updating Container Apps..."
+az containerapp update \
+  --name "${BACKEND_NAME}" \
+  --resource-group "${RG}" \
+  --image "${BACKEND_IMAGE}" \
+  --output none
+
+az containerapp update \
+  --name "${FRONTEND_NAME}" \
+  --resource-group "${RG}" \
+  --image "${FRONTEND_IMAGE}" \
+  --output none
+
+# ── Done ─────────────────────────────────────────────────────────────────────
 echo ""
-echo "To restart the App Service containers and pull the new images:"
-RG=$(terraform output -raw resource_group_name)
-echo "  az webapp restart --name ${INFRA_DIR##*/}-backend  --resource-group ${RG}"
-echo "  az webapp restart --name ${INFRA_DIR##*/}-frontend --resource-group ${RG}"
-echo ""
-echo "Or use the ACR webhook (DOCKER_ENABLE_CI=true) for automatic restarts."
+echo "=== Done ==="
+echo "  Backend:  https://$(az containerapp show --name "${BACKEND_NAME}" --resource-group "${RG}" --query 'properties.latestRevisionFqdn' -o tsv)"
+echo "  Frontend: https://$(az containerapp show --name "${FRONTEND_NAME}" --resource-group "${RG}" --query 'properties.latestRevisionFqdn' -o tsv)"

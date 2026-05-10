@@ -1,9 +1,6 @@
-variable "prefix" {
-  type = string
-}
-
-variable "location" {
-  type = string
+variable "app_name" {
+  description = "Name of the Container App"
+  type        = string
 }
 
 variable "resource_group_name" {
@@ -15,51 +12,43 @@ variable "tags" {
   default = {}
 }
 
-variable "app_service_plan_sku" {
-  description = "App Service Plan SKU (S1 or higher required for VNet integration)"
-  type        = string
-  default     = "S1"
-}
-
-variable "image_tag" {
-  description = "Docker image tag to pull from ACR"
-  type        = string
-  default     = "latest"
-}
-
-# ── ACR ────────────────────────────────────────────────────────────────────────
-
-variable "acr_login_server" {
-  description = "ACR login server hostname (e.g. myregistry.azurecr.io)"
+variable "container_app_environment_id" {
+  description = "ID of the Container App Environment"
   type        = string
 }
 
-variable "acr_admin_username" {
+variable "docker_image_name" {
+  description = "Docker image name and tag (e.g. backend:latest)"
+  type        = string
+}
+
+variable "docker_registry_url" {
+  description = "ACR login server hostname (e.g. lospaprodacr.azurecr.io)"
+  type        = string
+}
+
+variable "docker_registry_username" {
   type = string
 }
 
-variable "acr_admin_password" {
+variable "docker_registry_password" {
   type      = string
   sensitive = true
 }
 
-# ── PostgreSQL ─────────────────────────────────────────────────────────────────
-
-variable "postgres_host" {
-  description = "FQDN of the PostgreSQL Flexible Server"
+variable "app_command_line" {
+  description = "Custom startup command run via bash -c (leave empty to use image entrypoint)"
   type        = string
+  default     = ""
 }
 
-variable "postgres_user" {
-  type      = string
-  sensitive = true
+variable "app_settings" {
+  description = "Environment variables for the container"
+  type        = map(string)
+  default     = {}
 }
 
-variable "postgres_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "postgres_db" {
-  type = string
+variable "target_port" {
+  description = "Port the container listens on (used for ingress)"
+  type        = number
 }
