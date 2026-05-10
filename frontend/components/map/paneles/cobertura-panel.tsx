@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useFormState as useActionState } from 'react-dom'
+import { useActionState, useEffect, useState } from 'react'
 import type { PuntoData, CoberturaForm } from '@/app/lib/types'
 import { calcularCobertura, type CoberturaState } from '@/app/lib/actions'
 import { PanelFrame } from '@/components/map/panel-layout'

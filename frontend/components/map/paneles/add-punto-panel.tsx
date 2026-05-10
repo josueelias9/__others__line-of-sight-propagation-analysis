@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useFormState as useActionState } from 'react-dom'
+import { useActionState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { PuntoData } from '@/app/lib/types'
 import { agregarPunto, type PuntoState } from '@/app/lib/actions'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useFormState as useActionState } from 'react-dom'
+import { useActionState } from 'react'
 import type { PuntoData, ArbolResult } from '@/app/lib/types'
 import { calcularArbol, type ArbolState } from '@/app/lib/actions'
 import { PanelFrame } from '@/components/map/panel-layout'
