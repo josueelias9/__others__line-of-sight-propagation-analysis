@@ -57,7 +57,7 @@ function GenericPanel<T extends { id: number }>({
 
     async function handleDelete(id: number) {
         await deleteAction(id)
-        const next = items.filter(i => i.id !== id)
+        const next = items?.filter(i => i.id !== id)
         setItems(next)
         setVisibleIds(prev => {
             const s = new Set(prev)
@@ -80,7 +80,7 @@ function GenericPanel<T extends { id: number }>({
     })
 
     useEffect(() => {
-        onVisibleItemsChangeRef.current(items.filter(i => visibleIds.has(i.id)))
+        onVisibleItemsChangeRef.current(items?.filter(i => visibleIds.has(i.id)))
     }, [items, visibleIds])
 
     return (
@@ -92,7 +92,7 @@ function GenericPanel<T extends { id: number }>({
             contentClassName='max-h-[60vh] overflow-y-auto'
         >
             <div className='flex items-center justify-between'>
-                <span className='text-gray-400 text-xs'>{countLabel(items.length)}</span>
+                <span className='text-gray-400 text-xs'>{countLabel(items?.length)}</span>
                 <button
                     onClick={load}
                     disabled={loading}
@@ -106,11 +106,11 @@ function GenericPanel<T extends { id: number }>({
                 <p className='text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2'>{error}</p>
             )}
 
-            {!loading && items.length === 0 && (
+            {!loading && items?.length === 0 && (
                 <p className='text-gray-500 text-xs text-center py-2'>{emptyText}</p>
             )}
 
-            {items.map(item => {
+            {items?.map(item => {
                 const color = ITEM_COLORS[item.id % ITEM_COLORS.length]
                 const active = visibleIds.has(item.id)
                 const expanded = expandedId === item.id

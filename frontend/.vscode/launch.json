@@ -29,7 +29,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug Next.js (Full)",
+            "name": "🟢 Debug Next.js (Full)",
             "configurations": ["Debug Next.js (Server)", "Debug Next.js (Chrome)"]
         }
     ]
