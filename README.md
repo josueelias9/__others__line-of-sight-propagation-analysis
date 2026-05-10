@@ -1,23 +1,34 @@
-# - Visualizador de zonas de cobertura en zonas accidentadas
+# Coverage Zone Visualizer for Rugged Terrain
 
-**Problemática:** al instalar antenas de radioenlace en zonas accidentadas, se necesita saber qué cobertura tendrá la antena considerando:
-- altura de la antena y del equipo receptor
-- zona de Fresnel
-- distancia entre antena y receptor
+**Problem**: when installing radio link antennas in rugged terrain, it is necessary to determine the antenna coverage considering:
 
-**Alcance:** simplificar el trabajo del analista de cobertura de radioenlaces.
+- antenna and receiver equipment height
+- Fresnel zone
+- distance between the antenna and the receiver
 
-![](imagenes/resultado_1.png)
+**Scope**: simplify the work of radio link coverage analysts.
+
+![alt text](image.png)
 
 
-# use env
+## deploy
 
-encrypt
-```sh
-sops encrypt --age PUBLIC_KEY .env > enc.env
-```
-
-decrypt
+- decrypt envs
 ```sh
 SOPS_AGE_KEY_FILE=../key.txt sops decrypt enc.env > .env
+```
+- build project locally
+```sh
+docker compose up --build
+```
+
+- go to `localhost:3000/seed` to populate the first intial user
+- go to `localhost:3000` and fill the credencials user `user@example.com` and password `password123`
+
+
+## develop
+
+encrypt the envs
+```sh
+sops encrypt --age PUBLIC_KEY .env > enc.env
 ```
