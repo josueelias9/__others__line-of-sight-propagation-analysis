@@ -1,3 +1,4 @@
+# TODO: This class was for quick prototyping. If we are considering working only with the db, it should be removed.
 import logging
 import csv
 from typing import List, Optional

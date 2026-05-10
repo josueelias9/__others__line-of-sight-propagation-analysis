@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from sqlmodel import Session, select
 
@@ -20,11 +20,12 @@ class PgRedRepository(RedGateway):
     Pertenece a la capa de Infraestructura.
     """
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, user_id: Optional[int] = None) -> None:
         self._session = session
+        self._user_id = user_id
 
     def guardar_red(self, geojson: dict, red: Red) -> Red:
-        red_row = RedTable(nombre=red.nombre, geojson=geojson)
+        red_row = RedTable(nombre=red.nombre, geojson=geojson, user_id=self._user_id)
         self._session.add(red_row)
         self._session.flush()  # populate red_row.id
 
@@ -49,7 +50,10 @@ class PgRedRepository(RedGateway):
         return red
 
     def listar_redes(self) -> List[Red]:
-        red_rows = self._session.exec(select(RedTable).order_by(RedTable.id)).all()
+        stmt = select(RedTable).order_by(RedTable.id)
+        if self._user_id is not None:
+            stmt = stmt.where(RedTable.user_id == self._user_id)
+        red_rows = self._session.exec(stmt).all()
         redes: List[Red] = []
         for row in red_rows:
             rel_rows = self._session.exec(
@@ -89,7 +93,10 @@ class PgRedRepository(RedGateway):
         return redes
 
     def eliminar_red(self, red_id: int) -> None:
-        row = self._session.get(RedTable, red_id)
+        stmt = select(RedTable).where(RedTable.id == red_id)
+        if self._user_id is not None:
+            stmt = stmt.where(RedTable.user_id == self._user_id)
+        row = self._session.exec(stmt).first()
         if row:
             self._session.delete(row)
             self._session.commit()

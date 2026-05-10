@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 
 from app.core import config
+from app.api.deps import CurrentUserIdDep
 from infrastructure.persistence.database import SessionDep
 from infrastructure.persistence.pg_cobertura_guardada_repository import (
     PgCoberturaGuardadaRepository,
@@ -30,14 +31,16 @@ router = APIRouter()
 
 
 @router.post("")
-def post_cobertura(body: CoberturaRequest, session: SessionDep):
+def post_cobertura(
+    body: CoberturaRequest, session: SessionDep, user_id: CurrentUserIdDep
+):
     distancia_grados = config.de_km_a_grados(body.distancia_km)
-    cobertura_repo = PgCoberturaGuardadaRepository(session)
+    cobertura_repo = PgCoberturaGuardadaRepository(session, user_id=user_id)
     presenter = GenerarPoligonoCoberturaPresenter()
 
     use_case = GenerarPoligonoCoberturaUseCase(
         elevation_repo=SrtmElevationRepository(body.muestras),
-        punto_repo=PgPuntoRepository(session),
+        punto_repo=PgPuntoRepository(session, user_id=user_id),
         geometry_gateway=ShapelyGeometryRepository(),
         output_boundary=presenter,
         numero_de_ldv=body.numero_de_ldv,
@@ -58,8 +61,10 @@ def post_cobertura(body: CoberturaRequest, session: SessionDep):
 
 
 @router.get("", response_model=List[CoberturaGuardadaOut])
-def get_coberturas(session: SessionDep):
-    use_case = ListarCoberturasUseCase(repo=PgCoberturaGuardadaRepository(session))
+def get_coberturas(session: SessionDep, user_id: CurrentUserIdDep):
+    use_case = ListarCoberturasUseCase(
+        repo=PgCoberturaGuardadaRepository(session, user_id=user_id)
+    )
     items = use_case.ejecutar(ListarCoberturasRequest())
     return [
         CoberturaGuardadaOut(
@@ -77,8 +82,8 @@ def get_coberturas(session: SessionDep):
 
 
 @router.delete("/{id}", status_code=204)
-def delete_cobertura(id: int, session: SessionDep):
-    repo = PgCoberturaGuardadaRepository(session)
+def delete_cobertura(id: int, session: SessionDep, user_id: CurrentUserIdDep):
+    repo = PgCoberturaGuardadaRepository(session, user_id=user_id)
     try:
         repo.eliminar(id)
     except ValueError as e:

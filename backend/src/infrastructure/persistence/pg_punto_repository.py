@@ -49,14 +49,17 @@ class PgPuntoRepository(PuntoGateway):
     Pertenece a la capa de Infraestructura.
     """
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, user_id: Optional[int] = None) -> None:
         self._session = session
+        self._user_id = user_id
 
     # ------------------------------------------------------------------ PuntoGateway
 
     def leer_puntos(self, tipo: Optional[str] = None) -> List[Punto]:
         tipo_map = _load_tipo_map(self._session)
         stmt = select(PuntoTable).order_by(PuntoTable.ubigeo)
+        if self._user_id is not None:
+            stmt = stmt.where(PuntoTable.user_id == self._user_id)
         if tipo is not None:
             tipo_row = self._session.exec(
                 select(PuntoTypeTable).where(PuntoTypeTable.name == tipo)
@@ -69,15 +72,19 @@ class PgPuntoRepository(PuntoGateway):
 
     def obtener_punto_por_ubigeo(self, ubigeo: int) -> Punto:
         tipo_map = _load_tipo_map(self._session)
-        row = self._session.exec(
-            select(PuntoTable).where(PuntoTable.ubigeo == ubigeo)
-        ).first()
+        stmt = select(PuntoTable).where(PuntoTable.ubigeo == ubigeo)
+        if self._user_id is not None:
+            stmt = stmt.where(PuntoTable.user_id == self._user_id)
+        row = self._session.exec(stmt).first()
         if row is None:
             raise ValueError(f"No se encontró un punto con ubigeo={ubigeo}")
         return _table_to_punto(row, tipo_map)
 
     def guardar_puntos(self, puntos: List[Punto]) -> None:
-        self._session.exec(delete(PuntoTable))
+        stmt = delete(PuntoTable)
+        if self._user_id is not None:
+            stmt = stmt.where(PuntoTable.user_id == self._user_id)
+        self._session.exec(stmt)
         for p in puntos:
             tipo_id = _get_tipo_id(self._session, p.tipo)
             self._session.add(
@@ -91,6 +98,7 @@ class PgPuntoRepository(PuntoGateway):
                     metros_sobre_nivel_mar=p.metros_sobre_nivel_mar,
                     green_asociado=p.green_asociado,
                     conectado=p.conectado,
+                    user_id=self._user_id,
                 )
             )
         self._session.commit()
@@ -118,6 +126,7 @@ class PgPuntoRepository(PuntoGateway):
                 metros_sobre_nivel_mar=punto.metros_sobre_nivel_mar,
                 green_asociado=punto.green_asociado,
                 conectado=punto.conectado,
+                user_id=self._user_id,
             )
         )
         self._session.commit()

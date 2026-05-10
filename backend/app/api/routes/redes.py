@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter
 
 from app.core import config
+from app.api.deps import CurrentUserIdDep
 
 from infrastructure.persistence.database import SessionDep
 from infrastructure.persistence.pg_punto_repository import PgPuntoRepository
@@ -31,8 +32,8 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[RedOut])
-def get_redes(session: SessionDep):
-    use_case = ListarRedesUseCase(red_repo=PgRedRepository(session))
+def get_redes(session: SessionDep, user_id: CurrentUserIdDep):
+    use_case = ListarRedesUseCase(red_repo=PgRedRepository(session, user_id=user_id))
     redes = use_case.ejecutar()
     return [
         RedOut(
@@ -53,8 +54,8 @@ def get_redes(session: SessionDep):
 
 
 @router.delete("/{red_id}", status_code=204)
-def delete_red(red_id: int, session: SessionDep):
-    repo = PgRedRepository(session)
+def delete_red(red_id: int, session: SessionDep, user_id: CurrentUserIdDep):
+    repo = PgRedRepository(session, user_id=user_id)
     repo.eliminar_red(red_id)
 
 
@@ -62,13 +63,13 @@ def delete_red(red_id: int, session: SessionDep):
 
 
 @router.post("", response_model=ArbolResponse)
-def post_arbol(body: ArbolRequest, session: SessionDep):
+def post_arbol(body: ArbolRequest, session: SessionDep, user_id: CurrentUserIdDep):
     import os
 
     os.makedirs(config.DIR_OUTPUT, exist_ok=True)
 
-    repo = PgPuntoRepository(session)
-    red_repo = PgRedRepository(session)
+    repo = PgPuntoRepository(session, user_id=user_id)
+    red_repo = PgRedRepository(session, user_id=user_id)
     elevation_repo = SrtmElevationRepository(body.muestras)
     kml_output = KmlWriter(directorio=config.DIR_OUTPUT)
 
