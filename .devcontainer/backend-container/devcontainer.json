@@ -13,7 +13,8 @@
         "ms-python.python",
         "RandomFractalsInc.geo-data-viewer",
         "bierner.markdown-mermaid",
-        "humao.rest-client"
+        "humao.rest-client",
+        "eamodio.gitlens"
       ],
       "settings": {
         "workbench.colorTheme": "Monokai"

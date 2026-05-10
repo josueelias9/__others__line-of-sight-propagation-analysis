@@ -8,20 +8,3 @@ services:
       dockerfile: Dev.Dockerfile
     command: sleep infinity
     user: root
-    depends_on: !reset []
-    
-  backend:
-    profiles:
-      - avoid
-
-  pgadmin:
-    profiles:
-      - avoid
-
-  backend-init:
-    profiles:
-      - avoid
-
-  db:
-    profiles:
-      - avoid

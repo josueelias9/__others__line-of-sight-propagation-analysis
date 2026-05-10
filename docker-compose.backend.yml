@@ -5,7 +5,7 @@ services:
       # Mount the root folder that contains .git
       - .:/workspace
     command: sleep infinity
-    # depends_on: !reset []
+    depends_on: !reset []
 
 
   # frontend:
