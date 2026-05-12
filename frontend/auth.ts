@@ -6,7 +6,9 @@ import { z } from 'zod'
 import type { User } from '@/app/lib/types'
 import { authConfig } from '@/auth.config'
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: false })
+const sql = postgres(process.env.POSTGRES_URL!, {
+    ssl: process.env.POSTGRES_SSL === 'require' ? 'require' : false
+})
 
 async function getUser(email: string): Promise<User | undefined> {
     try {
@@ -32,14 +34,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
                     const user = await getUser(email)
                     if (!user) return null
-                    const temp = await bcrypt.hash(password, 10)
-                    console.log('Comparing password with hash:', {
-                        password,
-                        hash: user.hashed_password,
-                        temp
-                    })
-
+          
                     const passwordsMatch = await bcrypt.compare(password, user.hashed_password)
+                    if(passwordsMatch) {
+                        console.log('Password match successful for user:', email)
+                    }
                     if (passwordsMatch) return { id: user.id, email: user.email, name: user.email }
                 }
 

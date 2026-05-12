@@ -1,12 +1,9 @@
 import { auth } from '@/auth'
 
-const BASE =
-    process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8000'
-
 // Includes the user's email as X-User-Email on every request
 async function backendFetch(path: string, init?: RequestInit) {
     const session = await auth()
-    return fetch(`${BASE}${path}`, {
+    return fetch(`${process.env.BACKEND_API_URL}${path}`, {
         ...init,
         headers: {
             'Content-Type': 'application/json',

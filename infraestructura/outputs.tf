@@ -14,13 +14,23 @@ output "acr_name" {
 }
 
 output "backend_url" {
-  description = "Backend App Service HTTPS URL"
-  value       = module.app_service.backend_url
+  description = "Backend Container App HTTPS URL"
+  value       = module.backend.url
+}
+
+output "backend_name" {
+  description = "Backend Container App resource name"
+  value       = module.backend.name
 }
 
 output "frontend_url" {
-  description = "Frontend App Service HTTPS URL"
-  value       = module.app_service.frontend_url
+  description = "Frontend Container App HTTPS URL"
+  value       = module.frontend.url
+}
+
+output "frontend_name" {
+  description = "Frontend Container App resource name"
+  value       = module.frontend.name
 }
 
 output "postgres_fqdn" {

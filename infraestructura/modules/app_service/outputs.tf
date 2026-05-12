@@ -1,19 +1,14 @@
-output "backend_url" {
-  description = "Backend App Service HTTPS URL"
-  value       = "https://${azurerm_linux_web_app.backend.default_hostname}"
+output "url" {
+  description = "Container App HTTPS URL"
+  value       = "https://${azurerm_container_app.main.latest_revision_fqdn}"
 }
 
-output "frontend_url" {
-  description = "Frontend App Service HTTPS URL"
-  value       = "https://${azurerm_linux_web_app.frontend.default_hostname}"
+output "hostname" {
+  description = "Container App FQDN (without https://)"
+  value       = azurerm_container_app.main.latest_revision_fqdn
 }
 
-output "backend_hostname" {
-  description = "Backend default hostname (without https://)"
-  value       = azurerm_linux_web_app.backend.default_hostname
-}
-
-output "frontend_hostname" {
-  description = "Frontend default hostname (without https://)"
-  value       = azurerm_linux_web_app.frontend.default_hostname
+output "name" {
+  description = "Container App resource name"
+  value       = azurerm_container_app.main.name
 }

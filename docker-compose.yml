@@ -31,16 +31,17 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dev.Dockerfile
       args:
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
         NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID: ${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
     ports:
       - "3000:3000"
     env_file:
       - .env
     environment:
       - BACKEND_API_URL
+      # TODO: this should be refactored to use a single env var for the entire connection string
       - POSTGRES_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - NEXTAUTH_URL
       - AUTH_SECRET
