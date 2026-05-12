@@ -199,7 +199,7 @@ export function Map3DView({
                         strokeColor: '#34D399',
                         strokeWidth: 2
                     })
-                    poly.outerCoordinates = outerRing.map(([lng, lat]) => ({ lat, lng }))
+                    poly.path = outerRing.map(([lng, lat]) => ({ lat, lng }))
                     map3d.append(poly)
                     coberturaElemsRef.current.push(poly)
                 })
@@ -217,9 +217,9 @@ export function Map3DView({
                         strokeColor: '#FBBF24',
                         strokeWidth: 4
                     })
-                    poly.outerCoordinates = outerRing.map(([lng, lat]) => ({ lat, lng }))
+                    poly.path = outerRing.map(([lng, lat]) => ({ lat, lng }))
                     if (innerRings.length > 0) {
-                        poly.innerCoordinates = innerRings.map(ring =>
+                        poly.innerPaths = innerRings.map(ring =>
                             ring.map(([lng, lat]) => ({ lat, lng }))
                         )
                     }
@@ -257,12 +257,12 @@ export function Map3DView({
                         strokeColor: hex,
                         strokeWidth: 3
                     })
-                    poly.outerCoordinates = outerRing.map(([lng, lat]: [number, number]) => ({
+                    poly.path = outerRing.map(([lng, lat]: [number, number]) => ({
                         lat,
                         lng
                     }))
                     if (innerRings.length > 0) {
-                        poly.innerCoordinates = innerRings.map((ring: [number, number][]) =>
+                        poly.innerPaths = innerRings.map((ring: [number, number][]) =>
                             ring.map(([lng, lat]) => ({ lat, lng }))
                         )
                     }

@@ -49,7 +49,10 @@ export default function MapView({ initialPuntos, initialRedes, initialCoberturas
     const [redes, setRedes] = useState<RedData[]>(initialRedes)
 
     const seedInitialState: SeedState = { puntosCreados: null, error: null }
-    const [seedState, seedAction, seedPending] = useActionState(poblarDatosUsuario, seedInitialState)
+    const [seedState, seedAction, seedPending] = useActionState(
+        poblarDatosUsuario,
+        seedInitialState
+    )
 
     const highlightedUbigeos = useMemo(() => {
         const s = new Set<number>()
@@ -95,9 +98,7 @@ export default function MapView({ initialPuntos, initialRedes, initialCoberturas
                                 : '¿Cómo usar la app? Cargar datos de ejemplo'}
                     </button>
                 </form>
-                {seedState.error && (
-                    <span className='text-xs text-red-400'>{seedState.error}</span>
-                )}
+                {seedState.error && <span className='text-xs text-red-400'>{seedState.error}</span>}
                 <form action={signOutAction}>
                     <button
                         type='submit'
@@ -108,7 +109,15 @@ export default function MapView({ initialPuntos, initialRedes, initialCoberturas
                 </form>
             </div>
             <APIProvider apiKey={API_KEY}>
-                {view3D ? (
+                <Map3DView
+                    puntos={puntos}
+                    redes={redes}
+                    cobertura={cobertura}
+                    arbolRedGeojson={arbolResult?.red_geojson ?? null}
+                    showMalla={showMalla}
+                    multipoligonos={multipoligonos}
+                />
+                {/* {view3D ? (
                     <Map3DView
                         puntos={puntos}
                         redes={redes}
@@ -167,7 +176,7 @@ export default function MapView({ initialPuntos, initialRedes, initialCoberturas
                         ))}
                         <MapControls />
                     </Map>
-                )}
+                )} */}
             </APIProvider>
 
             {pickingMode && (
