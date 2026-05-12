@@ -5,3 +5,6 @@ terraform.tfvars
 # pattern
 .terraform*
 terraform.tfstate*
+*.tfvars.json
+
+!enc.terraform.tfvars.json
