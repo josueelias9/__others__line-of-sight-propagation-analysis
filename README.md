@@ -11,7 +11,7 @@
 ![alt text](image.png)
 
 ![alt text](image-1.png)
-## deploy
+## Local deployment
 
 - decrypt envs
 ```sh
@@ -25,8 +25,23 @@ docker compose up --build
 - go to `localhost:3000/seed` to populate the first intial user
 - go to `localhost:3000` and fill the credencials user `user@example.com` and password `password123`
 
+## Deployment on Cloud
 
-## develop
+- deploy on Azure
+```sh
+az login
+terraform init
+terraform apply --auto-aprove
+```
+- go to `<AZURE_URL>:3000/seed` to populate the first intial user
+- go to `<AZURE_URL>:3000` and fill the credencials user `user@example.com` and password `password123`
+
+## Develop
+
+encrypt the envs
+```sh
+sops encrypt --age PUBLIC_KEY .env > enc.env
+```
 
 encrypt the envs
 ```sh

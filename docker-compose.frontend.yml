@@ -7,4 +7,20 @@ services:
       context: ./frontend
       dockerfile: Dev.Dockerfile
     command: sleep infinity
-    user: root
+
+
+  backend:
+    profiles:
+      - avoid
+
+  backend-init:
+    profiles:
+      - avoid
+
+  db:
+    profiles:
+      - avoid
+
+  pgadmin:
+    profiles:
+      - avoid
