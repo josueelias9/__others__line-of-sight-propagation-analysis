@@ -33,7 +33,5 @@ digraph G {
   "module.database.azurerm_postgresql_flexible_server.main" -> "azurerm_resource_group.main";
   "module.database.azurerm_postgresql_flexible_server_database.main" -> "module.database.azurerm_postgresql_flexible_server.main";
   "module.database.azurerm_postgresql_flexible_server_firewall_rule.azure_services" -> "module.database.azurerm_postgresql_flexible_server.main";
-  "module.frontend.azurerm_container_app.main" -> "azurerm_container_app_environment.main";
-  "module.frontend.azurerm_container_app.main" -> "module.acr.azurerm_container_registry.main";
-  "module.frontend.azurerm_container_app.main" -> "module.database.azurerm_postgresql_flexible_server.main";
+  "module.frontend.azurerm_container_app.main" -> "module.backend.azurerm_container_app.main";
 }

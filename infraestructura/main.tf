@@ -86,6 +86,8 @@ module "frontend" {
   app_settings = {
     "AUTH_SECRET"      = var.auth_secret
     "AUTH_TRUST_HOST"  = "true"
-    "POSTGRES_URL"     = "postgresql://${var.postgres_admin_username}:${var.postgres_admin_password}@${module.database.fqdn}:5432/${var.postgres_db_name}"
+    "POSTGRES_URL"     = "postgresql://${var.postgres_admin_username}:${urlencode(var.postgres_admin_password)}@${module.database.fqdn}:5432/${var.postgres_db_name}?sslmode=require"
+    "POSTGRES_SSL"     = "require"
+    "BACKEND_API_URL" = "${module.backend.url}"
   }
 }

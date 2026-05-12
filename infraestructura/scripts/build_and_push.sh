@@ -27,6 +27,15 @@ REPO_ROOT="$(cd "${INFRA_DIR}/.." && pwd)"
 
 IMAGE_TAG="${1:-latest}"
 
+# ── Load variables from .env file ────────────────────────────────────────────
+if [[ -f "${REPO_ROOT}/.env" ]]; then
+  echo "==> Loading env vars from ${REPO_ROOT}/.env"
+  set -a
+  # shellcheck source=/dev/null
+  source "${REPO_ROOT}/.env"
+  set +a
+fi
+
 cd "${INFRA_DIR}"
 
 # ── Validate required env vars ────────────────────────────────────────────────
@@ -40,7 +49,6 @@ ACR_NAME=$(terraform output -raw acr_name)
 RG=$(terraform output -raw resource_group_name)
 BACKEND_NAME=$(terraform output -raw backend_name)
 FRONTEND_NAME=$(terraform output -raw frontend_name)
-BACKEND_URL=$(terraform output -raw backend_url)
 
 echo "    ACR:      ${ACR_LOGIN_SERVER}"
 echo "    Tag:      ${IMAGE_TAG}"
@@ -72,7 +80,6 @@ docker build \
   --platform linux/amd64 \
   --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}" \
   --build-arg NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID="${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}" \
-  --build-arg NEXT_PUBLIC_BACKEND_URL="${BACKEND_URL}" \
   -t "${FRONTEND_IMAGE}" \
   "${REPO_ROOT}/frontend"
 
