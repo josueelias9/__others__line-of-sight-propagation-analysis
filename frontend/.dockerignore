@@ -1,9 +1,10 @@
 # directories
-.vscode
 node_modules
+.vscode
 .prettierignore
 .prettierrc
+.next
 
 # files
-Dev.Dockerfile
 Dockerfile
+README.md

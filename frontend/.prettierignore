@@ -4,3 +4,5 @@ coverage
 
 tsconfig.json
 tailwind.config.ts
+package-lock.json
+package.json

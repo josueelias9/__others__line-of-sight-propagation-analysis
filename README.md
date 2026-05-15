@@ -52,7 +52,7 @@ encrypt the envs
 sops encrypt --age PUBLIC_KEY .env > enc.env
 ```
 
-encrypt the envs
+encrypt the tf envs
 ```sh
 sops encrypt --age PUBLIC_KEY infraestructura/terraform.tfvars.json > infraestructura/enc.terraform.tfvars.json
 ```

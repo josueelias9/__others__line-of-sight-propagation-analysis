@@ -18,7 +18,7 @@ export type State = {
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
     try {
-        await signIn('credentials', { ...Object.fromEntries(formData), redirectTo: '/' })
+        await signIn('credentials', { ...Object.fromEntries(formData), redirectTo: '/analyzer' })
     } catch (error) {
         if (error instanceof AuthError) {
             switch (error.type) {

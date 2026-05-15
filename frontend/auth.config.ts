@@ -1,7 +1,7 @@
 import type { NextAuthConfig } from 'next-auth'
 
 export const authConfig = {
-    // trustHost: true,
+    trustHost: true,
     pages: {
         signIn: '/login'
     },
@@ -11,17 +11,16 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user
             const isOnLogin = nextUrl.pathname === '/login'
             const isOnSeed = nextUrl.pathname === '/seed'
+            const isOnHome = nextUrl.pathname === '/'
+            const isOnAnalyzer = nextUrl.pathname.startsWith('/analyzer')
 
-            if (isOnSeed) return true
-
-            if (isOnLogin) {
-                // Already authenticated → send to home
-                if (isLoggedIn) return Response.redirect(new URL('/', nextUrl))
-                return true
+            if (isOnAnalyzer) {
+                if (isLoggedIn) {
+                    return true
+                }
+                return false
             }
-
-            // All other routes require auth
-            return isLoggedIn
+            return true
         }
     }
 } satisfies NextAuthConfig
