@@ -31,7 +31,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dev.Dockerfile
+      dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
         NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID: ${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}
